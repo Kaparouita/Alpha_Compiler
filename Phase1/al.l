@@ -1,12 +1,23 @@
 /*definitions section*/ 
 %{
-	#define YY_DECL int alpha_yylex (void *lvalp)
+	#define YY_DECL int alpha_yylex (void *ylval)
+
+	typedef struct alpha_token_t {
+      unsigned int     numline;
+      unsigned int     numToken;
+      char          *content;
+      char          *type;
+      struct alpha_token_t *alpha_yylex;
+	  }tokenaki;
+
+	  tokenaki *token = NULL;
 %}
 
 /*rules section*/ 
 %{
 %}
 
+%option prefix = "DMLS_yy"
 %option yylineno
 %option noyywrap
 
@@ -79,7 +90,7 @@ EXTRA_CHARS [!@#$^&~?|_]*
 /*ISWS TA SVISUMEEEE*/
 
 %%
-
+[0-9]+      { token->type = "INTEGER"; }
 %%
 int main(int argc,char** argv){	
 	if(argc>1){
