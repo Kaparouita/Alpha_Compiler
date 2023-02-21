@@ -1,11 +1,14 @@
 /*definitions section*/ 
-%
-%
+%{
+	#define YY_DECL int alpha_yylex (void *lvalp)
+%}
 
 /*rules section*/ 
-%
-%
+%{
+%}
 
+%option yylineno
+%option noyywrap
 
 /*KEYWORDS*/
 IF "if"
@@ -75,6 +78,7 @@ EXTRA_CHARS [!@#$^&~?|_]*
 
 /*ISWS TA SVISUMEEEE*/
 
+%%
 
 %%
 int main(int argc,char** argv){	
@@ -88,11 +92,10 @@ int main(int argc,char** argv){
 	
 	
 	alpha_yylex(NULL);
-	
-	
-	
+		
 	return 0;
 }
+
 
 
 
