@@ -1,5 +1,7 @@
+CC=gcc
+
 al: al.o 
-	$ (gcc) -o al al.c
+	$(CC) -o al al.c
 
 al.c: al.l
 	flex --outfile=al.c al.l

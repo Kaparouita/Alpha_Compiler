@@ -1,8 +1,6 @@
 %option prefix = "DMLS_yy"
 %option yylineno
 %option noyywrap
-
-
 /*definitions section*/ 
 %{
 	#include <stdlib.h>
@@ -34,7 +32,7 @@
 		token->type = strdup(type);
 		token->next = NULL;
 		return token;
-	  }
+	}
 
 	/*HEAD OF TOKENS*/ 
     tokenaki *first= NULL;
