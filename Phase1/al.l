@@ -2,8 +2,8 @@
 %option yylineno
 %option noyywrap
 
-/*definitions section*/
 
+/*definitions section*/
 %{
 	#include <stdlib.h>
     #include <string.h>
@@ -60,12 +60,14 @@
 
 	/*TESTING PRINT FUCTION*/
 	void print_token(tokenaki* token){
-   		printf("Line number: %d ", token->numline);
-    	printf("Token number: %d ", token->numToken);
-    	printf("Token type: %s ", token->type);
-    	printf("Content: %s ", token->content);
-		printf("Extra type: %s", token->extra_type);
-		printf("Category: %s\n", token->category);
+   		printf(": %d ", token->numline);
+    	printf("# %d ", token->numToken);
+		printf("\"");
+    	printf(" %s ", token->content);
+		printf("\"");
+    	printf(" %s ", token->type);
+		printf(" %s ", token->extra_type);
+		printf(" %s\n", token->category);
 	}
 	
 	void do_the_job(char*type,char*Etype,char*category){
@@ -187,10 +189,22 @@ EXTRA_CHARS [!@#$^&~?|_]*
 {INTEGER} { do_the_job("CONST_INT",yytext,"integer"); } //number
 {REAL} {do_the_job("REAL_NUMBER",yytext,"real");}
 
+{LEFT_CURLY_BRACKET} { do_the_job("PUNCTUATION","LEFT_CURLY_BRACKET","enumerated");}
+{RIGHT_CURLY_BRACKET} { do_the_job("PUNCTUATION","RIGHT_CURLY_BRACKET","enumerated");}
+{LEFT_SQUARE_BRACKET} { do_the_job("PUNCTUATION","LEFT_SQUARE_BRACKET","enumerated");}
+{RIGHT_SQUARE_BRACKET} { do_the_job("PUNCTUATION","RIGHT_SQUARE_BRACKET","enumerated");}
+{LEFT_PARENTHESIS} { do_the_job("PUNCTUATION","LEFT_PARENTHESIS","enumerated");}
+{RIGHT_PARENTHESIS} { do_the_job("PUNCTUATION","RIGHT_PARENTHESIS","enumerated");}
+{SEMICOLON} { do_the_job("PUNCTUATION","SEMICOLON","enumerated");}
+{COMMA} { do_the_job("PUNCTUATION","COMMA","enumerated");}
+{COLON} { do_the_job("PUNCTUATION","COLON","enumerated");}
+{SCOPE_RESOLUTION} { do_the_job("PUNCTUATION","SCOPE_RESOLUTION","enumerated");}
+{FULL_STOP} { do_the_job("PUNCTUATION","FULL_STOP","enumerated");}
+{DOUBLE_FULL_STOP} { do_the_job("PUNCTUATION","DOUBLE_FULL_STOP","enumerated");}
 
+{IDENTIFICATION} { do_the_job(yytext,"ID","char*");}
 
-
-
+{EXTRA_CHARS} { do_the_job("EXTRA_CHARS","EXTRA_CHARS","EXTRA_CHARS");}
 		  
 %%
 
@@ -204,7 +218,7 @@ int main(int argc,char** argv){
 		}
 	}else
 		yyin=stdin;
-	
+		printf("----------------------   Lexical Analysis  --------------------\n");
 	
 	alpha_yylex(NULL);
 	return 0;
