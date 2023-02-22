@@ -3,7 +3,7 @@
 %option noyywrap
 
 
-/*definitions section*/ 
+/*definitions section*/
 %{
 	#include <stdlib.h>
     #include <string.h>
@@ -17,24 +17,28 @@
       unsigned int     numToken;
       char          *content;
       char          *type;
+	  char          *extra_type;
+	  char          *category;
       struct alpha_token_t *next;
 	  };
 
       /*CREATE A TOKEN*/
-	tokenaki *tokenConstractor(int numline,int numToken,char* type,char *content){
+	tokenaki *tokenConstractor(int numline,int numToken,char* extra_type,char* type,char *content,char* category){
 		if (type == NULL || content == NULL) {
-        fprintf(stderr, "Error: lathos TYPE , CONTENT\n");
-        return NULL;
+			fprintf(stderr, "Error: lathos TYPE , CONTENT\n");
+			return NULL;
     	}
 
 		tokenaki *token = (tokenaki*)malloc(sizeof(tokenaki));
 		token->numline = numline;
 		token->numToken = numToken;
-		token->content = strdup(content);
+		token->extra_type = strdup(extra_type);
 		token->type = strdup(type);
+		token->content = strdup(content);
+		token->category = strdup(category);
 		token->next = NULL;
 		return token;
-	  }
+	}
 
 	/*HEAD OF TOKENS*/ 
     tokenaki *first= NULL;
@@ -43,29 +47,35 @@
 	  
     /*ADD A NEW TOKEN TO THE LIST*/
 	void insert_token(tokenaki *new_token) {
-    	if (first == NULL) {
-        first = new_token;
-   		} 
-		else {
-        tokenaki *current = first;
-        while (current->next != NULL) {
-            current = current->next;
-        }
-        current->next = new_token;
+    	if (first == NULL) 
+        	first = new_token;
+		else{
+			tokenaki *current = first;
+			while (current->next != NULL) 
+				current = current->next;
+			
+        	current->next = new_token;
     	}
 	}
+
 	/*TESTING PRINT FUCTION*/
 	void print_token(tokenaki* token){
-    	printf("Token number: %d\n", token->numToken);
-    	printf("Token type: %s\n", token->type);
-   		printf("Line number: %d\n", token->numline);
-    	printf("Content: %s\n", token->content);
+   		printf("Line number: %d ", token->numline);
+    	printf("Token number: %d ", token->numToken);
+    	printf("Token type: %s ", token->type);
+    	printf("Content: %s ", token->content);
+		printf("Extra type: %s", token->extra_type);
+		printf("Category: %s\n", token->category);
 	}
+	
+	void do_the_job(char*type,char*Etype,char*category){
+		token_count++;
+		tokenaki *t = tokenConstractor( yylineno,token_count,Etype,type,yytext,category);
+        insert_token(t);
+		print_token(t);
+	}
+	
 	  
-%}
-
-/*rules section*/ 
-%{
 %}
 
 /*KEYWORDS*/
@@ -74,10 +84,11 @@ ELSE "else"
 WHILE "while"
 FOR "for"
 FUNCTION "function"
-RETUNR "return"
+RETURN "return"
 BREAK "break"
 CONTINUE "continue"
 AND "and"
+NOT "not"
 OR "or"
 LOCAL "local"
 TRUE "true"
@@ -141,12 +152,45 @@ EXTRA_CHARS [!@#$^&~?|_]*
 \n { yylineno; } // update yylineno every new line
 [\t ' '] {};	// ignore whitespace char
 
-[0-9]+      { tokenaki *t = tokenConstractor( yylineno,token_count++,"INTEGER",yytext);
-              insert_token(t);
-			  print_token(t); } //number
+{IF} {do_the_job("KEYWORD","IF","enumerated");}
+{ELSE} {do_the_job("KEYWORD","ELSE","enumerated");}
+{WHILE} {do_the_job("KEYWORD","WHILE","enumerated");}
+{FOR} {do_the_job("KEYWORD","FOR","enumerated");}
+{FUNCTION} {do_the_job("KEYWORD","FUNCTION","enumerated");}
+{RETURN} {do_the_job("KEYWORD","RETURN","enumerated");}
+{BREAK} {do_the_job("KEYWORD","BREAK","enumerated");}
+{CONTINUE} {do_the_job("KEYWORD","CONTINUE","enumerated");}
+{AND} {do_the_job("KEYWORD","AND","enumerated");}
+{NOT} {do_the_job("KEYWORD","NOT","enumerated");}
+{OR} {do_the_job("KEYWORD","OR","enumerated");}
+{LOCAL} {do_the_job("KEYWORD","LOCAL","enumerated");}
+{TRUE} {do_the_job("KEYWORD","TRUE","enumerated");}
+{FALSE} {do_the_job("KEYWORD","FALSE","enumerated");}
+{NILL} {do_the_job("KEYWORD","NILL","enumerated");}
+
+{ASSIGNMENT} {do_the_job("OPERATOR","ASSIGNMENT","enumerated");}
+{ADDITION} {do_the_job("OPERATOR","ADDITION","enumerated");}
+{SUBTRACTION} {do_the_job("OPERATOR","SUBTRACTION","enumerated");}
+{MULTI} {do_the_job("OPERATOR","MULTI","enumerated");}
+{DIVISION} {do_the_job("OPERATOR","DIVISION","enumerated");}
+{MODULUS} {do_the_job("OPERATOR","MODULUS","enumerated");}
+{EQUAL} {do_the_job("OPERATOR","EQUAL","enumerated");}
+{NOTEQUAL} {do_the_job("OPERATOR","NOTEQUAL","enumerated");}
+{INCREMENT} {do_the_job("OPERATOR","INCREMENT","enumerated");}
+{DECREMENT} {do_the_job("OPERATOR","DECREMENT","enumerated");}
+{GRETER_THAN} {do_the_job("OPERATOR","GRETER_THAN","enumerated");}
+{LESS_THAN} {do_the_job("OPERATOR","LESS_THAN","enumerated");}
+{GRE_EQUAL} {do_the_job("OPERATOR","GRE_EQUAL","enumerated");}
+{LES_EQUAL} {do_the_job("OPERATOR","LES_EQUAL","enumerated");}
 
 
-[0-9]+[^0-9]+ {printf("hello");} //number followed by char
+{INTEGER} { do_the_job("CONST_INT",yytext,"integer"); } //number
+{REAL} {do_the_job("REAL_NUMBER",yytext,"real");}
+
+
+
+
+
 		  
 %%
 
@@ -163,7 +207,6 @@ int main(int argc,char** argv){
 	
 	
 	alpha_yylex(NULL);
-		
 	return 0;
 }
 
