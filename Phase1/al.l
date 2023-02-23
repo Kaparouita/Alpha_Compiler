@@ -5,6 +5,7 @@
 
 /*definitions section*/
 %{
+	#include <stdio.h>
 	#include <stdlib.h>
     #include <string.h>
 
@@ -71,13 +72,19 @@
 	}
 	
 	void do_the_job(char*type,char*Etype,char*category){
-		token_count++;
-		tokenaki *t = tokenConstractor( yylineno,token_count,Etype,type,yytext,category);
+		tokenaki *t = tokenConstractor( yylineno,token_count++,Etype,type,yytext,category);
+		if(t==NULL)
+		 { token_count--;
+		  return;}
         insert_token(t);
 		print_token(t);
 	}
 	
-	  
+	/*
+	 * return 0 if succed
+	 * return 1 if fails(not nested comment found)
+	*/ 
+	int star_comment_checker(int i);
 %}
 
 /*KEYWORDS*/
@@ -112,6 +119,7 @@ GRETER_THAN ">"
 LESS_THAN "<"
 GRE_EQUAL ">="
 LES_EQUAL "<="
+LINE_COMMENT "//"
 
 /*INTEGER NUMERIC*/
 INTEGER [0-9]+
@@ -205,10 +213,54 @@ EXTRA_CHARS [!@#$^&~?|_]*
 {IDENTIFICATION} { do_the_job(yytext,"ID","char*");}
 
 {EXTRA_CHARS} { do_the_job("EXTRA_CHARS","EXTRA_CHARS","EXTRA_CHARS");}
-		  
+
+{LINE_COMMENT} {
+	int i ;
+	while((i = input()) !=EOF)
+	{
+		if(i=='\n'){
+			unput(i);
+			do_the_job("","COMMENT LINE_COMMENT","enumerated");
+			break;
+		}
+		else if(i=='/'){
+			i = input();
+			int tmp = i;
+			if(tmp == '/')
+			   do_the_job("","NESTED_COMMENT LINE_COMMENTa","enumerated");
+			else if(tmp == '*'){
+				if(star_comment_checker(i) == 1)
+					printf("ERROR : UNCLOSED STAR_COMMENT LINE : %d\n",yylineno);		
+			}
+		    else
+			   unput(i);
+			   
+		}
+	}
+	if(i == EOF)
+		do_the_job("","COMMENT LINE_COMMENT","enumerated");
+}
+
+
+
 %%
 
-
+int star_comment_checker(int i){
+	while((i = input()) != '\n' && i != EOF){
+				if(i == '*')
+					{if(i = input() == '/'){
+						do_the_job("","NESTED_COMMENT STAR_COMMENT","enumerated");
+						return 0;
+					}
+					else
+						unput(i);}					
+	}
+	if(i == EOF)
+	  exit(1);
+	unput(i);
+	return 1;
+	 	
+}
 
 int main(int argc,char** argv){	
 	if(argc>1){
