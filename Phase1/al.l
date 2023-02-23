@@ -204,7 +204,8 @@ EXTRA_CHARS [!@#$^&~?|_]*
 
 {IDENTIFICATION} { do_the_job(yytext,"ID","char*");}
 
-{EXTRA_CHARS} { do_the_job("EXTRA_CHARS","EXTRA_CHARS","EXTRA_CHARS");}
+{EXTRA_CHARS} { do_the_job("EXTRA_CHARS","EXTRA_CHARS","EXTRA_CHARS");
+				printf("Undefined character\n");}
 		  
 %%
 
