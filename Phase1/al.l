@@ -73,11 +73,17 @@
 	
 	void do_the_job(char*type,char*Etype,char*category){
 		tokenaki *t = tokenConstractor( yylineno,token_count++,Etype,type,yytext,category);
-		if(t==NULL)
+		if(t == NULL)
 		 { token_count--;
 		  return;}
         insert_token(t);
 		print_token(t);
+	}
+
+	char *create_string(int a,int b){
+		char* str = malloc(sizeof(char) * 30);
+		sprintf(str,"%d - %d",a,b);
+		return str;
 	}
 	
 	/*
@@ -217,7 +223,8 @@ EXTRA_CHARS [!@#$^&~?|_]*
 
 {LINE_COMMENT} {
 	int i ;
-	while((i = input()) !=EOF || i=='\n')
+	//TO EOF EIXE BUG
+	while((i = input()) >=1 || i=='\n')
 	{
 		if(i == '\n'){
 			unput(i);
@@ -225,65 +232,92 @@ EXTRA_CHARS [!@#$^&~?|_]*
 			break;
 		}
 		else if(i=='/'){
-			i = input();
-			int tmp = i;
-			if(tmp == '/')  
+			if((i = input()) == '/')  
 			   do_the_job("","NESTED_COMMENT LINE_COMMENT","enumerated");
-			else if(tmp == '*'){
+			else if(i == '*'){
 				if(star_comment_checker(i,1) == 1)
-					//printf("ERROR : UNCLOSED STAR_COMMENT LINE : %d\n",yylineno);		
+					printf("ERROR : UNCLOSED STAR_COMMENT LINE : %d\n",yylineno);		
 			}
 		    else
-			   unput(i);
-			   
+			   unput(i);			   
 		}
 	}
-	if(i == EOF)
+	if(i <= 1)
 		do_the_job("","COMMENT LINE_COMMENT","enumerated");
 }
 
-{BLOCK_COMMENT} {
 
-	
+
+{BLOCK_COMMENT} {
+	int i , line = yylineno;
+	while((i = input()) >= 1)
+	{	
+	    if(i == '/'){
+			if((i = input()) == '*')  
+			{
+				if(star_comment_checker(i,0) == 1)
+					break;	
+				else
+			   		unput(i);
+			} 
+			else if(i == '/')  
+			   		do_the_job("","NESTED_COMMENT LINE_COMMENT","enumerated");
+		}
+		else if(i == '*'){
+			if((i = input()) == '/'){
+				
+			   do_the_job(create_string(line,yylineno),"COMMENT BLOCK?_COMMENT","enumerated");
+			   break;
+			   }
+			else
+			   unput(i);
+		}		   	   
+	}
+	if(i <= 1)
+		printf("ERROR : UNCLOSED STAR_COMMENT REACHED EOF ");	
 }
 
 
 
 %%
 
-/*
+/* Checks if the comment
  * what = 1 check for line
  * else check for multiline
  */
 int star_comment_checker(int i,int what){
-	while((i = input()) != EOF){
+	int line = yylineno;
+	while((i = input()) >= 1){
 		if(what == 1 && i == '\n')
 		    {   unput(i);
 				return 1;}
 		if(i == '*'){
-			if(i = input() == '/'){
-				do_the_job("","NESTED_COMMENT STAR_COMMENT","enumerated");
+			if((i = input()) == '/'){
+				do_the_job(create_string(line,yylineno),"NESTED_COMMENT STAR_COMMENT","enumerated");
 					return 0;
 			}
 			else
 				unput(i);
 		}
 		else if(i == '/'){
-            if(i = input() == '*'){
+            if((i = input()) == '*'){
 				if(what == 1)
 					star_comment_checker(i,1);
 			    else
 					star_comment_checker(i,0);		
 			}
+			else if(i == '/')  
+			   	do_the_job("","NESTED_COMMENT LINE_COMMENT","enumerated");
 			else
 				unput(i);
-		}		 					
+		}					
 	}
-	if(i == EOF)
-	  exit(1);
+	if(i >= 1 && what != 1)
+	  exit(0);
 	unput(i);
 	return 1; 	
 }
+
 
 int main(int argc,char** argv){	
 	if(argc>1){
