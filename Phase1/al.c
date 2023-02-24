@@ -878,7 +878,7 @@ char *yytext;
 	 * return 0 if succed
 	 * return 1 if fails(not nested comment found)
 	*/ 
-	int star_comment_checker(int i);
+	int star_comment_checker(int i,int what);
 #line 883 "al.c"
 /*KEYWORDS*/
 /*OPERATORS*/
@@ -1419,9 +1419,9 @@ YY_RULE_SETUP
 #line 217 "al.l"
 {
 	int i ;
-	while((i = input()) !=EOF)
+	while((i = input()) !=EOF || i=='\n')
 	{
-		if(i=='\n'){
+		if(i == '\n'){
 			unput(i);
 			do_the_job("","COMMENT LINE_COMMENT","enumerated");
 			break;
@@ -1429,10 +1429,10 @@ YY_RULE_SETUP
 		else if(i=='/'){
 			i = input();
 			int tmp = i;
-			if(tmp == '/')
-			   do_the_job("","NESTED_COMMENT LINE_COMMENTa","enumerated");
+			if(tmp == '/')  
+			   do_the_job("","NESTED_COMMENT LINE_COMMENT","enumerated");
 			else if(tmp == '*'){
-				if(star_comment_checker(i) == 1)
+				if(star_comment_checker(i,1) == 1)
 					printf("ERROR : UNCLOSED STAR_COMMENT LINE : %d\n",yylineno);		
 			}
 		    else
@@ -2469,21 +2469,38 @@ void yyfree (void * ptr )
 #line 246 "al.l"
 
 
-int star_comment_checker(int i){
-	while((i = input()) != '\n' && i != EOF){
-				if(i == '*')
-					{if(i = input() == '/'){
-						do_the_job("","NESTED_COMMENT STAR_COMMENT","enumerated");
-						return 0;
-					}
-					else
-						unput(i);}					
+/*
+ * what = 1 check for line
+ * else check for multiline
+ */
+int star_comment_checker(int i,int what){
+	while((i = input()) != EOF){
+		if(what == 1 && i == '\n')
+		    {   unput(i);
+				return 1;}
+		if(i == '*'){
+			if(i = input() == '/'){
+				do_the_job("","NESTED_COMMENT STAR_COMMENT","enumerated");
+					return 0;
+			}
+			else
+				unput(i);
+		}
+		else if(i == '/'){
+            if(i = input() == '*'){
+				if(what == 1)
+					star_comment_checker(i,1);
+			    else
+					star_comment_checker(i,0);		
+			}
+			else
+				unput(i);
+		}		 					
 	}
 	if(i == EOF)
 	  exit(1);
 	unput(i);
-	return 1;
-	 	
+	return 1; 	
 }
 
 int main(int argc,char** argv){	
