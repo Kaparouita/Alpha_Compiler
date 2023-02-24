@@ -80,6 +80,7 @@
 		print_token(t);
 	}
 
+    /*creates a string with 2 integers for block comments printing*/
 	char *create_string(int a,int b){
 		char* str = malloc(sizeof(char) * 30);
 		sprintf(str,"%d - %d",a,b);
@@ -329,7 +330,7 @@ int main(int argc,char** argv){
 		yyin=stdin;
 		printf("----------------------   Lexical Analysis  --------------------\n");
 	
-	alpha_yylex(NULL);
+	alpha_yylex(first);//nmzw prepei na einai etsi <---
 	return 0;
 }
 

@@ -874,6 +874,7 @@ char *yytext;
 		print_token(t);
 	}
 
+    /*creates a string with 2 integers for block comments printing*/
 	char *create_string(int a,int b){
 		char* str = malloc(sizeof(char) * 30);
 		sprintf(str,"%d - %d",a,b);
@@ -885,7 +886,7 @@ char *yytext;
 	 * return 1 if fails(not nested comment found)
 	*/ 
 	int star_comment_checker(int i,int what);
-#line 889 "al.c"
+#line 890 "al.c"
 /*KEYWORDS*/
 /*OPERATORS*/
 /*INTEGER NUMERIC*/
@@ -898,7 +899,7 @@ char *yytext;
 /*STHN POREIA*/
 /*NOT DEFINED SYMBOLS*/
 /*ISWS TA SVISUMEEEE*/
-#line 902 "al.c"
+#line 903 "al.c"
 
 #define INITIAL 0
 
@@ -1115,9 +1116,9 @@ YY_DECL
 		}
 
 	{
-#line 168 "al.l"
+#line 169 "al.l"
 
-#line 1121 "al.c"
+#line 1122 "al.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -1187,242 +1188,242 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 169 "al.l"
+#line 170 "al.l"
 { yylineno; } // update yylineno every new line
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 170 "al.l"
+#line 171 "al.l"
 {};	// ignore whitespace char
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 172 "al.l"
+#line 173 "al.l"
 {do_the_job("KEYWORD","IF","enumerated");}
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 173 "al.l"
+#line 174 "al.l"
 {do_the_job("KEYWORD","ELSE","enumerated");}
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 174 "al.l"
+#line 175 "al.l"
 {do_the_job("KEYWORD","WHILE","enumerated");}
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 175 "al.l"
+#line 176 "al.l"
 {do_the_job("KEYWORD","FOR","enumerated");}
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 176 "al.l"
+#line 177 "al.l"
 {do_the_job("KEYWORD","FUNCTION","enumerated");}
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 177 "al.l"
+#line 178 "al.l"
 {do_the_job("KEYWORD","RETURN","enumerated");}
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 178 "al.l"
+#line 179 "al.l"
 {do_the_job("KEYWORD","BREAK","enumerated");}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 179 "al.l"
+#line 180 "al.l"
 {do_the_job("KEYWORD","CONTINUE","enumerated");}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 180 "al.l"
+#line 181 "al.l"
 {do_the_job("KEYWORD","AND","enumerated");}
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 181 "al.l"
+#line 182 "al.l"
 {do_the_job("KEYWORD","NOT","enumerated");}
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 182 "al.l"
+#line 183 "al.l"
 {do_the_job("KEYWORD","OR","enumerated");}
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 183 "al.l"
+#line 184 "al.l"
 {do_the_job("KEYWORD","LOCAL","enumerated");}
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 184 "al.l"
+#line 185 "al.l"
 {do_the_job("KEYWORD","TRUE","enumerated");}
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 185 "al.l"
+#line 186 "al.l"
 {do_the_job("KEYWORD","FALSE","enumerated");}
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 186 "al.l"
+#line 187 "al.l"
 {do_the_job("KEYWORD","NILL","enumerated");}
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 188 "al.l"
+#line 189 "al.l"
 {do_the_job("OPERATOR","ASSIGNMENT","enumerated");}
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 189 "al.l"
+#line 190 "al.l"
 {do_the_job("OPERATOR","ADDITION","enumerated");}
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 190 "al.l"
+#line 191 "al.l"
 {do_the_job("OPERATOR","SUBTRACTION","enumerated");}
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 191 "al.l"
+#line 192 "al.l"
 {do_the_job("OPERATOR","MULTI","enumerated");}
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 192 "al.l"
+#line 193 "al.l"
 {do_the_job("OPERATOR","DIVISION","enumerated");}
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 193 "al.l"
+#line 194 "al.l"
 {do_the_job("OPERATOR","MODULUS","enumerated");}
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 194 "al.l"
+#line 195 "al.l"
 {do_the_job("OPERATOR","EQUAL","enumerated");}
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 195 "al.l"
+#line 196 "al.l"
 {do_the_job("OPERATOR","NOTEQUAL","enumerated");}
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 196 "al.l"
+#line 197 "al.l"
 {do_the_job("OPERATOR","INCREMENT","enumerated");}
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 197 "al.l"
+#line 198 "al.l"
 {do_the_job("OPERATOR","DECREMENT","enumerated");}
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 198 "al.l"
+#line 199 "al.l"
 {do_the_job("OPERATOR","GRETER_THAN","enumerated");}
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 199 "al.l"
+#line 200 "al.l"
 {do_the_job("OPERATOR","LESS_THAN","enumerated");}
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 200 "al.l"
+#line 201 "al.l"
 {do_the_job("OPERATOR","GRE_EQUAL","enumerated");}
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 201 "al.l"
+#line 202 "al.l"
 {do_the_job("OPERATOR","LES_EQUAL","enumerated");}
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 204 "al.l"
+#line 205 "al.l"
 { do_the_job("CONST_INT",yytext,"integer"); } //number
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 205 "al.l"
+#line 206 "al.l"
 {do_the_job("REAL_NUMBER",yytext,"real");}
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 207 "al.l"
+#line 208 "al.l"
 { do_the_job("PUNCTUATION","LEFT_CURLY_BRACKET","enumerated");}
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 208 "al.l"
+#line 209 "al.l"
 { do_the_job("PUNCTUATION","RIGHT_CURLY_BRACKET","enumerated");}
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 209 "al.l"
+#line 210 "al.l"
 { do_the_job("PUNCTUATION","LEFT_SQUARE_BRACKET","enumerated");}
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 210 "al.l"
+#line 211 "al.l"
 { do_the_job("PUNCTUATION","RIGHT_SQUARE_BRACKET","enumerated");}
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 211 "al.l"
+#line 212 "al.l"
 { do_the_job("PUNCTUATION","LEFT_PARENTHESIS","enumerated");}
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 212 "al.l"
+#line 213 "al.l"
 { do_the_job("PUNCTUATION","RIGHT_PARENTHESIS","enumerated");}
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 213 "al.l"
+#line 214 "al.l"
 { do_the_job("PUNCTUATION","SEMICOLON","enumerated");}
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 214 "al.l"
+#line 215 "al.l"
 { do_the_job("PUNCTUATION","COMMA","enumerated");}
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 215 "al.l"
+#line 216 "al.l"
 { do_the_job("PUNCTUATION","COLON","enumerated");}
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 216 "al.l"
+#line 217 "al.l"
 { do_the_job("PUNCTUATION","SCOPE_RESOLUTION","enumerated");}
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 217 "al.l"
+#line 218 "al.l"
 { do_the_job("PUNCTUATION","FULL_STOP","enumerated");}
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 218 "al.l"
+#line 219 "al.l"
 { do_the_job("PUNCTUATION","DOUBLE_FULL_STOP","enumerated");}
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 220 "al.l"
+#line 221 "al.l"
 { do_the_job(yytext,"ID","char*");}
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 222 "al.l"
+#line 223 "al.l"
 { do_the_job("EXTRA_CHARS","EXTRA_CHARS","EXTRA_CHARS");}
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 224 "al.l"
+#line 225 "al.l"
 {
 	int i ;
 	//TO EOF EIXE BUG
@@ -1450,7 +1451,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 251 "al.l"
+#line 252 "al.l"
 {
 	int i , line = yylineno;
 	while((i = input()) >= 1)
@@ -1478,7 +1479,6 @@ YY_RULE_SETUP
 	}
 	if(i <= 1)
 		printf("ERROR : UNCLOSED STAR_COMMENT REACHED EOF ");	
-
 }
 	YY_BREAK
 case 50:
@@ -2554,7 +2554,7 @@ int main(int argc,char** argv){
 		yyin=stdin;
 		printf("----------------------   Lexical Analysis  --------------------\n");
 	
-	alpha_yylex(NULL);
+	alpha_yylex(first);//nmzw prepei na einai etsi <---
 	return 0;
 }
 
