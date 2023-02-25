@@ -8,6 +8,7 @@
 	#include <stdio.h>
 	#include <stdlib.h>
     #include <string.h>
+    #include <regex.h>
 
 	#define YY_DECL int alpha_yylex (void *ylval)
 	#define buffer_size 256
@@ -138,9 +139,12 @@ GRETER_THAN ">"
 LESS_THAN "<"
 GRE_EQUAL ">="
 LES_EQUAL "<="
+<<<<<<< HEAD
 LINE_COMMENT "//"
 BLOCK_COMMENT "/*"
 STRINGS "\""
+=======
+>>>>>>> 8aeca7a27d355c17721fb2ac176e5b36d2df9bee
 
 /*INTEGER NUMERIC*/
 INTEGER [0-9]+
@@ -150,7 +154,7 @@ REAL [0-9]+"."[0-9]+
 
 /*STRINGS*/
 
-/*STHN POREIA*/
+STRING "\""
 
 /*PUNCTUATIONS MARK*/
 LEFT_CURLY_BRACKET "{"
@@ -170,14 +174,12 @@ DOUBLE_FULL_STOP ".."
 IDENTIFICATION [A-Za-z][A-Za-z_0-9]*
 
 /*COMMENTS*/
-
-/*STHN POREIA*/
-
+LINE_COMMENT "//"
+BLOCK_COMMENT "/*"
 
 /*NOT DEFINED SYMBOLS*/
 EXTRA_CHARS [!@#$^&~?|_]* 
 
-/*ISWS TA SVISUMEEEE*/
 
 %%
 \n { yylineno; } // update yylineno every new line
@@ -311,7 +313,10 @@ EXTRA_CHARS [!@#$^&~?|_]*
 		printf("ERROR : UNCLOSED STAR_COMMENT REACHED EOF ");	
 }
 
+"\""      { printf("\n"); BEGIN(INSIDE_STRING); }
 
+
+".|\n" { /* ignore other characters */ }
 
 %%
 
@@ -366,8 +371,4 @@ int main(int argc,char** argv){
 	alpha_yylex(first);//nmzw prepei na einai etsi <---
 	return 0;
 }
-
-
-
-
 
