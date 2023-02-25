@@ -226,16 +226,21 @@ EXTRA_CHARS [!@#$^&~?|_]*
     char *buffer = (char*)malloc(sizeof(char*)*buffer_size),prev;
 	while((i = input()) >= 1)
 	{	
-		buffer[buffer_counter++] = i;
+		
 		if(buffer_counter >= buffer_size - 1){
 			buffer_size *= 2;
 			buffer = (char*) realloc(buffer, buffer_size * sizeof(char));
 		}
-	    if(i == '\"'&& prev != '\\'){
+		if(prev == '\\' && ( i == 't' || i == 'n' )){
+			buffer[buffer_counter-1] = (i == 't') ? '\t' : '\n';
+		}
+	    else if(i == '\"' && prev != '\\'){
 			do_the_job(buffer,"STRING","<-char*");
 			break;
 		}
-		prev = i;	   
+		else
+			buffer[buffer_counter++] = i;
+		prev = i;	  
 	}
 	if(i <= 1)
 		printf("ERROR : UNCLOSED STRING REACHED EOF ");	

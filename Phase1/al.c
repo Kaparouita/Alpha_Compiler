@@ -1430,16 +1430,22 @@ YY_RULE_SETUP
     char *buffer = (char*)malloc(sizeof(char*)*buffer_size),prev;
 	while((i = input()) >= 1)
 	{	
-		buffer[buffer_counter++] = i;
+		
 		if(buffer_counter >= buffer_size - 1){
 			buffer_size *= 2;
 			buffer = (char*) realloc(buffer, buffer_size * sizeof(char));
 		}
-	    if(i == '\"'&& prev != '\\'){
+		if(prev == '\\' && ( i == 't' || i == 'n' )){
+			buffer[buffer_counter-1] = (i == 't') ? '\t' : '\n';
+		}
+	    else if(i == '\"' && prev != '\\'){
 			do_the_job(buffer,"STRING","<-char*");
 			break;
 		}
-		prev = i;	   
+		else
+			buffer[buffer_counter++] = i;
+		prev = i;	  
+		buffer[0]= '\"'; 
 	}
 	if(i <= 1)
 		printf("ERROR : UNCLOSED STRING REACHED EOF ");	
@@ -1447,7 +1453,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 245 "al.l"
+#line 251 "al.l"
 {
 	int i ;
 	//TO EOF EIXE BUG
@@ -1475,7 +1481,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 272 "al.l"
+#line 278 "al.l"
 {
 	int i , line = yylineno;
 	while((i = input()) >= 1)
@@ -1506,10 +1512,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 300 "al.l"
+#line 306 "al.l"
 ECHO;
 	YY_BREAK
-#line 1513 "al.c"
+#line 1519 "al.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2526,7 +2532,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 300 "al.l"
+#line 306 "al.l"
 
 
 /* Checks if the comment
