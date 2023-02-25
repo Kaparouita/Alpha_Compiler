@@ -126,11 +126,8 @@ GRETER_THAN ">"
 LESS_THAN "<"
 GRE_EQUAL ">="
 LES_EQUAL "<="
-<<<<<<< HEAD
-=======
 LINE_COMMENT "//"
 BLOCK_COMMENT "/*"
->>>>>>> refs/remotes/origin/main
 
 /*INTEGER NUMERIC*/
 INTEGER [0-9]+
@@ -139,7 +136,8 @@ INTEGER [0-9]+
 REAL [0-9]+"."[0-9]+
 
 /*STRINGS*/
-STRING " \" /" "
+
+/*STHN POREIA*/
 
 /*PUNCTUATIONS MARK*/
 LEFT_CURLY_BRACKET "{"
@@ -160,7 +158,8 @@ IDENTIFICATION [A-Za-z][A-Za-z_0-9]*
 
 /*COMMENTS*/
 
-LINE_COMMENT "//"
+/*STHN POREIA*/
+
 
 /*NOT DEFINED SYMBOLS*/
 EXTRA_CHARS [!@#$^&~?|_]* 
@@ -221,8 +220,7 @@ EXTRA_CHARS [!@#$^&~?|_]*
 
 {IDENTIFICATION} { do_the_job(yytext,"ID","char*");}
 
-{EXTRA_CHARS} { do_the_job("EXTRA_CHARS","EXTRA_CHARS","EXTRA_CHARS");
-				printf("Undefined chars:*\n");}
+{EXTRA_CHARS} { do_the_job("EXTRA_CHARS","EXTRA_CHARS","EXTRA_CHARS");}
 
 {LINE_COMMENT} {
 	int i ;
@@ -235,19 +233,10 @@ EXTRA_CHARS [!@#$^&~?|_]*
 			break;
 		}
 		else if(i=='/'){
-<<<<<<< HEAD
-			i = input();
-			int tmp = i;
-			if(tmp == '/')
-			   do_the_job("","NESTED_COMMENT LINE_COMMENT","enumerated");
-			else if(tmp == '*'){
-				if(star_comment_checker(i) == 1)
-=======
 			if((i = input()) == '/')  
 			   do_the_job("","NESTED_COMMENT LINE_COMMENT","enumerated");
 			else if(i == '*'){
 				if(star_comment_checker(i,1) == 1)
->>>>>>> refs/remotes/origin/main
 					printf("ERROR : UNCLOSED STAR_COMMENT LINE : %d\n",yylineno);		
 			}
 		    else
@@ -259,9 +248,6 @@ EXTRA_CHARS [!@#$^&~?|_]*
 }
 
 
-{STRING} {
-
-}
 
 {BLOCK_COMMENT} {
 	int i , line = yylineno;
@@ -279,8 +265,7 @@ EXTRA_CHARS [!@#$^&~?|_]*
 			   		do_the_job("","NESTED_COMMENT LINE_COMMENT","enumerated");
 		}
 		else if(i == '*'){
-			if((i = input()) == '/'){
-				
+			if((i = input()) == '/'){				
 			   do_the_job(create_string(line,yylineno),"COMMENT BLOCK?_COMMENT","enumerated");
 			   break;
 			   }
@@ -296,17 +281,6 @@ EXTRA_CHARS [!@#$^&~?|_]*
 
 %%
 
-<<<<<<< HEAD
-int star_comment_checker(int i){
-	while((i = input()) != '\n' && i <=1){
-				if(i == '*')
-					{if(i = input() == '/'){
-						do_the_job("","NESTED_COMMENT STAR_COMMENT","enumerated");
-						return 0;
-					}
-					else
-						unput(i);}					
-=======
 /* Checks if the comment
  * what = 1 check for line
  * else check for multiline
@@ -337,7 +311,6 @@ int star_comment_checker(int i,int what){
 			else
 				unput(i);
 		}					
->>>>>>> refs/remotes/origin/main
 	}
 	if(i >= 1 && what != 1)
 	  exit(0);
@@ -359,8 +332,4 @@ int main(int argc,char** argv){
 	alpha_yylex(first);//nmzw prepei na einai etsi <---
 	return 0;
 }
-
-
-
-
 
