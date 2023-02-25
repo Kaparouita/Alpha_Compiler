@@ -223,7 +223,7 @@ EXTRA_CHARS [!@#$^&~?|_]*
 {STRINGS} {
 	int i ,buffer_counter = 0,starter_line = yylineno;
 	int buffer_size = INIT_BUFFER_SIZE;
-    char *buffer = (char*)malloc(sizeof(char*)*buffer_size);
+    char *buffer = (char*)malloc(sizeof(char*)*buffer_size),prev;
 	while((i = input()) >= 1)
 	{	
 		buffer[buffer_counter++] = i;
@@ -231,10 +231,11 @@ EXTRA_CHARS [!@#$^&~?|_]*
 			buffer_size *= 2;
 			buffer = (char*) realloc(buffer, buffer_size * sizeof(char));
 		}
-	    if(i == '\"'){
+	    if(i == '\"'&& prev != '\\'){
 			do_the_job(buffer,"STRING","<-char*");
 			break;
-			}	   
+		}
+		prev = i;	   
 	}
 	if(i <= 1)
 		printf("ERROR : UNCLOSED STRING REACHED EOF ");	
