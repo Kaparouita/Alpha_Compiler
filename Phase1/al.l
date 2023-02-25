@@ -313,11 +313,6 @@ EXTRA_CHARS [!@#$^&~?|_]*
 		printf("ERROR : UNCLOSED STAR_COMMENT REACHED EOF ");	
 }
 
-"\""      { printf("\n"); BEGIN(INSIDE_STRING); }
-
-
-".|\n" { /* ignore other characters */ }
-
 %%
 
 /* Checks if the comment
