@@ -8,6 +8,7 @@
 	#include <stdio.h>
 	#include <stdlib.h>
     #include <string.h>
+    #include <regex.h>
 
 	#define YY_DECL int alpha_yylex (void *ylval)
     
@@ -126,8 +127,6 @@ GRETER_THAN ">"
 LESS_THAN "<"
 GRE_EQUAL ">="
 LES_EQUAL "<="
-LINE_COMMENT "//"
-BLOCK_COMMENT "/*"
 
 /*INTEGER NUMERIC*/
 INTEGER [0-9]+
@@ -137,7 +136,7 @@ REAL [0-9]+"."[0-9]+
 
 /*STRINGS*/
 
-/*STHN POREIA*/
+STRING "\""
 
 /*PUNCTUATIONS MARK*/
 LEFT_CURLY_BRACKET "{"
@@ -157,14 +156,12 @@ DOUBLE_FULL_STOP ".."
 IDENTIFICATION [A-Za-z][A-Za-z_0-9]*
 
 /*COMMENTS*/
-
-/*STHN POREIA*/
-
+LINE_COMMENT "//"
+BLOCK_COMMENT "/*"
 
 /*NOT DEFINED SYMBOLS*/
 EXTRA_CHARS [!@#$^&~?|_]* 
 
-/*ISWS TA SVISUMEEEE*/
 
 %%
 \n { yylineno; } // update yylineno every new line
@@ -277,7 +274,10 @@ EXTRA_CHARS [!@#$^&~?|_]*
 		printf("ERROR : UNCLOSED STAR_COMMENT REACHED EOF ");	
 }
 
+"\""      { printf("\n"); BEGIN(INSIDE_STRING); }
 
+
+".|\n" { /* ignore other characters */ }
 
 %%
 
