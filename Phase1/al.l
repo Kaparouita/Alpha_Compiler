@@ -8,10 +8,9 @@
 	#include <stdio.h>
 	#include <stdlib.h>
     #include <string.h>
-    #include <regex.h>
 
 	#define YY_DECL int alpha_yylex (void *ylval)
-	#define buffer_size 256
+	#define INIT_BUFFER_SIZE 16
     
     typedef struct alpha_token_t tokenaki;
 
@@ -82,15 +81,6 @@
 		  return;}
         insert_token(t);
 		print_token(t);
-	}
-
-    char* allocate_buffer(int size) {
-    	char* buffer = malloc(sizeof(char) * size);
-    	if (buffer == NULL) {
-       		printf("Error allocating memory\n");
-        exit(1);
-    	}
-    	return buffer;
 	}
 
     /*creates a string with 2 integers for block comments printing*/
@@ -231,20 +221,20 @@ EXTRA_CHARS [!@#$^&~?|_]*
 {EXTRA_CHARS} { do_the_job("EXTRA_CHARS","EXTRA_CHARS","EXTRA_CHARS");}
 
 {STRINGS} {
-	int i ,buffer_counter = 0,j = 0,starter_line = yylineno;
-    char *buffer = allocate_buffer(buffer_size);
+	int i ,buffer_counter = 0,starter_line = yylineno;
+	int buffer_size = INIT_BUFFER_SIZE;
+    char *buffer = (char*)malloc(sizeof(char*)*buffer_size);
 	while((i = input()) >= 1)
 	{	
-		buffer[j++] = i;
-		buffer_counter++;
-		if(buffer_counter >= buffer_size){
-			buffer = allocate_buffer(buffer_size);
-			buffer_counter = 0;
+		buffer[buffer_counter++] = i;
+		if(buffer_counter >= buffer_size - 1){
+			buffer_size *= 2;
+			buffer = (char*) realloc(buffer, buffer_size * sizeof(char));
 		}
-	    if(i == '\"')
-			{
-				do_the_job(buffer,"STRING","<-char*");
-				break; }	   
+	    if(i == '\"'){
+			do_the_job(buffer,"STRING","<-char*");
+			break;
+			}	   
 	}
 	if(i <= 1)
 		printf("ERROR : UNCLOSED STRING REACHED EOF ");	
