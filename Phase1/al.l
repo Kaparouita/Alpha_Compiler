@@ -139,12 +139,6 @@ GRETER_THAN ">"
 LESS_THAN "<"
 GRE_EQUAL ">="
 LES_EQUAL "<="
-<<<<<<< HEAD
-LINE_COMMENT "//"
-BLOCK_COMMENT "/*"
-STRINGS "\""
-=======
->>>>>>> 8aeca7a27d355c17721fb2ac176e5b36d2df9bee
 
 /*INTEGER NUMERIC*/
 INTEGER [0-9]+
@@ -153,8 +147,7 @@ INTEGER [0-9]+
 REAL [0-9]+"."[0-9]+
 
 /*STRINGS*/
-
-STRING "\""
+STRINGS "\""
 
 /*PUNCTUATIONS MARK*/
 LEFT_CURLY_BRACKET "{"
