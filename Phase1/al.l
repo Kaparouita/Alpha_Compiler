@@ -73,18 +73,25 @@
 	
 	void do_the_job(char*type,char*Etype,char*category){
 		tokenaki *t = tokenConstractor( yylineno,token_count++,Etype,type,yytext,category);
-		if(t==NULL)
+		if(t == NULL)
 		 { token_count--;
 		  return;}
         insert_token(t);
 		print_token(t);
+	}
+
+    /*creates a string with 2 integers for block comments printing*/
+	char *create_string(int a,int b){
+		char* str = malloc(sizeof(char) * 30);
+		sprintf(str,"%d - %d",a,b);
+		return str;
 	}
 	
 	/*
 	 * return 0 if succed
 	 * return 1 if fails(not nested comment found)
 	*/ 
-	int star_comment_checker(int i);
+	int star_comment_checker(int i,int what);
 %}
 
 /*KEYWORDS*/
@@ -119,6 +126,11 @@ GRETER_THAN ">"
 LESS_THAN "<"
 GRE_EQUAL ">="
 LES_EQUAL "<="
+<<<<<<< HEAD
+=======
+LINE_COMMENT "//"
+BLOCK_COMMENT "/*"
+>>>>>>> refs/remotes/origin/main
 
 /*INTEGER NUMERIC*/
 INTEGER [0-9]+
@@ -214,28 +226,35 @@ EXTRA_CHARS [!@#$^&~?|_]*
 
 {LINE_COMMENT} {
 	int i ;
-	while((i = input()) !=EOF)
+	//TO EOF EIXE BUG
+	while((i = input()) >=1 || i=='\n')
 	{
-		if(i=='\n'){
+		if(i == '\n'){
 			unput(i);
 			do_the_job("","COMMENT LINE_COMMENT","enumerated");
 			break;
 		}
 		else if(i=='/'){
+<<<<<<< HEAD
 			i = input();
 			int tmp = i;
 			if(tmp == '/')
 			   do_the_job("","NESTED_COMMENT LINE_COMMENT","enumerated");
 			else if(tmp == '*'){
 				if(star_comment_checker(i) == 1)
+=======
+			if((i = input()) == '/')  
+			   do_the_job("","NESTED_COMMENT LINE_COMMENT","enumerated");
+			else if(i == '*'){
+				if(star_comment_checker(i,1) == 1)
+>>>>>>> refs/remotes/origin/main
 					printf("ERROR : UNCLOSED STAR_COMMENT LINE : %d\n",yylineno);		
 			}
 		    else
-			   unput(i);
-			   
+			   unput(i);			   
 		}
 	}
-	if(i == EOF)
+	if(i <= 1)
 		do_the_job("","COMMENT LINE_COMMENT","enumerated");
 }
 
@@ -244,8 +263,40 @@ EXTRA_CHARS [!@#$^&~?|_]*
 
 }
 
+{BLOCK_COMMENT} {
+	int i , line = yylineno;
+	while((i = input()) >= 1)
+	{	
+	    if(i == '/'){
+			if((i = input()) == '*')  
+			{
+				if(star_comment_checker(i,0) == 1)
+					break;	
+				else
+			   		unput(i);
+			} 
+			else if(i == '/')  
+			   		do_the_job("","NESTED_COMMENT LINE_COMMENT","enumerated");
+		}
+		else if(i == '*'){
+			if((i = input()) == '/'){
+				
+			   do_the_job(create_string(line,yylineno),"COMMENT BLOCK?_COMMENT","enumerated");
+			   break;
+			   }
+			else
+			   unput(i);
+		}		   	   
+	}
+	if(i <= 1)
+		printf("ERROR : UNCLOSED STAR_COMMENT REACHED EOF ");	
+}
+
+
+
 %%
 
+<<<<<<< HEAD
 int star_comment_checker(int i){
 	while((i = input()) != '\n' && i <=1){
 				if(i == '*')
@@ -255,13 +306,45 @@ int star_comment_checker(int i){
 					}
 					else
 						unput(i);}					
+=======
+/* Checks if the comment
+ * what = 1 check for line
+ * else check for multiline
+ */
+int star_comment_checker(int i,int what){
+	int line = yylineno;
+	while((i = input()) >= 1){
+		if(what == 1 && i == '\n')
+		    {   unput(i);
+				return 1;}
+		if(i == '*'){
+			if((i = input()) == '/'){
+				do_the_job(create_string(line,yylineno),"NESTED_COMMENT STAR_COMMENT","enumerated");
+					return 0;
+			}
+			else
+				unput(i);
+		}
+		else if(i == '/'){
+            if((i = input()) == '*'){
+				if(what == 1)
+					star_comment_checker(i,1);
+			    else
+					star_comment_checker(i,0);		
+			}
+			else if(i == '/')  
+			   	do_the_job("","NESTED_COMMENT LINE_COMMENT","enumerated");
+			else
+				unput(i);
+		}					
+>>>>>>> refs/remotes/origin/main
 	}
-	if(i == EOF)
-	  exit(1);
+	if(i >= 1 && what != 1)
+	  exit(0);
 	unput(i);
-	return 1;
-	 	
+	return 1; 	
 }
+
 
 int main(int argc,char** argv){	
 	if(argc>1){
@@ -273,7 +356,7 @@ int main(int argc,char** argv){
 		yyin=stdin;
 		printf("----------------------   Lexical Analysis  --------------------\n");
 	
-	alpha_yylex(NULL);
+	alpha_yylex(first);//nmzw prepei na einai etsi <---
 	return 0;
 }
 
