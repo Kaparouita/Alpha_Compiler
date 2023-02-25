@@ -1412,11 +1412,12 @@ YY_RULE_SETUP
 case 47:
 YY_RULE_SETUP
 #line 215 "al.l"
-{ do_the_job("EXTRA_CHARS","EXTRA_CHARS","EXTRA_CHARS");}
+{ do_the_job("EXTRA_CHARS","EXTRA_CHARS","EXTRA_CHARS");
+				printf("Undefined chars:*\n");}
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 217 "al.l"
+#line 218 "al.l"
 {
 	int i ;
 	while((i = input()) !=EOF)
@@ -1430,7 +1431,7 @@ YY_RULE_SETUP
 			i = input();
 			int tmp = i;
 			if(tmp == '/')
-			   do_the_job("","NESTED_COMMENT LINE_COMMENTa","enumerated");
+			   do_the_job("","NESTED_COMMENT LINE_COMMENT","enumerated");
 			else if(tmp == '*'){
 				if(star_comment_checker(i) == 1)
 					printf("ERROR : UNCLOSED STAR_COMMENT LINE : %d\n",yylineno);		
@@ -1446,10 +1447,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 246 "al.l"
+#line 247 "al.l"
 ECHO;
 	YY_BREAK
-#line 1453 "al.c"
+#line 1454 "al.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2466,7 +2467,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 246 "al.l"
+#line 247 "al.l"
 
 
 int star_comment_checker(int i){

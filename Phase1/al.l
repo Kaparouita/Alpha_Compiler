@@ -119,7 +119,6 @@ GRETER_THAN ">"
 LESS_THAN "<"
 GRE_EQUAL ">="
 LES_EQUAL "<="
-LINE_COMMENT "//"
 
 /*INTEGER NUMERIC*/
 INTEGER [0-9]+
@@ -128,8 +127,7 @@ INTEGER [0-9]+
 REAL [0-9]+"."[0-9]+
 
 /*STRINGS*/
-
-/*STHN POREIA*/
+STRING " \" /" "
 
 /*PUNCTUATIONS MARK*/
 LEFT_CURLY_BRACKET "{"
@@ -150,8 +148,7 @@ IDENTIFICATION [A-Za-z][A-Za-z_0-9]*
 
 /*COMMENTS*/
 
-/*STHN POREIA*/
-
+LINE_COMMENT "//"
 
 /*NOT DEFINED SYMBOLS*/
 EXTRA_CHARS [!@#$^&~?|_]* 
@@ -212,7 +209,8 @@ EXTRA_CHARS [!@#$^&~?|_]*
 
 {IDENTIFICATION} { do_the_job(yytext,"ID","char*");}
 
-{EXTRA_CHARS} { do_the_job("EXTRA_CHARS","EXTRA_CHARS","EXTRA_CHARS");}
+{EXTRA_CHARS} { do_the_job("EXTRA_CHARS","EXTRA_CHARS","EXTRA_CHARS");
+				printf("Undefined chars:*\n");}
 
 {LINE_COMMENT} {
 	int i ;
@@ -227,7 +225,7 @@ EXTRA_CHARS [!@#$^&~?|_]*
 			i = input();
 			int tmp = i;
 			if(tmp == '/')
-			   do_the_job("","NESTED_COMMENT LINE_COMMENTa","enumerated");
+			   do_the_job("","NESTED_COMMENT LINE_COMMENT","enumerated");
 			else if(tmp == '*'){
 				if(star_comment_checker(i) == 1)
 					printf("ERROR : UNCLOSED STAR_COMMENT LINE : %d\n",yylineno);		
@@ -242,11 +240,14 @@ EXTRA_CHARS [!@#$^&~?|_]*
 }
 
 
+{STRING} {
+
+}
 
 %%
 
 int star_comment_checker(int i){
-	while((i = input()) != '\n' && i != EOF){
+	while((i = input()) != '\n' && i <=1){
 				if(i == '*')
 					{if(i = input() == '/'){
 						do_the_job("","NESTED_COMMENT STAR_COMMENT","enumerated");
