@@ -10,6 +10,7 @@
     #include <string.h>
 
 	#define YY_DECL int alpha_yylex (void *ylval)
+	#define buffer_size 256
     
     typedef struct alpha_token_t tokenaki;
 
@@ -71,6 +72,8 @@
 		printf(" %s\n", token->category);
 	}
 	
+
+	/*add line for comments/strings */
 	void do_the_job(char*type,char*Etype,char*category){
 		tokenaki *t = tokenConstractor( yylineno,token_count++,Etype,type,yytext,category);
 		if(t == NULL)
@@ -78,6 +81,15 @@
 		  return;}
         insert_token(t);
 		print_token(t);
+	}
+
+    char* allocate_buffer(int size) {
+    	char* buffer = malloc(sizeof(char) * size);
+    	if (buffer == NULL) {
+       		printf("Error allocating memory\n");
+        exit(1);
+    	}
+    	return buffer;
 	}
 
     /*creates a string with 2 integers for block comments printing*/
@@ -128,6 +140,7 @@ GRE_EQUAL ">="
 LES_EQUAL "<="
 LINE_COMMENT "//"
 BLOCK_COMMENT "/*"
+STRINGS "\""
 
 /*INTEGER NUMERIC*/
 INTEGER [0-9]+
@@ -222,6 +235,27 @@ EXTRA_CHARS [!@#$^&~?|_]*
 
 {EXTRA_CHARS} { do_the_job("EXTRA_CHARS","EXTRA_CHARS","EXTRA_CHARS");}
 
+{STRINGS} {
+	int i ,buffer_counter = 0,j = 0,starter_line = yylineno;
+    char *buffer = allocate_buffer(buffer_size);
+	while((i = input()) >= 1)
+	{	
+		buffer[j++] = i;
+		buffer_counter++;
+		if(buffer_counter >= buffer_size){
+			buffer = allocate_buffer(buffer_size);
+			buffer_counter = 0;
+		}
+	    if(i == '\"')
+			{
+				do_the_job(buffer,"STRING","<-char*");
+				break; }	   
+	}
+	if(i <= 1)
+		printf("ERROR : UNCLOSED STRING REACHED EOF ");	
+}
+
+
 {LINE_COMMENT} {
 	int i ;
 	//TO EOF EIXE BUG
@@ -265,8 +299,7 @@ EXTRA_CHARS [!@#$^&~?|_]*
 			   		do_the_job("","NESTED_COMMENT LINE_COMMENT","enumerated");
 		}
 		else if(i == '*'){
-			if((i = input()) == '/'){
-				
+			if((i = input()) == '/'){				
 			   do_the_job(create_string(line,yylineno),"COMMENT BLOCK?_COMMENT","enumerated");
 			   break;
 			   }
