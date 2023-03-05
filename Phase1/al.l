@@ -8,9 +8,9 @@
 	#include <stdio.h>
 	#include <stdlib.h>
     #include <string.h>
-    #include <regex.h>
 
 	#define YY_DECL int alpha_yylex (void *ylval)
+	#define INIT_BUFFER_SIZE 16
     
     typedef struct alpha_token_t tokenaki;
 
@@ -72,6 +72,8 @@
 		printf(" %s\n", token->category);
 	}
 	
+
+	/*add line for comments/strings */
 	void do_the_job(char*type,char*Etype,char*category){
 		tokenaki *t = tokenConstractor( yylineno,token_count++,Etype,type,yytext,category);
 		if(t == NULL)
@@ -135,8 +137,7 @@ INTEGER [0-9]+
 REAL [0-9]+"."[0-9]+
 
 /*STRINGS*/
-
-STRING "\""
+STRINGS "\""
 
 /*PUNCTUATIONS MARK*/
 LEFT_CURLY_BRACKET "{"
@@ -219,6 +220,33 @@ EXTRA_CHARS [!@#$^&~?|_]*
 
 {EXTRA_CHARS} { do_the_job("EXTRA_CHARS","EXTRA_CHARS","EXTRA_CHARS");}
 
+{STRINGS} {
+	int i ,buffer_counter = 0,starter_line = yylineno;
+	int buffer_size = INIT_BUFFER_SIZE;
+    char *buffer = (char*)malloc(sizeof(char*)*buffer_size),prev;
+	while((i = input()) >= 1)
+	{	
+		
+		if(buffer_counter >= buffer_size - 1){
+			buffer_size *= 2;
+			buffer = (char*) realloc(buffer, buffer_size * sizeof(char));
+		}
+		if(prev == '\\' && ( i == 't' || i == 'n' )){
+			buffer[buffer_counter-1] = (i == 't') ? '\t' : '\n';
+		}
+	    else if(i == '\"' && prev != '\\'){
+			do_the_job(buffer,"STRING","<-char*");
+			break;
+		}
+		else
+			buffer[buffer_counter++] = i;
+		prev = i;	  
+	}
+	if(i <= 1)
+		printf("ERROR : UNCLOSED STRING REACHED EOF ");	
+}
+
+
 {LINE_COMMENT} {
 	int i ;
 	//TO EOF EIXE BUG
@@ -273,11 +301,6 @@ EXTRA_CHARS [!@#$^&~?|_]*
 	if(i <= 1)
 		printf("ERROR : UNCLOSED STAR_COMMENT REACHED EOF ");	
 }
-
-"\""      { printf("\n"); BEGIN(INSIDE_STRING); }
-
-
-".|\n" { /* ignore other characters */ }
 
 %%
 
