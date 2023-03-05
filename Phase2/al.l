@@ -168,57 +168,57 @@ EXTRA_CHARS [!@#$^&~?|_]*
 \n { yylineno; } // update yylineno every new line
 [\t ' '] {};	// ignore whitespace char
 
-{IF} {do_the_job(yytext,"KEYWORD","IF","enumerated");}
-{ELSE} {do_the_job(yytext,"KEYWORD","ELSE","enumerated");}
-{WHILE} {do_the_job(yytext,"KEYWORD","WHILE","enumerated");}
-{FOR} {do_the_job(yytext,"KEYWORD","FOR","enumerated");}
-{FUNCTION} {do_the_job(yytext,"KEYWORD","FUNCTION","enumerated");}
-{RETURN} {do_the_job(yytext,"KEYWORD","RETURN","enumerated");}
-{BREAK} {do_the_job(yytext,"KEYWORD","BREAK","enumerated");}
-{CONTINUE} {do_the_job(yytext,"KEYWORD","CONTINUE","enumerated");}
-{AND} {do_the_job(yytext,"KEYWORD","AND","enumerated");}
-{NOT} {do_the_job(yytext,"KEYWORD","NOT","enumerated");}
-{OR} {do_the_job(yytext,"KEYWORD","OR","enumerated");}
-{LOCAL} {do_the_job(yytext,"KEYWORD","LOCAL","enumerated");}
-{TRUE} {do_the_job(yytext,"KEYWORD","TRUE","enumerated");}
-{FALSE} {do_the_job(yytext,"KEYWORD","FALSE","enumerated");}
-{NILL} {do_the_job(yytext,"KEYWORD","NILL","enumerated");}
+{IF} {return IF;}
+{ELSE} {return ELSE;}
+{WHILE} {return WHILE;}
+{FOR} {return FOR;}
+{FUNCTION} {return FUNCTION;}
+{RETURN} {return RETURN;}
+{BREAK} {return BREAK;}
+{CONTINUE} {return CONTINUE;}
+{AND} {return AND;}
+{NOT} {return NOT;}
+{OR} {return OR;}
+{LOCAL} {return LOCAL;}
+{TRUE} {return TRUE;}
+{FALSE} {return FALSE;}
+{NILL} {return NILL;}
 
-{ASSIGNMENT} {do_the_job(yytext,"OPERATOR","ASSIGNMENT","enumerated");}
-{ADDITION} {do_the_job(yytext,"OPERATOR","ADDITION","enumerated");}
-{SUBTRACTION} {do_the_job(yytext,"OPERATOR","SUBTRACTION","enumerated");}
-{MULTI} {do_the_job(yytext,"OPERATOR","MULTI","enumerated");}
-{DIVISION} {do_the_job(yytext,"OPERATOR","DIVISION","enumerated");}
-{MODULUS} {do_the_job(yytext,"OPERATOR","MODULUS","enumerated");}
-{EQUAL} {do_the_job(yytext,"OPERATOR","EQUAL","enumerated");}
-{NOTEQUAL} {do_the_job(yytext,"OPERATOR","NOTEQUAL","enumerated");}
-{INCREMENT} {do_the_job(yytext,"OPERATOR","INCREMENT","enumerated");}
-{DECREMENT} {do_the_job(yytext,"OPERATOR","DECREMENT","enumerated");}
-{GRETER_THAN} {do_the_job(yytext,"OPERATOR","GRETER_THAN","enumerated");}
-{LESS_THAN} {do_the_job(yytext,"OPERATOR","LESS_THAN","enumerated");}
-{GRE_EQUAL} {do_the_job(yytext,"OPERATOR","GRE_EQUAL","enumerated");}
-{LES_EQUAL} {do_the_job(yytext,"OPERATOR","LES_EQUAL","enumerated");}
+{ASSIGNMENT} {return ASSIGNMENT;}
+{ADDITION} {return ADDITION;}
+{SUBTRACTION} {return SUBTRACTION;}
+{MULTI} {return MULTI;}
+{DIVISION} {return DIVISION;}
+{MODULUS} {return MODULUS;}
+{EQUAL} {return EQUAL;}
+{NOTEQUAL} {return NOTEQUAL;}
+{INCREMENT} {return INCREMENT;}
+{DECREMENT} {return DECREMENT;}
+{GRETER_THAN} {return GRETER_THAN;}
+{LESS_THAN} {return LESS_THAN;}
+{GRE_EQUAL} {return GRE_EQUAL;}
+{LES_EQUAL} {return LES_EQUAL;}
 
 
-{INTEGER} { do_the_job(yytext,"CONST_INT",yytext,"integer"); } //number
-{REAL} {do_the_job(yytext,"REAL_NUMBER",yytext,"real");}
+{INTEGER} {/*DEN KSERW AKOMA TI VAZUME*/ } //number
+{REAL} {/*DEN KSERW AKOMA TI VAZUME*/}
 
-{LEFT_CURLY_BRACKET} { do_the_job(yytext,"PUNCTUATION","LEFT_CURLY_BRACKET","enumerated");}
-{RIGHT_CURLY_BRACKET} { do_the_job(yytext,"PUNCTUATION","RIGHT_CURLY_BRACKET","enumerated");}
-{LEFT_SQUARE_BRACKET} { do_the_job(yytext,"PUNCTUATION","LEFT_SQUARE_BRACKET","enumerated");}
-{RIGHT_SQUARE_BRACKET} { do_the_job(yytext,"PUNCTUATION","RIGHT_SQUARE_BRACKET","enumerated");}
-{LEFT_PARENTHESIS} { do_the_job(yytext,"PUNCTUATION","LEFT_PARENTHESIS","enumerated");}
-{RIGHT_PARENTHESIS} { do_the_job(yytext,"PUNCTUATION","RIGHT_PARENTHESIS","enumerated");}
-{SEMICOLON} { do_the_job(yytext,"PUNCTUATION","SEMICOLON","enumerated");}
-{COMMA} { do_the_job(yytext,"PUNCTUATION","COMMA","enumerated");}
-{COLON} { do_the_job(yytext,"PUNCTUATION","COLON","enumerated");}
-{SCOPE_RESOLUTION} { do_the_job(yytext,"PUNCTUATION","SCOPE_RESOLUTION","enumerated");}
-{FULL_STOP} { do_the_job(yytext,"PUNCTUATION","FULL_STOP","enumerated");}
-{DOUBLE_FULL_STOP} { do_the_job(yytext,"PUNCTUATION","DOUBLE_FULL_STOP","enumerated");}
+{LEFT_CURLY_BRACKET} { return LEFT_CURLY_BRACKET;}
+{RIGHT_CURLY_BRACKET} { return RIGHT_CURLY_BRACKET;}
+{LEFT_SQUARE_BRACKET} { return LEFT_SQUARE_BRACKET;}
+{RIGHT_SQUARE_BRACKET} { return RIGHT_SQUARE_BRACKET;}
+{LEFT_PARENTHESIS} { return LEFT_PARENTHESIS;}
+{RIGHT_PARENTHESIS} { return RIGHT_PARENTHESIS;}
+{SEMICOLON} { return SEMICOLON;}
+{COMMA} { return COMMA;}
+{COLON} { return COLON;}
+{SCOPE_RESOLUTION} { return SCOPE_RESOLUTION;}
+{FULL_STOP} { return FULL_STOP;}
+{DOUBLE_FULL_STOP} { return DOUBLE_FULL_STOP;}
 
-{IDENTIFICATION} { do_the_job(yytext,"ID",yytext,"char*");}
+{IDENTIFICATION} { return IDENTIFICATION;}
 
-{EXTRA_CHARS} { do_the_job(yytext,"UNDEF","UNDEF","UNDEF");}
+{EXTRA_CHARS} { return EXTRA_CHARS;}
 
 {STRINGS} {
 	int i ,buffer_counter = 0,starter_line = yylineno;
@@ -343,17 +343,4 @@ int star_comment_checker(int i,int what){
 }
 
 
-int main(int argc,char** argv){	
-	if(argc>1){
-		if(!(yyin=fopen(argv[1],"r"))){		
-			fprintf(stderr,"Something went wrong bro <3%s\n",argv[1]);			
-			return 1;
-		}
-	}else
-		yyin=stdin;
-		printf("----------------------   Lexical Analysis  --------------------\n");
-	
-	alpha_yylex(first);//nmzw prepei na einai etsi <---
-	return 0;
-}
 
