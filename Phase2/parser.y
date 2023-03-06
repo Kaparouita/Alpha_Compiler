@@ -19,9 +19,9 @@
 %token RETURN
 %token BREAK;
 %token CONTINUE
-%token AND 'and'
-%token NOT  'not'
-%token OR   'or'
+%token AND 
+%token NOT  
+%token OR   
 %token LOCAL
 %token TRUE
 %token FALSE
@@ -81,7 +81,7 @@
 %start program  /*specify the start symbol of the grammar*/
 
 %%
-program:    stmts 
+program:    stmt_list 
             ;
 
 stmt_list:  stmt
@@ -94,12 +94,12 @@ continue_stmt: CONTINUE SEMICOLON ;
 stmt:   expr SEMICOLON
         |ifstmt
         |whilestmt
-        |forstmt
+        //|forstmt
         |returnstmt
         |break_stmt
         |continue_stmt
         |block
-        |fundef
+        //|fundef
         |SEMICOLON
         ;
 
@@ -139,7 +139,7 @@ assignexpr: lvalue ASSIGNMENT expr
 primary:    lvalue
             |call
             |objectdef
-            |LEFT_PARENTHESIS fundef RIGHT_PARENTHESIS
+            //|LEFT_PARENTHESIS fundef RIGHT_PARENTHESIS
             |const
             ;
 
@@ -157,22 +157,49 @@ member:     lvalue FULL_STOP ID
 
 call:       call LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
             |lvalue callsuffix
-            |LEFT_PARENTHESIS fundef RIGHT_PARENTHESIS LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
+            //|LEFT_PARENTHESIS fundef RIGHT_PARENTHESIS LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
             ;
 
 callsuffix:     normcall
                 |methodcall
                 ;
 
-normcall:   LEFT_PARENTHESIS elist RIGHT_PARENTHESI 
+normcall:   //LEFT_PARENTHESIS elist RIGHT_PARENTHESIS 
             ;
 
-methodcall: DOUBLE_FULL_STOP ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
+methodcall: DOUBLE_FULL_STOP ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS /* na tsekarume gia to elist*/
+            ;    
+
+elist:     LEFT_SQUARE_BRACKET expr LEFT_SQUARE_BRACKET COMMA expr RIGHT_SQUARE_BRACKET  RIGHT_SQUARE_BRACKET /* KI EDW NA TSEKARUME GIA TO **/
+           ;
+
+/* mazema k edw gia to telos*/
+objectdef: LEFT_SQUARE_BRACKET LEFT_SQUARE_BRACKET elist RIGHT_SQUARE_BRACKET
+           ;     
+indexed: LEFT_SQUARE_BRACKET  elist RIGHT_SQUARE_BRACKET
+           ; 
+
+
+block:  LEFT_CURLY_BRACKET stmt_list RIGHT_CURLY_BRACKET
+        ;
+
+funcdef:    FUNCTION 
+
+const:  INTEGER
+        |REAL
+        |STRING
+        |NILL
+        |TRUE
+        |FALSE
+        ;
+
+ifstmt: IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt_list
+        |ELSE stmt
+        ;
+
+whilestmt: WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt
+           ;
+
+returnstmt: RETURN expr SEMICOLON
             ;
-
-
-
-
-
-
-
+%%

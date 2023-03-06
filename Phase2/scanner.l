@@ -4,85 +4,11 @@
 
 /*definitions section*/
 %{ 
-	#include <stdio.h>
-	#include <stdlib.h>
-    #include <string.h>
 	#include "parser.h"
 	
 	#define YY_DECL int alpha_yylex (void *ylval)
 	#define INIT_BUFFER_SIZE 256
     
-    typedef struct alpha_token_t tokenaki;
-
-	struct alpha_token_t {
-      unsigned int     numline;
-      unsigned int     numToken;
-      char          *content;
-      char          *type;
-	  char          *extra_type;
-	  char          *category;
-      struct alpha_token_t *next;
-	  };
-
-      /*CREATE A TOKEN*/
-	tokenaki *tokenConstractor(int numline,int numToken,char* extra_type,char* type,char *content,char* category){
-		if (type == NULL || content == NULL) {
-			fprintf(stderr, "Error: lathos TYPE , CONTENT\n");
-			return NULL;
-    	}
-
-		tokenaki *token = (tokenaki*)malloc(sizeof(tokenaki));
-		token->numline = numline;
-		token->numToken = numToken;
-		token->extra_type = strdup(extra_type);
-		token->type = strdup(type);
-		token->content = strdup(content);
-		token->category = strdup(category);
-		token->next = NULL;
-		return token;
-	}
-
-	/*HEAD OF TOKENS*/ 
-    tokenaki *first= NULL;
-	/*TOKENS COUNTER*/	
-	int token_count = 0;
-	  
-    /*ADD A NEW TOKEN TO THE LIST*/
-	void insert_token(tokenaki *new_token) {
-    	if (first == NULL) 
-        	first = new_token;
-		else{
-			tokenaki *current = first;
-			while (current->next != NULL) 
-				current = current->next;
-			
-        	current->next = new_token;
-    	}
-	}
-
-	/*TESTING PRINT FUCTION*/
-	void print_token(tokenaki* token){
-   		printf("%d:"" ", token->numline);
-    	printf("# %d ", token->numToken);
-		printf("\"");
-    	printf("%s", token->content);
-		printf("\"");
-    	printf(" %s ", token->type);
-		printf(" %s ", token->extra_type);
-		printf(" <-%s\n", token->category);
-	}
-	
-
-	/*add line for comments/strings */
-	void do_the_job(char* text,char*type,char*Etype,char*category){
-		tokenaki *t = tokenConstractor( yylineno,token_count++,Etype,type,text,category);
-		if(t == NULL)
-		 { token_count--;
-		  return;}
-        insert_token(t);
-		print_token(t);
-	}
-
     /*creates a string with 2 integers for block comments printing*/
 	char *create_string(int a,int b){
 		char* str = malloc(sizeof(char) * 30);
@@ -154,7 +80,7 @@ FULL_STOP "."
 DOUBLE_FULL_STOP ".."
 
 /*IDENTIFICATION NAME*/
-IDENTIFICATION [A-Za-z][A-Za-z_0-9]*
+ID [A-Za-z][A-Za-z_0-9]*
 
 /*COMMENTS*/
 LINE_COMMENT "//"
@@ -216,7 +142,7 @@ EXTRA_CHARS [!@#$^&~?|_]*
 {FULL_STOP} { return FULL_STOP;}
 {DOUBLE_FULL_STOP} { return DOUBLE_FULL_STOP;}
 
-{IDENTIFICATION} { return IDENTIFICATION;}
+{ID} { return ID;}
 
 {EXTRA_CHARS} { return EXTRA_CHARS;}
 
@@ -224,20 +150,15 @@ EXTRA_CHARS [!@#$^&~?|_]*
 	int i ,buffer_counter = 0,starter_line = yylineno;
 	int buffer_size = INIT_BUFFER_SIZE;
     char *buffer = (char*)malloc(sizeof(char*)*buffer_size),prev;
-	while((i = input()) >= 1)
-	{	
-		
+	while((i = input()) >= 1){	
 		if(buffer_counter >= buffer_size - 1){
 			buffer_size *= 2;
 			buffer = (char*) realloc(buffer, buffer_size * sizeof(char));
 		}
-		if(prev == '\\' && ( i == 't' || i == 'n' )){
+		if(prev == '\\' && ( i == 't' || i == 'n' ))
 			buffer[buffer_counter-1] = (i == 't') ? '\t' : '\n';
-		}
-	    else if(i == '\"' && prev != '\\'){
-			do_the_job(buffer,"STRING",buffer,"<-char*");
-			break;
-		}
+	    else if(i == '\"' && prev != '\\')
+			return STRING;
 		else
 			buffer[buffer_counter++] = i;
 		prev = i;	  
@@ -247,20 +168,16 @@ EXTRA_CHARS [!@#$^&~?|_]*
 
 }
 
-
 {LINE_COMMENT} {
 	int i ;
 	//TO EOF EIXE BUG
-	while((i = input()) >=1 || i=='\n')
-	{
+	while((i = input()) >=1 || i=='\n'){
 		if(i == '\n'){
 			unput(i);
-			do_the_job("","COMMENT","LINE_COMMENT","enumerated");
-			break;
-		}
-		else if(i=='/'){
+			return LINE_COMMENT;
+		}else if(i=='/'){
 			if((i = input()) == '/')  
-			   do_the_job("","COMMENT","NESTED_LINE_COMMENT","enumerated");
+			  return LINE_COMMENT;
 			else if(i == '*'){
 				if(star_comment_checker(i,1) == 1)
 					printf("ERROR : UNCLOSED STAR_COMMENT LINE : %d\n",yylineno);		
@@ -270,31 +187,23 @@ EXTRA_CHARS [!@#$^&~?|_]*
 		}
 	}
 	if(i <= 1)
-		do_the_job("","COMMENT","LINE_COMMENT","enumerated");
+		return LINE_COMMENT;
 }
-
-
 
 {BLOCK_COMMENT} {
 	int i , line = yylineno;
-	while((i = input()) >= 1)
-	{	
+	while((i = input()) >= 1){	
 	    if(i == '/'){
-			if((i = input()) == '*')  
-			{
+			if((i = input()) == '*'){
 				if(star_comment_checker(i,0) == 1)
 					break;	
 				else
 			   		unput(i);
-			} 
-			else if(i == '/')  
-			   		do_the_job("","COMMENT","NESTED_LINE_COMMENT","enumerated");
-		}
-		else if(i == '*'){
-			if((i = input()) == '/'){				
-			   do_the_job(create_string(line,yylineno),"COMMENT" ,"BLOCK_COMMENT","enumerated");
-			   break;
-			   }
+			}else if(i == '/')  
+			   		return LINE_COMMENT;
+		}else if(i == '*'){
+			if((i = input()) == '/')			
+			   return BLOCK_COMMENT;
 			else
 			   unput(i);
 		}		   	   
@@ -302,6 +211,7 @@ EXTRA_CHARS [!@#$^&~?|_]*
 	if(i <= 1)
 		printf("ERROR : UNCLOSED STAR_COMMENT REACHED EOF ");	
 }
+
 
 %%
 
@@ -312,35 +222,35 @@ EXTRA_CHARS [!@#$^&~?|_]*
 int star_comment_checker(int i,int what){
 	int line = yylineno;
 	while((i = input()) >= 1){
-		if(what == 1 && i == '\n')
-		    {   unput(i);
-				return 1;}
+		if(what == 1 && i == '\n'){
+			unput(i);
+			return 1;
+		}
 		if(i == '*'){
-			if((i = input()) == '/'){
-				do_the_job(create_string(line,yylineno),"COMMENT","NESTED_STAR_COMMENT","enumerated");
-					return 0;
-			}
+			if((i = input()) == '/')				
+				return 0;
 			else
 				unput(i);
-		}
-		else if(i == '/'){
+		}else if(i == '/'){
             if((i = input()) == '*'){
 				if(what == 1)
 					star_comment_checker(i,1);
 			    else
 					star_comment_checker(i,0);		
-			}
-			else if(i == '/')  
-			   	do_the_job("","COMMENT","NESTED_LINE_COMMENT","enumerated");
+			}else if(i == '/')  
+			   	return 0;
 			else
 				unput(i);
 		}					
 	}
+
 	if(i >= 1 && what != 1)
 	  exit(0);
+	  
 	unput(i);
 	return 1; 	
 }
+
 
 
 
