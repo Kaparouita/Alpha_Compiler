@@ -258,9 +258,7 @@ EXTRA_CHARS [!@#$^&~?|_]*
 			break;
 		}
 		else if(i=='/'){
-			if((i = input()) == '/')  
-			   do_the_job("","COMMENT","NESTED_LINE_COMMENT","enumerated");
-			else if(i == '*'){
+			 if(i == '*'){
 				if(star_comment_checker(i,1) == 1)
 					printf("ERROR : UNCLOSED STAR_COMMENT LINE : %d\n",yylineno);		
 			}
@@ -329,8 +327,6 @@ int star_comment_checker(int i,int what){
 			    else
 					star_comment_checker(i,0);		
 			}
-			else if(i == '/')  
-			   	do_the_job("","COMMENT","NESTED_LINE_COMMENT","enumerated");
 			else
 				unput(i);
 		}					
