@@ -96,6 +96,8 @@
 	int star_comment_checker(int i,int what);
 %}
 
+/*NOT DEFINED SYMBOLS*/
+EXTRA_CHARS [!@#$^&~?|_]* 
 /*KEYWORDS*/
 IF "if"
 ELSE "else"
@@ -158,9 +160,6 @@ IDENTIFICATION [A-Za-z][A-Za-z_0-9]*
 /*COMMENTS*/
 LINE_COMMENT "//"
 BLOCK_COMMENT "/*"
-
-/*NOT DEFINED SYMBOLS*/
-EXTRA_CHARS [!@#$^&~?|_]* 
 
 
 %%
@@ -225,21 +224,44 @@ EXTRA_CHARS [!@#$^&~?|_]*
     char *buffer = (char*)malloc(sizeof(char*)*buffer_size),prev;
 	while((i = input()) >= 1)
 	{	
-		
+		/*increase buffer*/
 		if(buffer_counter >= buffer_size - 1){
 			buffer_size *= 2;
 			buffer = (char*) realloc(buffer, buffer_size * sizeof(char));
 		}
-		if(prev == '\\' && ( i == 't' || i == 'n' )){
-			buffer[buffer_counter-1] = (i == 't') ? '\t' : '\n';
+		/*check for escape char*/
+		if(prev == '\\') {
+                switch (i) {
+                case 'n':
+                    buffer[buffer_counter-1] = '\n';
+                    break;
+                case 't':
+                    buffer[buffer_counter-1] = '\t';
+                    break;
+                case 'r':
+                    buffer[buffer_counter-1] = '\r';
+                    break;
+                case '\\':
+                    buffer[buffer_counter-1] = '\\';
+                    break;
+                case '\'':
+                    buffer[buffer_counter-1] = '\'';
+                    break;
+                case '\"':
+                    buffer[buffer_counter-1] = '\"';
+                    break;
+				default:
+					printf("LINE : %d ILLEGAL CHAR -> \\%c \n",yylineno,i);
+					buffer_counter--;
+            }
 		}
 	    else if(i == '\"' && prev != '\\'){
 			do_the_job(buffer,"STRING",buffer,"<-char*");
 			break;
 		}
 		else
-			buffer[buffer_counter++] = i;
-		prev = i;	  
+			buffer[buffer_counter++] = i;	  
+		prev = i;
 	}
 	if(i <= 1)
 		printf("ERROR : UNCLOSED STRING REACHED EOF ");	
@@ -258,7 +280,7 @@ EXTRA_CHARS [!@#$^&~?|_]*
 			break;
 		}
 		else if(i=='/'){
-			 if(i == '*'){
+			 if((i = input()) == '*'){
 				if(star_comment_checker(i,1) == 1)
 					printf("ERROR : UNCLOSED STAR_COMMENT LINE : %d\n",yylineno);		
 			}
@@ -281,11 +303,9 @@ EXTRA_CHARS [!@#$^&~?|_]*
 			{
 				if(star_comment_checker(i,0) == 1)
 					break;	
-				else
-			   		unput(i);
-			} 
-			else if(i == '/')  
-			   		do_the_job("","COMMENT","NESTED_LINE_COMMENT","enumerated");
+			}
+			else
+			   	unput(i); 
 		}
 		else if(i == '*'){
 			if((i = input()) == '/'){				
@@ -312,15 +332,7 @@ int star_comment_checker(int i,int what){
 		if(what == 1 && i == '\n')
 		    {   unput(i);
 				return 1;}
-		if(i == '*'){
-			if((i = input()) == '/'){
-				do_the_job(create_string(line,yylineno),"COMMENT","NESTED_STAR_COMMENT","enumerated");
-					return 0;
-			}
-			else
-				unput(i);
-		}
-		else if(i == '/'){
+		if(i == '/'){
             if((i = input()) == '*'){
 				if(what == 1)
 					star_comment_checker(i,1);
@@ -329,10 +341,21 @@ int star_comment_checker(int i,int what){
 			}
 			else
 				unput(i);
-		}					
+		}	
+		else if(i == '*'){
+			if((i = input()) == '/'){
+				do_the_job(create_string(line,yylineno),"COMMENT","NESTED_STAR_COMMENT","enumerated");
+					return 0;
+			}
+			else
+				unput(i);
+		}
+						
 	}
-	if(i >= 1 && what != 1)
-	  exit(0);
+	if(i <= 1 && what != 1){
+		printf("ERROR : UNCLOSED STAR_COMMENT REACHED EOF ");	
+		exit(0);
+	}
 	unput(i);
 	return 1; 	
 }
