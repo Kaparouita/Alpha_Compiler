@@ -94,12 +94,12 @@ continue_stmt: CONTINUE SEMICOLON ;
 stmt:   expr SEMICOLON
         |ifstmt
         |whilestmt
-        //|forstmt
+        |forstmt
         |returnstmt
         |break_stmt
         |continue_stmt
         |block
-        //|fundef
+        |fundef
         |SEMICOLON
         ;
 
@@ -139,7 +139,7 @@ assignexpr: lvalue ASSIGNMENT expr
 primary:    lvalue
             |call
             |objectdef
-            //|LEFT_PARENTHESIS fundef RIGHT_PARENTHESIS
+            |LEFT_PARENTHESIS fundef RIGHT_PARENTHESIS
             |const
             ;
 
@@ -157,8 +157,9 @@ member:     lvalue FULL_STOP ID
 
 call:       call LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
             |lvalue callsuffix
-            //|LEFT_PARENTHESIS fundef RIGHT_PARENTHESIS LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
+            |LEFT_PARENTHESIS fundef RIGHT_PARENTHESIS LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
             ;
+
 
 callsuffix:     normcall
                 |methodcall
