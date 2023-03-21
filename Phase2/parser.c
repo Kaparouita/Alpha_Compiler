@@ -1502,7 +1502,7 @@ yyreturnlab:
 int yyerror(char* yaccProvidedMessage){
                 //provide error message example:
         fprintf(stderr,"%s: error at line %d , before token %s\n",yaccProvidedMessage,yylineno,yytext);
-        fprintf(stderr,"INVALID INPUT");
+        fprintf(stderr,"INVALID INPUT\n");
 }
 
 
