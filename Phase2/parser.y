@@ -1,5 +1,9 @@
 %{
-    /*C code included here*/    
+        #include <stdio.h>
+        #include "lex.yy.h" // alphayylex?
+        #include "Symbol_Table.h"
+        #include "parser.tab.h" // include the parser header file ?
+      
 %}
 
 
