@@ -2,7 +2,7 @@
         #include <stdio.h>
         #include "lex.yy.h" // alphayylex?
         #include "Symbol_Table.h"
-        #include "parser.h" // include the parser header file ?
+       
 
         int yyerror (char* yaccProvidedMessage);
         int yylex (void);
@@ -57,7 +57,8 @@
 
 /*INTEGER NUMERIC*/
 %token <intValue> INTEGER
-
+x= 5
+Y=6
 /*REAL NUMERIC*/
 %token <realValue> REAL
 
@@ -106,7 +107,7 @@ continue_stmt: CONTINUE SEMICOLON ;
 
 stmt:   expr SEMICOLON
         |ifstmt
-        |whilestmt
+        |whilestmt { }
         |forstmt
         |returnstmt
         |break_stmt
@@ -200,7 +201,7 @@ indexed: LEFT_SQUARE_BRACKET  elist RIGHT_SQUARE_BRACKET
 block:  LEFT_CURLY_BRACKET stmt_list RIGHT_CURLY_BRACKET
         ;
 
-funcdef:    FUNCTION ID LEFT_PARENTHESIS
+funcdef:    FUNCTION ID LEFT_PARENTHESIS  { IUNSERT }
 
 const:  INTEGER
         |REAL
