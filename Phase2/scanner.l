@@ -153,35 +153,67 @@ BLOCK_COMMENT "/*"
 	int i ,buffer_counter = 0,starter_line = yylineno;
 	int buffer_size = INIT_BUFFER_SIZE;
     char *buffer = (char*)malloc(sizeof(char*)*buffer_size),prev;
-	while((i = input()) >= 1){	
+	while((i = input()) >= 1)
+	{	
+		/*increase buffer*/
 		if(buffer_counter >= buffer_size - 1){
 			buffer_size *= 2;
 			buffer = (char*) realloc(buffer, buffer_size * sizeof(char));
 		}
-		if(prev == '\\' && ( i == 't' || i == 'n' ))
-			buffer[buffer_counter-1] = (i == 't') ? '\t' : '\n';
-	    else if(i == '\"' && prev != '\\')
+		/*check for escape char*/
+		if(prev == '\\') {
+                switch (i) {
+                case 'n':
+                    buffer[buffer_counter-1] = '\n';
+                    break;
+                case 't':
+                    buffer[buffer_counter-1] = '\t';
+                    break;
+                case 'r':
+                    buffer[buffer_counter-1] = '\r';
+                    break;
+                case '\\':
+                    buffer[buffer_counter-1] = '\\';
+                    break;
+                case '\'':
+                    buffer[buffer_counter-1] = '\'';
+                    break;
+                case '\"':
+                    buffer[buffer_counter-1] = '\"';
+                    break;
+				default:
+					printf("LINE : %d ILLEGAL CHAR -> \\%c \n",yylineno,i);
+					buffer_counter--;
+            }
+		}
+	    else if(i == '\"' && prev != '\\'){
+			//do_the_job(buffer,"STRING",buffer,"<-char*");
 			return STRING;
+			break;
+		}
 		else
-			buffer[buffer_counter++] = i;
-		prev = i;	  
+			buffer[buffer_counter++] = i;	  
+		prev = i;
 	}
 	if(i <= 1)
 		printf("ERROR : UNCLOSED STRING REACHED EOF ");	
 
 }
 
+
 {LINE_COMMENT} {
 	int i ;
 	//TO EOF EIXE BUG
-	while((i = input()) >=1 || i=='\n'){
+	while((i = input()) >=1 || i=='\n')
+	{
 		if(i == '\n'){
 			unput(i);
+			//do_the_job("","COMMENT","LINE_COMMENT","enumerated");
 			return LINE_COMMENT;
-		}else if(i=='/'){
-			if((i = input()) == '/')  
-			  return LINE_COMMENT;
-			else if(i == '*'){
+			break;
+		}
+		else if(i=='/'){
+			 if((i = input()) == '*'){
 				if(star_comment_checker(i,1) == 1)
 					printf("ERROR : UNCLOSED STAR_COMMENT LINE : %d\n",yylineno);		
 			}
@@ -190,23 +222,31 @@ BLOCK_COMMENT "/*"
 		}
 	}
 	if(i <= 1)
+		//do_the_job("","COMMENT","LINE_COMMENT","enumerated");
 		return LINE_COMMENT;
 }
 
+
+
 {BLOCK_COMMENT} {
 	int i , line = yylineno;
-	while((i = input()) >= 1){	
+	while((i = input()) >= 1)
+	{	
 	    if(i == '/'){
-			if((i = input()) == '*'){
+			if((i = input()) == '*')  
+			{
 				if(star_comment_checker(i,0) == 1)
 					break;	
-				else
-			   		unput(i);
-			}else if(i == '/')  
-			   		return LINE_COMMENT;
-		}else if(i == '*'){
-			if((i = input()) == '/')			
+			}
+			else
+			   	unput(i); 
+		}
+		else if(i == '*'){
+			if((i = input()) == '/'){				
+			   //do_the_job(create_string(line,yylineno),"COMMENT" ,"BLOCK_COMMENT","enumerated");
 			   return BLOCK_COMMENT;
+			   break;
+			   }
 			else
 			   unput(i);
 		}		   	   
@@ -214,7 +254,6 @@ BLOCK_COMMENT "/*"
 	if(i <= 1)
 		printf("ERROR : UNCLOSED STAR_COMMENT REACHED EOF ");	
 }
-
 
 %%
 
@@ -225,35 +264,36 @@ BLOCK_COMMENT "/*"
 int star_comment_checker(int i,int what){
 	int line = yylineno;
 	while((i = input()) >= 1){
-		if(what == 1 && i == '\n'){
-			unput(i);
-			return 1;
-		}
-		if(i == '*'){
-			if((i = input()) == '/')				
-				return 0;
-			else
-				unput(i);
-		}else if(i == '/'){
+		if(what == 1 && i == '\n')
+		    {   unput(i);
+				return 1;}
+		if(i == '/'){
             if((i = input()) == '*'){
 				if(what == 1)
 					star_comment_checker(i,1);
 			    else
 					star_comment_checker(i,0);		
-			}else if(i == '/')  
-			   	return 0;
+			}
 			else
 				unput(i);
-		}					
+		}	
+		else if(i == '*'){
+			if((i = input()) == '/'){
+				//do_the_job(create_string(line,yylineno),"COMMENT","NESTED_STAR_COMMENT","enumerated");
+					return 0;
+			}
+			else
+				unput(i);
+		}
+						
 	}
-
-	if(i >= 1 && what != 1)
-	  exit(0);
-	  
+	if(i <= 1 && what != 1){
+		printf("ERROR : UNCLOSED STAR_COMMENT REACHED EOF ");	
+		exit(0);
+	}
 	unput(i);
 	return 1; 	
 }
-
 
 
 
