@@ -1,4 +1,4 @@
-calc: scanner.c parser.c
+calc: parser.c scanner.l
 	gcc -o calc scanner.c parser.c
 
 scanner.c: scanner.l
