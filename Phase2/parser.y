@@ -1,5 +1,6 @@
 %{
         #include <stdio.h>
+        //#include "lex.yy.h" // alphayylex?
         #include "Symbol_Table.h"
        
 
@@ -27,7 +28,7 @@
 %token FOR
 %token FUNCTION
 %token RETURN
-%token BREAK
+%token BREAK;
 %token CONTINUE
 %token AND 
 %token NOT  
@@ -56,6 +57,7 @@
 
 /*INTEGER NUMERIC*/
 %token <intValue> INTEGER
+
 /*REAL NUMERIC*/
 %token <realValue> REAL
 
@@ -104,7 +106,7 @@ continue_stmt: CONTINUE SEMICOLON ;
 
 stmt:   expr SEMICOLON
         |ifstmt
-        |whilestmt { }
+        |whilestmt
         |forstmt
         |returnstmt
         |break_stmt
@@ -198,7 +200,8 @@ indexed: LEFT_SQUARE_BRACKET  elist RIGHT_SQUARE_BRACKET
 block:  LEFT_CURLY_BRACKET stmt_list RIGHT_CURLY_BRACKET
         ;
 
-funcdef:    FUNCTION ID LEFT_PARENTHESIS  { }
+funcdef:    FUNCTION ID LEFT_PARENTHESIS  { //INSERT 
+}
 
 const:  INTEGER
         |REAL
@@ -247,7 +250,7 @@ int main(int argc, char **argv) {
         input_file = stdin;
 
     printf("----------------------   Lexical Analysis  --------------------\n");
-   // yyset_in(input_file); // set the input stream for the lexer
+   //yyset_in(input_file); // set the input stream for the lexer
     yyparse(); // call the parser function
     fclose(input_file);
     return 0;
