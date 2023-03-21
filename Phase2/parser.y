@@ -205,4 +205,24 @@ whilestmt: WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt
 
 returnstmt: RETURN expr SEMICOLON
             ;
-%%
+
+ %%
+
+int main(int argc, char **argv) {
+    FILE *input_file;
+    if (argc > 1) {
+        input_file = fopen(argv[1], "r");
+        if (!input_file) {
+            printf("Error: failed to open input file '%s'\n", argv[1]);
+            return 1;
+        }
+    } 
+    else 
+        input_file = stdin;
+
+    printf("----------------------   Lexical Analysis  --------------------\n");
+    yyset_in(input_file); // set the input stream for the lexer
+    yyparse(); // call the parser function
+    fclose(input_file);
+    return 0;
+}
