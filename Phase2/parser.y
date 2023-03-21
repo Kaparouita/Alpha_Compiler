@@ -80,13 +80,13 @@
 
 %start program  /*specify the start symbol of the grammar*/
 
-if(i==0)
+
 
 %%
 program:    stmt_list 
             ;
 
-stmt_list:  stmt
+stmt_list:  stmt        /*note thisn*/
             |stmt_list SEMICOLON stmt
             ;
 
@@ -167,18 +167,21 @@ callsuffix:     normcall
                 |methodcall
                 ;
 
-normcall:   //LEFT_PARENTHESIS elist RIGHT_PARENTHESIS 
+normcall:   LEFT_PARENTHESIS elist RIGHT_PARENTHESIS 
             ;
 
-methodcall: DOUBLE_FULL_STOP ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS /* na tsekarume gia to elist*/
+methodcall: DOUBLE_FULL_STOP ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS 
             ;    
 
-elist:     LEFT_SQUARE_BRACKET expr LEFT_SQUARE_BRACKET COMMA expr RIGHT_SQUARE_BRACKET  RIGHT_SQUARE_BRACKET /* KI EDW NA TSEKARUME GIA TO **/
-           ;
+elist:  expr
+        |elist COMMA expr
+        ;
 
-/* mazema k edw gia to telos*/
-objectdef: LEFT_SQUARE_BRACKET LEFT_SQUARE_BRACKET elist RIGHT_SQUARE_BRACKET
+
+objectdef: LEFT_SQUARE_BRACKET  elist RIGHT_SQUARE_BRACKET
+           |LEFT_SQUARE_BRACKET   indexed  RIGHT_SQUARE_BRACKET
            ;     
+
 indexed: LEFT_SQUARE_BRACKET  elist RIGHT_SQUARE_BRACKET
            ; 
 
@@ -186,7 +189,7 @@ indexed: LEFT_SQUARE_BRACKET  elist RIGHT_SQUARE_BRACKET
 block:  LEFT_CURLY_BRACKET stmt_list RIGHT_CURLY_BRACKET
         ;
 
-funcdef:    FUNCTION 
+funcdef:    FUNCTION ID LEFT_PARENTHESIS
 
 const:  INTEGER
         |REAL
@@ -196,11 +199,16 @@ const:  INTEGER
         |FALSE
         ;
 
+idlist:
 ifstmt: IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt_list
         |ELSE stmt
         ;
 
 whilestmt: WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt
+           ;
+
+/*note this for elist*/
+forstmt:   FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS stmt
            ;
 
 returnstmt: RETURN expr SEMICOLON
