@@ -6,7 +6,7 @@
 %{ 
 	#include "parser.h"
 	
-	#define YY_DECL int alpha_yylex (void *ylval)
+	#define YY_DECL int yylex (void)
 	#define INIT_BUFFER_SIZE 256
     
     /*creates a string with 2 integers for block comments printing*/
@@ -294,6 +294,3 @@ int star_comment_checker(int i,int what){
 	unput(i);
 	return 1; 	
 }
-
-
-
