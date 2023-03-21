@@ -2,7 +2,14 @@
         #include <stdio.h>
         #include "lex.yy.h" // alphayylex?
         #include "Symbol_Table.h"
-        #include "parser.tab.h" // include the parser header file ?
+        #include "parser.h" // include the parser header file ?
+
+        int yyerror (char* yaccProvidedMessage);
+        int yylex (void);
+
+        extern int yylineno;
+        extern int char* yytext;
+        exter FILE* yyin;
       
 %}
 
@@ -210,8 +217,17 @@ whilestmt: WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt
 returnstmt: RETURN expr SEMICOLON
             ;
 
- %%
+%%
 
+int yyerror(char* yaccProvidedMessage){
+                //provide error message example:
+        fprintf(stderr,"%s: error at line %d , before token %s\n",yaccProvidedMessage,yylineno,yytext);
+        fprintf(stderr,"INVALID INPUT");
+}
+
+
+
+/*-----------------------------MAIN-----------------------*/
 int main(int argc, char **argv) {
     FILE *input_file;
     if (argc > 1) {
