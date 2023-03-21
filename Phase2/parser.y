@@ -1,5 +1,16 @@
 %{
-    /*C code included here*/    
+        #include <stdio.h>
+        #include "lex.yy.h" // alphayylex?
+        #include "Symbol_Table.h"
+        #include "parser.h" // include the parser header file ?
+
+        int yyerror (char* yaccProvidedMessage);
+        int yylex (void);
+
+        extern int yylineno;
+        extern int char* yytext;
+        exter FILE* yyin;
+      
 %}
 
 
@@ -213,4 +224,33 @@ forstmt:   FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PAREN
 
 returnstmt: RETURN expr SEMICOLON
             ;
+
 %%
+
+int yyerror(char* yaccProvidedMessage){
+                //provide error message example:
+        fprintf(stderr,"%s: error at line %d , before token %s\n",yaccProvidedMessage,yylineno,yytext);
+        fprintf(stderr,"INVALID INPUT");
+}
+
+
+
+/*-----------------------------MAIN-----------------------*/
+int main(int argc, char **argv) {
+    FILE *input_file;
+    if (argc > 1) {
+        input_file = fopen(argv[1], "r");
+        if (!input_file) {
+            printf("Error: failed to open input file '%s'\n", argv[1]);
+            return 1;
+        }
+    } 
+    else 
+        input_file = stdin;
+
+    printf("----------------------   Lexical Analysis  --------------------\n");
+    yyset_in(input_file); // set the input stream for the lexer
+    yyparse(); // call the parser function
+    fclose(input_file);
+    return 0;
+}
