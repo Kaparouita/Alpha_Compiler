@@ -80,6 +80,8 @@
 
 %start program  /*specify the start symbol of the grammar*/
 
+if(i==0)
+
 %%
 program:    stmt_list 
             ;

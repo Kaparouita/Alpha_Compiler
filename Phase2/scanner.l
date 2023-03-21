@@ -23,6 +23,10 @@
 	int star_comment_checker(int i,int what);
 %}
 
+
+/*NOT DEFINED SYMBOLS*/
+EXTRA_CHARS [!@#$^&~?|_]* 
+
 /*KEYWORDS*/
 IF "if"
 ELSE "else"
@@ -86,13 +90,13 @@ ID [A-Za-z][A-Za-z_0-9]*
 LINE_COMMENT "//"
 BLOCK_COMMENT "/*"
 
-/*NOT DEFINED SYMBOLS*/
-EXTRA_CHARS [!@#$^&~?|_]* 
 
 
 %%
 \n { yylineno; } // update yylineno every new line
 [\t ' '] {};	// ignore whitespace char
+
+{EXTRA_CHARS} { return EXTRA_CHARS;}
 
 {IF} {return IF;}
 {ELSE} {return ELSE;}
@@ -144,7 +148,6 @@ EXTRA_CHARS [!@#$^&~?|_]*
 
 {ID} { return ID;}
 
-{EXTRA_CHARS} { return EXTRA_CHARS;}
 
 {STRINGS} {
 	int i ,buffer_counter = 0,starter_line = yylineno;
