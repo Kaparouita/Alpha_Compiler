@@ -130,8 +130,8 @@ BLOCK_COMMENT "/*"
 {LES_EQUAL} {return LES_EQUAL;}
 
 
-{INTEGER} {/*DEN KSERW AKOMA TI VAZUME*/ } //number
-{REAL} {/*DEN KSERW AKOMA TI VAZUME*/}
+{INTEGER} {yylval.intValue=atoi(yytext); return INTEGER; } //number
+{REAL} {yylval.realValue=atoi(yytext); return REAL;}
 
 {LEFT_CURLY_BRACKET} { return LEFT_CURLY_BRACKET;}
 {RIGHT_CURLY_BRACKET} { return RIGHT_CURLY_BRACKET;}
@@ -146,7 +146,7 @@ BLOCK_COMMENT "/*"
 {FULL_STOP} { return FULL_STOP;}
 {DOUBLE_FULL_STOP} { return DOUBLE_FULL_STOP;}
 
-{ID} { return ID;}
+{ID} { yylval.stringValue=strdup(yytext); return ID;}
 
 
 {STRINGS} {
@@ -197,6 +197,8 @@ BLOCK_COMMENT "/*"
 	}
 	if(i <= 1)
 		printf("ERROR : UNCLOSED STRING REACHED EOF ");	
+	
+	yylval.stringValue=strdup(yytext); return STRING;
 
 }
 

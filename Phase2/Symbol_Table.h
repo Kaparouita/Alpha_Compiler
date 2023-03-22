@@ -1,4 +1,4 @@
-/*typedef enum types_var {global, typical, local} var_Type;
+typedef enum types_var {global, typical, local} var_Type;
 typedef enum types_func {user_func, lib_func} func_Type;
 
 
@@ -34,4 +34,8 @@ void hide (int target_scope){
     //ta elements me scope == target
     //iterate kai bres to scope
     var_struct temp;
-}*/
+}
+
+void init_lid_func(char * lib_func){
+    //me thn insert kanume init oles tis lib funcs
+}
