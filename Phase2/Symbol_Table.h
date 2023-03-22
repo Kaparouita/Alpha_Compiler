@@ -1,3 +1,6 @@
+
+#include <string.h>
+
 typedef enum types_var {global, typical, local} var_Type;
 typedef enum types_func {user_func, lib_func} func_Type;
 
@@ -12,8 +15,8 @@ typedef struct domhvar{
     var_Type var_type;
     int scope;
     int lineno;
-    int hidden = 0;     //me 0 den einai krymmeno, 1 einai 
-    struct* var_struct next_same_scope;
+    int hidden ;     //me 0 den einai krymmeno, 1 einai 
+    struct var_struct * next_same_scope;
 } var_struct;
 
 
@@ -27,8 +30,8 @@ typedef struct domhfunc{
 
     int scope;
     int lineno;
-    int hidden = 0;     //me 0 den einai krymmeno, 1 einai 
-    struct* func_struct next_same_scope;
+    int hidden;     //me 0 den einai krymmeno, 1 einai 
+    struct func_struct * next_same_scope;
 } func_struct;
 
 
@@ -42,7 +45,7 @@ int lookup(char* key_name){
 }
 
 /*  front3@16 leei na kanoume mia lookup gia sygkekrimeno scope, kai mia oxi*/
-int lookup(char* key_name, int key_scope){
+int lookup_scope(char* key_name, int key_scope){
     
     /*  find a way to iterate through the hashtable and the whole 
     *   collision lists until the first symbol with target_scope is found.
@@ -51,6 +54,9 @@ int lookup(char* key_name, int key_scope){
     */
 
     //temp = 
+
+    /*POUKA COMMENTS*/
+    /* thelei na kaneis declare kapu to temp KAI TO TARGET SCOPE*/
     while(temp != NULL){    /*Simple search*/
         if((strcmp(temp->name,key_name) == 0) && temp->scope == target_scope){
             //epishs prepei na frontisw na prospelasw oloklhra ta buckets (dhladh kai ta collision lists tous) 
@@ -64,15 +70,10 @@ int lookup(char* key_name, int key_scope){
 int hide (int target_scope){
     //prepei na brw kai sta 2 struct 
     //ta elements me scope == target
-<<<<<<< HEAD
     //iterate kai bres to scope
     var_struct temp;
 }
 
 void init_lid_func(char * lib_func){
     //me thn insert kanume init oles tis lib funcs
-=======
-    // tha xrhsimopoihthei lookup
-    return 0;
->>>>>>> 787326ed332dca4d4ff0123e8456b9c0a0e45b05
 }
