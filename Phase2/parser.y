@@ -89,17 +89,18 @@
 %token BLOCK_COMMENT
 
 
-%right ASSIGNMENT         /*=*/
-%left OR                 /*or*/
-%left AND                /*and*/
-%nonassoc EQUAL NOTEQUAL /* == != */
-%nonassoc GRETER_THAN GRE_EQUAL LESS_THAN LES_EQUAL /* > <= < <= */
-%left ADDITION SUBTRACTION								/*+ -*/
-%left MULTI DIVISION MODULUS 							/* * / % */
-%right NOT INCREMENT DECREMENT  		/*not ++ -- -*/
-%left FULL_STOP DOUBLE_FULL_STOP                       		/*. ..*/
-%left LEFT_SQUARE_BRACKET RIGHT_SQUARE_BRACKET       	/*[ ]*/
-%left LEFT_PARENTHESIS RIGHT_PARENTHESIS		/*( )*/
+/*proteraiothtes*/
+%right ASSIGNMENT         
+%left OR                
+%left AND               
+%nonassoc EQUAL NOTEQUAL 
+%nonassoc GRETER_THAN GRE_EQUAL LESS_THAN LES_EQUAL 
+%left ADDITION SUBTRACTION								
+%left MULTI DIVISION MODULUS 							
+%right NOT INCREMENT DECREMENT  		/*EDW LIPI TO - POU DEN KSERW EAN THELEI TO SUBTRACTION OR UMINUS*/
+%left FULL_STOP DOUBLE_FULL_STOP                       		
+%left LEFT_SQUARE_BRACKET RIGHT_SQUARE_BRACKET       	
+%left LEFT_PARENTHESIS RIGHT_PARENTHESIS		
 
 
 
@@ -115,14 +116,17 @@ stmt_list: stmt_list  stmt
            |
            ;
 
-/*lipun prgamate dw */
+
+brk_stm:BREAK SEMICOLON;
+cnt_stm:CONTINUE SEMICOLON ;
+ 
 stmt:   expr SEMICOLON
         |ifstmt
         |whilestmt
         |forstmt
         |returnstmt
-        |BREAK SEMICOLON
-        |CONTINUE SEMICOLON
+        |brk_stm
+        |cnt_stm
         |block
         |funcdef
         |SEMICOLON
@@ -133,13 +137,14 @@ expr:   assignexpr
         |expr ADDITION expr
         |expr SUBTRACTION expr
         |expr MULTI expr
+        |expr DIVISION expr
         |expr MODULUS expr
+        |expr GRETER_THAN expr
+        |expr GRE_EQUAL expr
+        |expr LESS_THAN expr
+        |expr LES_EQUAL expr
         |expr EQUAL expr
         |expr NOTEQUAL expr
-        |expr GRETER_THAN expr
-        |expr LESS_THAN expr
-        |expr GRE_EQUAL expr
-        |expr LES_EQUAL expr
         |expr AND expr
         |expr OR expr
         |term
