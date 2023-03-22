@@ -84,10 +84,24 @@
 /*NOT DEFINED SYMBOLS*/
 %token EXTRA_CHARS
 
-
 /*COMMENTS*/
-%token LINE_COMMENT 
-%token BLOCK_COMMENT 
+ %token LINE_COMMENT 
+%token BLOCK_COMMENT
+
+
+%right ASSIGNMENT         /*=*/
+%left OR                 /*or*/
+%left AND                /*and*/
+%nonassoc EQUAL NOTEQUAL /* == != */
+%nonassoc GRETER_THAN GRE_EQUAL LESS_THAN LES_EQUAL /* > <= < <= */
+%left ADDITION SUBTRACTION								/*+ -*/
+%left MULTI DIVISION MODULUS 							/* * / % */
+%right NOT INCREMENT DECREMENT  		/*not ++ -- -*/
+%left FULL_STOP DOUBLE_FULL_STOP                       		/*. ..*/
+%left LEFT_SQUARE_BRACKET RIGHT_SQUARE_BRACKET       	/*[ ]*/
+%left LEFT_PARENTHESIS RIGHT_PARENTHESIS		/*( )*/
+
+
 
 %start program  /*specify the start symbol of the grammar*/
 
@@ -97,44 +111,41 @@
 program:    stmt_list 
             ;
 
-stmt_list:  stmt        /*note thisn*/
-            |stmt_list SEMICOLON stmt
-            ;
+stmt_list: stmt_list  stmt
+           |
+           ;
 
-break_stmt: BREAK SEMICOLON;
-continue_stmt: CONTINUE SEMICOLON ;
-
+/*lipun prgamate dw */
 stmt:   expr SEMICOLON
         |ifstmt
         |whilestmt
         |forstmt
         |returnstmt
-        |break_stmt
-        |continue_stmt
+        |BREAK SEMICOLON
+        |CONTINUE SEMICOLON
         |block
         |funcdef
         |SEMICOLON
         ;
 
+
 expr:   assignexpr
-        |expr op expr
+        |expr ADDITION expr
+        |expr SUBTRACTION expr
+        |expr MULTI expr
+        |expr MODULUS expr
+        |expr EQUAL expr
+        |expr NOTEQUAL expr
+        |expr GRETER_THAN expr
+        |expr LESS_THAN expr
+        |expr GRE_EQUAL expr
+        |expr LES_EQUAL expr
+        |expr AND expr
+        |expr OR expr
         |term
         ;
 
-op:     ADDITION
-        |SUBTRACTION 
-        |MULTI 
-        |DIVISION 
-        |MODULUS 
-        |EQUAL    
-        |NOTEQUAL  
-        |GRETER_THAN 
-        |LESS_THAN   
-        |GRE_EQUAL   
-        |LES_EQUAL   
-        |AND
-        |OR
-        ;
+     
 
 term:   LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
         |SUBTRACTION expr
@@ -144,10 +155,10 @@ term:   LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
         |DECREMENT lvalue
         |lvalue DECREMENT
         |primary
-        ;
+        ;        
 
 assignexpr: lvalue ASSIGNMENT expr
-            ;
+            ;    
 
 primary:    lvalue
             |call
@@ -160,17 +171,17 @@ lvalue:     ID
             |LOCAL ID
             |SCOPE_RESOLUTION ID
             |member
-            ;
-
+            ;             
+            
 member:     lvalue FULL_STOP ID
             |lvalue LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET
             |call FULL_STOP ID
             |call LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET
             ;
 
-call:       call LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
+call:       call LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS
             |lvalue callsuffix
-            |LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
+            |LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS
             ;
 
 
@@ -178,30 +189,42 @@ callsuffix:     normcall
                 |methodcall
                 ;
 
-normcall:   LEFT_PARENTHESIS elist RIGHT_PARENTHESIS 
+normcall:   LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS 
             ;
 
-methodcall: DOUBLE_FULL_STOP ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS 
+methodcall: DOUBLE_FULL_STOP ID LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS 
             ;    
 
 elist:  expr
-        |elist COMMA expr
         ;
 
+moreElist: elist        
+           |moreElist COMMA elist
+           |
+           ;     
 
-objectdef: LEFT_SQUARE_BRACKET  elist RIGHT_SQUARE_BRACKET
+objectdef: LEFT_SQUARE_BRACKET  moreElist RIGHT_SQUARE_BRACKET
            |LEFT_SQUARE_BRACKET   indexed  RIGHT_SQUARE_BRACKET
            ;     
 
-indexed: LEFT_SQUARE_BRACKET  elist RIGHT_SQUARE_BRACKET
+indexed: moreindexedelem
            ; 
+
+/*1 or + times for indexedelems*/
+moreindexedelem:   indexedelem     
+                   |moreindexedelem COMMA indexedelem
+                   ;
+
+indexedelem: LEFT_CURLY_BRACKET expr COLON expr RIGHT_CURLY_BRACKET
+             ;
 
 
 block:  LEFT_CURLY_BRACKET stmt_list RIGHT_CURLY_BRACKET
         ;
 
-funcdef:    FUNCTION ID LEFT_PARENTHESIS  { //INSERT 
-}
+funcdef:    FUNCTION ID LEFT_PARENTHESIS moreidilist  RIGHT_PARENTHESIS block
+            |FUNCTION  LEFT_PARENTHESIS moreidilist  RIGHT_PARENTHESIS block /*anonymous functions here */
+            ;    
 
 const:  INTEGER
         |REAL
@@ -211,8 +234,16 @@ const:  INTEGER
         |FALSE
         ;
 
-idlist:
-ifstmt: IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt_list
+idlist: ID
+        |COMMA ID
+        ;
+
+moreidilist: moreidilist idlist
+             |
+             ;
+
+
+ifstmt: IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt
         |ELSE stmt
         ;
 
@@ -220,12 +251,11 @@ whilestmt: WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt
            ;
 
 /*note this for elist*/
-forstmt:   FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS stmt
+forstmt:   FOR LEFT_PARENTHESIS moreElist SEMICOLON expr SEMICOLON moreElist RIGHT_PARENTHESIS stmt
            ;
 
 returnstmt: RETURN expr SEMICOLON
-            ;
-
+            ;   
 %%
 
 int yyerror(char* yaccProvidedMessage){
