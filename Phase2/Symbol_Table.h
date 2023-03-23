@@ -1,14 +1,11 @@
 
 #include <string.h>
+
 extern int yylineno;
-typedef enum types_var {global, typical, local} var_Type;
-// edw den kserw an  xriazomaste enum gt tha kanume init prwta prwta tis libfun
-typedef enum types_func {user_func, lib_func} func_Type;
 
+typedef enum var_type {var,fuction} var_type;
+typedef enum var_id{global, typical, local,user_func, lib_func} var_id;
 
-/*** LOG ***
-* den eginan polla, ligo ksekatharisma kai sxolia, exw kollhsei sto pos tha einai h domh symtable.
-*/
 
 
 typedef struct domhvar{
@@ -20,6 +17,18 @@ typedef struct domhvar{
     //int hidden ;     //me 0 den einai krymmeno, 1 einai 
     //struct var_struct * next_same_scope;
 } var_struct;
+
+
+typedef struct values{
+
+    var_type type;
+    var_id id;          //ti eimai?
+    char* name;
+    
+
+
+}*values;
+
 
 
 typedef struct domhfunc{
@@ -38,9 +47,7 @@ typedef struct domhfunc{
 
 
 typedef struct Sentrys{
-    
-    int hidden;     //me 0 den einai krymmeno, 1 einaichar* name;
-    func_Type func_type;
+        func_Type func_type;
     //var_Type var_type;
     /*  prepei na mpoun ta orismata, pou apo oti fantazomai
     *   einai apla          var_struct me ->var_type == typical;
