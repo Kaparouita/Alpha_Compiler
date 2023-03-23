@@ -71,7 +71,7 @@ int hash_insert(Table *table, char *name, int type, int scope) {
     }
 
     // Create new variable node
-    VarNode *new_var = (VarNode*)malloc(sizeof(VarNode));
+    var *new_var = (var*)malloc(sizeof(var));
     new_var->name = name;
     new_var->type = type;
     new_var->scope = scope;
