@@ -34,7 +34,9 @@ typedef struct hash_table_t {
 } hash_table_t;
 
 
-
+/**
+ * hash-table constractor
+*/
 hash_table_t *create_hash_table() {
     hash_table_t *ht = malloc(sizeof(hash_table_t));
 
@@ -43,19 +45,51 @@ hash_table_t *create_hash_table() {
 
     return ht;
 }
+/**
+ * hash fuction
+*/
+unsigned int hash(char *str) {
+    unsigned int hashval;
+    for (hashval = 0; *str != '\0'; str++) {
+        hashval = *str + 31 * hashval;
+    }
+    return hashval % HASHSIZE;
+}
 
-typedef struct Sentrys{
-        func_Type func_type;
-    //var_Type var_type;
-    /*  prepei na mpoun ta orismata, pou apo oti fantazomai
-    *   einai apla          var_struct me ->var_type == typical;
-    */
+int hash_insert(Table *table, char *name, int type, int scope) {
+    // Calculate hash value
+    int hash_val = hash(name) % table->num_buckets;
 
-    int scope;
-    int lineno;
-    int hidden;     //me 0 den einai krymmeno, 1 einai 
-    //struct func_struct * next_same_scope;
-} Symbol_Entrys;
+    // Traverse bucket list to check for existing variable
+    VarNode *var = table->buckets[hash_val];
+    while (var != NULL) {
+        if (strcmp(var->name, name) == 0 && var->scope == scope) {
+            // Variable already exists in scope, return error
+            return 0;
+        }
+        var = var->next;
+    }
+
+    // Create new variable node
+    VarNode *new_var = (VarNode*)malloc(sizeof(VarNode));
+    new_var->name = name;
+    new_var->type = type;
+    new_var->scope = scope;
+    new_var->next = NULL;
+
+    // Insert node at beginning of bucket list
+    new_var->next = table->buckets[hash_val];
+    table->buckets[hash_val] = new_var;
+
+    // Insert node at beginning of scope list
+    new_var->next_scope = table->scopes[scope];
+    table->scopes[scope] = new_var;
+
+    // Increment count
+    table->count++;
+
+    return 1;
+}
 
 
 int insert(){
