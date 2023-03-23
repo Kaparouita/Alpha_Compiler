@@ -21,8 +21,19 @@ typedef struct var{
     int hide;
     int line;
     struct var *next;    // gia to next var an pesei se idio bucket sto table
-    struct var *scope;   // gia same scope mporei na xrhsimepsei
 }var;
+
+struct var* new_var(var_type type, var_id id, char* name, int scope, int hide, int line, struct var* next) {
+    struct var* v = (struct var*) malloc(sizeof(struct var));
+    v->type = type;
+    v->id = id;
+    v->name = strdup(name);
+    v->scope = scope;
+    v->hide = hide;
+    v->line = line;
+    v->next = next;
+    return v;
+}
 
 /**
  * hash-table struct
