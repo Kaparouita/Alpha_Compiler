@@ -1,7 +1,7 @@
 #include <string.h>
 
 typedef enum var_type {var,fuction} var_type;
-typedef enum var_id{global, typical, local,user_func, lib_func} var_id;
+typedef enum var_id{global, formal, local,user_func, lib_func} var_id;
 
 typedef struct vars{
 
@@ -11,7 +11,7 @@ typedef struct vars{
     int scope;
     int hide;
     int line;
-    
+
 }vars;
 
 
