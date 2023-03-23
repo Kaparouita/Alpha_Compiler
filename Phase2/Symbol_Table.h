@@ -9,6 +9,7 @@ typedef enum var_type {var,fuction} var_type;
 typedef enum var_id{global, formal, local,user_func, lib_func} var_id;
 
 
+int x;
 /**
  * Struct var:
  * 
