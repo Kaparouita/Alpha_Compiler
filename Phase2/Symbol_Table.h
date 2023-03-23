@@ -14,7 +14,6 @@ typedef enum var_id{global, formal, local,user_func, lib_func} var_id;
  * 
 */
 typedef struct var{
-
     var_type type;
     var_id id;          
     char* name;
@@ -25,23 +24,21 @@ typedef struct var{
     struct var *scope;   // gia same scope mporei na xrhsimepsei
 }var;
 
-typedef struct SymTab {
+/**
+ * hash-table struct
+*/
+typedef struct hash_table_t {
     var **buckets;
     int num_buckets;
     var *scope_head;
-} SymTab;
+} hash_table_t;
 
 
-struct vars { /* table entry: */
-    struct nlist *next; /* next entry in chain */
-    char *name; /* variable name */
-    int value; /* variable value */
-};
 
 hash_table_t *create_hash_table() {
     hash_table_t *ht = malloc(sizeof(hash_table_t));
 
-    ht->buckets = calloc(NUM_BUCKETS, sizeof(var_t *));
+    ht->buckets = calloc(BUCKETS, sizeof(var_t *));
     ht->head = NULL;
 
     return ht;
