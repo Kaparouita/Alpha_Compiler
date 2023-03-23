@@ -1,7 +1,8 @@
 
 #include <string.h>
-
+extern int yylineno;
 typedef enum types_var {global, typical, local} var_Type;
+// edw den kserw an  xriazomaste enum gt tha kanume init prwta prwta tis libfun
 typedef enum types_func {user_func, lib_func} func_Type;
 
 
@@ -12,17 +13,18 @@ typedef enum types_func {user_func, lib_func} func_Type;
 
 typedef struct domhvar{
     char* name;
-    var_Type var_type;
     int scope;
     int lineno;
-    int hidden ;     //me 0 den einai krymmeno, 1 einai 
-    struct var_struct * next_same_scope;
+    
+    //var_Type var_type;
+    //int hidden ;     //me 0 den einai krymmeno, 1 einai 
+    //struct var_struct * next_same_scope;
 } var_struct;
 
 
 typedef struct domhfunc{
     char* name;
-    func_Type func_type;
+    //func_Type func_type;
     
     /*  prepei na mpoun ta orismata, pou apo oti fantazomai
     *   einai apla          var_struct me ->var_type == typical;
@@ -30,9 +32,25 @@ typedef struct domhfunc{
 
     int scope;
     int lineno;
-    int hidden;     //me 0 den einai krymmeno, 1 einai 
-    struct func_struct * next_same_scope;
+    //int hidden;     //me 0 den einai krymmeno, 1 einai
+    //struct func_struct * next_same_scope;
 } func_struct;
+
+
+typedef struct Sentrys{
+    
+    int hidden;     //me 0 den einai krymmeno, 1 einaichar* name;
+    func_Type func_type;
+    //var_Type var_type;
+    /*  prepei na mpoun ta orismata, pou apo oti fantazomai
+    *   einai apla          var_struct me ->var_type == typical;
+    */
+
+    int scope;
+    int lineno;
+    int hidden;     //me 0 den einai krymmeno, 1 einai 
+    //struct func_struct * next_same_scope;
+} Symbol_Entrys;
 
 
 int insert(){

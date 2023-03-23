@@ -228,7 +228,7 @@ block:  LEFT_CURLY_BRACKET stmt_list RIGHT_CURLY_BRACKET
         ;
 
 funcdef:    FUNCTION ID LEFT_PARENTHESIS moreidilist  RIGHT_PARENTHESIS block
-            |FUNCTION  LEFT_PARENTHESIS moreidilist  RIGHT_PARENTHESIS block /*anonymous functions here */
+            |FUNCTION  LEFT_PARENTHESIS moreidilist  RIGHT_PARENTHESIS block   /*anonymous functions here */
             ;    
 
 const:  INTEGER
