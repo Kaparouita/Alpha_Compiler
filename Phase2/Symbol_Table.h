@@ -1,49 +1,19 @@
-
 #include <string.h>
-
-extern int yylineno;
 
 typedef enum var_type {var,fuction} var_type;
 typedef enum var_id{global, typical, local,user_func, lib_func} var_id;
 
-
-
-typedef struct domhvar{
-    char* name;
-    int scope;
-    int lineno;
-    
-    //var_Type var_type;
-    //int hidden ;     //me 0 den einai krymmeno, 1 einai 
-    //struct var_struct * next_same_scope;
-} var_struct;
-
-
-typedef struct values{
+typedef struct vars{
 
     var_type type;
     var_id id;          //ti eimai?
     char* name;
-    
-
-
-}*values;
-
-
-
-typedef struct domhfunc{
-    char* name;
-    //func_Type func_type;
-    
-    /*  prepei na mpoun ta orismata, pou apo oti fantazomai
-    *   einai apla          var_struct me ->var_type == typical;
-    */
-
     int scope;
-    int lineno;
-    //int hidden;     //me 0 den einai krymmeno, 1 einai
-    //struct func_struct * next_same_scope;
-} func_struct;
+    int hide;
+    int line;
+    
+}vars;
+
 
 
 typedef struct Sentrys{
@@ -62,6 +32,7 @@ typedef struct Sentrys{
 
 int insert(){
     return 0;
+   
 }
 
 
