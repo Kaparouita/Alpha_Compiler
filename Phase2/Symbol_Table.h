@@ -1,20 +1,51 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+
+#define HASHSIZE 101
+#define BUCKETS 512
 
 typedef enum var_type {var,fuction} var_type;
 typedef enum var_id{global, formal, local,user_func, lib_func} var_id;
 
-typedef struct vars{
+
+/**
+ * Struct var:
+ * 
+*/
+typedef struct var{
 
     var_type type;
-    var_id id;          //ti eimai?
+    var_id id;          
     char* name;
     int scope;
     int hide;
     int line;
+    struct var *next;    // gia to next var an pesei se idio bucket sto table
+    struct var *scope;   // gia same scope mporei na xrhsimepsei
+}var;
 
-}vars;
+typedef struct SymTab {
+    var **buckets;
+    int num_buckets;
+    var *scope_head;
+} SymTab;
 
 
+struct vars { /* table entry: */
+    struct nlist *next; /* next entry in chain */
+    char *name; /* variable name */
+    int value; /* variable value */
+};
+
+hash_table_t *create_hash_table() {
+    hash_table_t *ht = malloc(sizeof(hash_table_t));
+
+    ht->buckets = calloc(NUM_BUCKETS, sizeof(var_t *));
+    ht->head = NULL;
+
+    return ht;
+}
 
 typedef struct Sentrys{
         func_Type func_type;
