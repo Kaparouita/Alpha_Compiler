@@ -8,7 +8,6 @@
 typedef enum var_type {varr,fuction} var_type;
 typedef enum var_id{global, formal, local,user_func, lib_func} var_id;
 
-
 /**
  * Struct var:
  * 
@@ -21,6 +20,7 @@ typedef struct var{
     int hide;
     int line;
     struct var *next;    // gia to next var an pesei se idio bucket sto table
+    struct var *s_next;   // scope next
 }var;
 
 
@@ -47,9 +47,15 @@ typedef struct var_table {
     int num_buckets;
     int size;
     unsigned hs; /*hash multiplier*/
-    var *scope_head;
 } var_table;
 
+/**
+ * @brief VARIABLES
+ * 
+ */
+int CURR_SCOPE = 0;
+var* first; // first var for scope_list
+var_table* table ; //table
 
 /**
  * @brief Create a hash table object
@@ -57,6 +63,14 @@ typedef struct var_table {
  * @return hash_table_t* 
  */
 var_table *create_hash_table() ;
+
+/**
+ * @brief insert sto scope list
+ * 
+ * @param v 
+ * @return * void 
+ */
+void scope_insert(var *v);
 /**
  * @brief hash fuction
  * 
@@ -80,6 +94,22 @@ int lookup(char* key_name){
     return 0;
 }
 
+/**
+ * @brief 
+ * 
+ * @param table 
+ * @param v 
+ * @return 1 if var already on the table 0 otherwise
+ */
+int lookup_globaly(var_table *table, var *v);
+/**
+ * print gia enum(id)
+*/
+char *enum_id(var_type id);
+/**
+ * Print gia enum(type)
+*/
+char *enum_type(var_type type);
 /*  front3@16 leei na kanoume mia lookup gia sygkekrimeno scope, kai mia oxi*/
 int lookup_scope(char* key_name, int key_scope){
     
