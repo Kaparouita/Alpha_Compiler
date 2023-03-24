@@ -41,7 +41,7 @@ void hash_insert(var *v,var_table *table) {
             curr = curr->next;
         }
         if(strcmp(curr->name,v->name) == 0)
-            printf("Varriable already exist!");
+            printf("VARIABLE ALREADY EXIST!\n");
         else{  
             curr->next = v;
             scope_insert(v); //insert sto scope tou    
@@ -56,7 +56,7 @@ void scope_insert(var *v){
         return;
     }
     var *curr = first;
-    while(curr->scope != v->scope || curr->s_next != NULL){
+    while(curr->scope != v->scope && curr->s_next != NULL){
         curr = curr->s_next;
     }
     if(curr->scope == v->scope){
@@ -69,13 +69,11 @@ void scope_insert(var *v){
     else{
         curr->s_next = v;
     }
-
 }
 
 int lookup_globaly(var_table *table, var *v){
     var *curr;
     int index = hash(v->name); /*get the key*/
-    printf("\n INDEX : %d \n",index);
     if ((table->buckets[index]) != NULL){
         curr = table->buckets[index];
         /*tsekare thn alysida tou*/
@@ -87,6 +85,37 @@ int lookup_globaly(var_table *table, var *v){
         }
     }
     return 0;
+}
+
+int lookup_scope(int scope,var *v){
+    var *curr = get_scope_var(scope);
+    if(curr == NULL)
+        return 0;
+    while(curr!=NULL && curr->scope == scope){
+            if (strcmp(curr->name,v->name) == 0) /*if its the same return 1*/
+                return 1;
+            curr = curr->next;
+    }
+    return 0;
+}
+
+/**
+ * @brief Get the scope var object
+ * 
+ * @return the first element of the scope or NULL if scope doesnt exist 
+ */
+var *get_scope_var(int scope){
+    if(first == NULL){
+        return NULL;
+    }
+    var *curr = first;
+    while(curr->scope != scope && curr->s_next != NULL){
+        curr = curr->s_next;
+    }
+    if(curr->scope == scope)
+        return curr;
+    else
+        return NULL;
 }
 
 void print_var(var *v) {
@@ -118,19 +147,21 @@ char *enum_id(var_type id){
 }
 
 
-void print_scope(var *scope){
+void print_scope(int scope){
     if(first == NULL)
         return;
     var *curr = first;
-    while(curr->scope != scope->scope || curr->s_next != NULL){
+    while(curr->scope != scope && curr->s_next != NULL){
         curr = curr->s_next;
     }
-    print_var(curr);
-    while(curr->next != NULL){
-        
+    while(curr != NULL && curr->scope == scope){
+        print_var(curr);
         curr = curr->next;
     }
+    if(curr->scope != scope)
+        printf("NO VAR/FUNC WITH THAT SCOPE FOUND\n");
 }
+
 void print_table(var_table *oSymTable)
 {
     int i = 0;
@@ -163,10 +194,12 @@ int main()
 
     hash_insert(y,table);
     hash_insert(new_var(varr,global,"x",1,0,3),table);
-    hash_insert(new_var(fuction,lib_func,"k",1,0,0),table);
+    hash_insert(new_var(fuction,lib_func,"k",2,0,0),table);
     hash_insert(x,table);
 
-    print_scope(first);
+    if(lookup_scope(2,x)==1){
+        print_var(x);
+    }
 /*
     print_table(table);
     if(lookup_globaly(table,x) == 1)

@@ -87,13 +87,25 @@ unsigned int hash(char *str) {
 
 
 void hash_insert( var *v, var_table *table);
-   
 
+/**
+ * @brief lookup for a var in spesific scope
+ * 
+ * @param scope 
+ * @return return 1 if var is in the scope 0 otherwise 
+ */
+int lookup_scope(int scope,var *v);
 
 int lookup(char* key_name){
     return 0;
 }
 
+/**
+ * @brief Get the scope var object
+ * 
+ * @return the first element of the scope or NULL if scope doesnt exist 
+ */
+var *get_scope_var(int scope);
 /**
  * @brief 
  * 
@@ -110,29 +122,6 @@ char *enum_id(var_type id);
  * Print gia enum(type)
 */
 char *enum_type(var_type type);
-/*  front3@16 leei na kanoume mia lookup gia sygkekrimeno scope, kai mia oxi*/
-int lookup_scope(char* key_name, int key_scope){
-    
-    /*  find a way to iterate through the hashtable and the whole 
-    *   collision lists until the first symbol with target_scope is found.
-    *   after that iterate through it's scope link
-    *   and hide every node.
-    */
-
-    //temp = 
-
-    /*POUKA COMMENTS*/
-    /* thelei na kaneis declare kapu to temp KAI TO TARGET SCOPE*/
-    var *temp;//(auto den einai kati apla gia kanei compile)
-    while(temp != NULL){    /*Simple search*/
-        if((strcmp(temp->name,key_name) == 0) && temp->scope == key_scope){
-            //epishs prepei na frontisw na prospelasw oloklhra ta buckets (dhladh kai ta collision lists tous) 
-            //ki edw arxizw na kanw iterate th lista me ta idia scopes.kapws.
-        }
-        temp = temp->next;
-    }
-}
-
 
 int hide (int target_scope){
     //prepei na brw kai sta 2 struct 
