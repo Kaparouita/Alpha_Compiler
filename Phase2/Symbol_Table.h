@@ -9,17 +9,18 @@ typedef enum var_type {varr,fuction} var_type;
 typedef enum var_id{global, formal, local,user_func, lib_func} var_id;
 
 /**
- * Struct var:
+ * @brief 
  * 
-*/
+ */
 typedef struct var{
     var_type type;
     var_id id;          
     char* name;
     int scope;
-    int hide;
+    int hide;             // 0 gia hidden 1 gia visable
     int line;
     struct var *next;    // gia to next var an pesei se idio bucket sto table
+    struct var *same_scope_next; // gia to same scope
     struct var *s_next;   // scope next
 }var;
 
@@ -58,6 +59,13 @@ var* first; // first var for scope_list
 var_table* table ; //table
 
 /**
+ * @brief Create a table object
+ * 
+ * @param hs hash multiplayer
+ * @return var_table* 
+ */
+var_table *create_table(unsigned hs);
+/**
  * @brief Create a hash table object
  * 
  * @return hash_table_t* 
@@ -85,7 +93,12 @@ unsigned int hash(char *str) {
     return hashval % TABLE_SIZE;
 }
 
-
+/**
+ * @brief insert ena var sto hash table
+ * 
+ * @param v 
+ * @param table 
+ */
 void hash_insert( var *v, var_table *table);
 
 /**
@@ -123,13 +136,29 @@ char *enum_id(var_type id);
 */
 char *enum_type(var_type type);
 
-int hide (int target_scope){
-    //prepei na brw kai sta 2 struct 
-    //ta elements me scope == target
-    //iterate kai bres to scope
-    var temp;
-}
+/**
+ * @brief hide all variables withing scope
+ * 
+ * @param scope 
+ * @return int 
+ */
+int hide (int scope);
 
-void init_lid_func(char * lib_func){
-    //me thn insert kanume init oles tis lib funcs
+/**
+ * @brief init all lib fuctions
+ * 
+ * @param lib_func 
+ */
+void init_lid_func(){
+    hash_insert(new_var(fuction,lib_func,"print",0,1,0),table);
+    hash_insert(new_var(fuction,lib_func,"input",0,1,0),table);
+    hash_insert(new_var(fuction,lib_func,"objectmemberkeys",0,1,0),table);
+    hash_insert(new_var(fuction,lib_func,"objecttotalmembers",0,1,0),table);
+    hash_insert(new_var(fuction,lib_func,"totalarguments",0,1,0),table);
+    hash_insert(new_var(fuction,lib_func,"argument",0,1,0),table);
+    hash_insert(new_var(fuction,lib_func,"typeof",0,1,0),table);
+    hash_insert(new_var(fuction,lib_func,"strtonum",0,1,0),table);
+    hash_insert(new_var(fuction,lib_func,"sqrt",0,1,0),table);
+    hash_insert(new_var(fuction,lib_func,"cos",0,1,0),table);
+    hash_insert(new_var(fuction,lib_func,"sin",0,1,0),table);
 }

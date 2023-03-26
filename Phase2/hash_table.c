@@ -14,6 +14,7 @@ var* new_var(var_type type, var_id id, char* name, int scope, int hide, int line
     v->line = line;
     v->next = NULL;
     v->s_next = NULL;
+    v->same_scope_next = NULL;
     return v;
 }
 
@@ -41,7 +42,7 @@ void hash_insert(var *v,var_table *table) {
             curr = curr->next;
         }
         if(strcmp(curr->name,v->name) == 0)
-            printf("VARIABLE ALREADY EXIST!\n");
+            printf("VAR ALREADY IN THE TABLE!\n");
         else{  
             curr->next = v;
             scope_insert(v); //insert sto scope tou    
@@ -61,10 +62,10 @@ void scope_insert(var *v){
     }
     if(curr->scope == v->scope){
         //proxwra mexri to last element kai kantw insert sthn list
-        while(curr->next != NULL){
-            curr = curr->next;
+        while(curr->same_scope_next != NULL){
+            curr = curr->same_scope_next;
         }
-        curr->next = v;
+        curr->same_scope_next = v;
     }
     else{
         curr->s_next = v;
@@ -99,11 +100,7 @@ int lookup_scope(int scope,var *v){
     return 0;
 }
 
-/**
- * @brief Get the scope var object
- * 
- * @return the first element of the scope or NULL if scope doesnt exist 
- */
+
 var *get_scope_var(int scope){
     if(first == NULL){
         return NULL;
@@ -116,6 +113,17 @@ var *get_scope_var(int scope){
         return curr;
     else
         return NULL;
+}
+
+int hide(int scope){
+    var *curr = get_scope_var(scope);
+    if(curr == NULL)
+        return 1;//nothing within the scope
+    while(curr != NULL){
+        curr->hide = 0;
+        curr = curr->same_scope_next;
+    }
+    return 0;
 }
 
 void print_var(var *v) {
@@ -155,10 +163,11 @@ void print_scope(int scope){
         curr = curr->s_next;
     }
     while(curr != NULL && curr->scope == scope){
-        print_var(curr);
-        curr = curr->next;
+        if(curr->hide == 1)
+            print_var(curr);
+        curr = curr->same_scope_next;
     }
-    if(curr->scope != scope)
+    if(curr != NULL && curr->scope != scope)
         printf("NO VAR/FUNC WITH THAT SCOPE FOUND\n");
 }
 
@@ -189,22 +198,16 @@ int main()
     
     table = create_table(5381);
 
-    var *x= new_var(varr,global,"x",1,0,0);
-    var *y=new_var(varr,global,"y",1,0,8);
-
+    var *x= new_var(varr,global,"x",1,1,0);
+    var *y=new_var(varr,global,"y",1,1,8);
+    var *k=new_var(fuction,lib_func,"k",2,1,0);
     hash_insert(y,table);
-    hash_insert(new_var(varr,global,"x",1,0,3),table);
-    hash_insert(new_var(fuction,lib_func,"k",2,0,0),table);
+    hash_insert(new_var(varr,global,"x",1,1,3),table);
+    hash_insert(k,table);
     hash_insert(x,table);
+    init_lid_func();
 
-    if(lookup_scope(2,x)==1){
-        print_var(x);
-    }
-/*
-    print_table(table);
-    if(lookup_globaly(table,x) == 1)
-        print_var(x);
-    else
-        printf("DIDNT FOUND VAR");    
-*/    
+    //hide(1);
+    print_scope(0);   
+   
 }
