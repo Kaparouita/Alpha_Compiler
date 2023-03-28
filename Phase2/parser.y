@@ -267,7 +267,7 @@ indexedelem: LEFT_CURLY_BRACKET expr COLON expr RIGHT_CURLY_BRACKET
              ;
 
 
-block:  LEFT_CURLY_BRACKET {CURR_SCOPE++;int i=max_scope(0,1); printf("the max is %d,i");} stmt_list RIGHT_CURLY_BRACKET{ CURR_SCOPE--;}
+block:  LEFT_CURLY_BRACKET {CURR_SCOPE++;int i=max_scope(0,1); printf("the max is %d",i);} stmt_list RIGHT_CURLY_BRACKET{ CURR_SCOPE--;}
         ;
 
 funcdef:    FUNCTION ID LEFT_PARENTHESIS moreidilist  RIGHT_PARENTHESIS block
@@ -317,25 +317,25 @@ int yyerror(char* yaccProvidedMessage){
 
 
 /*-----------------------------MAIN-----------------------*/
-int main(int argc, char **argv) {
-    FILE *input_file;
-    if (argc > 1) {
-        input_file = fopen(argv[1], "r");
-        if (!input_file) {
-            printf("Error: failed to open input file '%s'\n", argv[1]);
-            return 1;
-        }
-    } 
-    else 
-        input_file = stdin;
+int main(int argc, char** argv){
+	
+    if(argc>1){
+		if(!(yyin=fopen(argv[1],"r"))){
+		
+			fprintf(stderr,"Error%s\n",argv[1]);
+			
+			return 1;
+		}
+	}
+	else yyin=stdin;
+	 
     
     
     init_lib_func();
-    print_scope(CURR_SCOPE);
     
-    
+    print_scope(0);
     //yyset_in(input_file); // set the input stream for the lexer
     yyparse(); // call the parser function
-    fclose(input_file);
+    print_scope(CURR_SCOPE);
     return 0;
 }
