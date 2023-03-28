@@ -4,7 +4,8 @@
 #include "Symbol_Table.h"
 
 
-var* new_var(var_type type, var_id id, char* name, int scope, int hide, int line) {
+
+var* new_var(var_type type, var_id id, char* name, int scope, int hide, int line){
     var* v = (var*) malloc(sizeof(var));
     v->type = type;
     v->id = id;
@@ -18,8 +19,7 @@ var* new_var(var_type type, var_id id, char* name, int scope, int hide, int line
     return v;
 }
 
-var_table *create_table(unsigned hs)
-{
+var_table *create_table(unsigned hs){
     var_table *new_table = malloc(sizeof(var_table *));
     new_table->buckets = malloc(BUCKETS * sizeof(struct var *));
     new_table->size = 0;
@@ -45,7 +45,7 @@ void hash_insert(var *v,var_table *table) {
             printf("VAR ALREADY IN THE TABLE!\n");
         else{  
             curr->next = v;
-            scope_insert(v); //insert sto scope tou    
+            scope_insert(v); //insert sto scope tou 
         }
     }
     table->size++;
@@ -127,12 +127,12 @@ int hide(int scope){
 }
 
 void print_var(var *v) {
-    printf("Type: %s ,", enum_type(v->type));
-    printf("ID: %s ,",   enum_id(v->id));
-    printf("Name: %s ,", v->name);
-    printf("Scope: %d ,", v->scope);
-    printf("Hide: %d ,", v->hide);
-    printf("Line: %d \n", v->line);
+    
+    printf("\"%s\" ", v->name);
+    printf("[%s] ",   enum_id(v->id));
+    printf("(line %d) ", v->line);
+    printf("(scope %d) \n", v->scope);
+    
 }
 
 char *enum_type(var_type type){
@@ -191,8 +191,32 @@ void print_table(var_table *oSymTable)
     return;
 }
 
+unsigned int hash(char *str) {
+    unsigned int hashval;
+    for (hashval = 0; *str != '\0'; str++) {
+        hashval = *str + 31 * hashval;
+    }
+    return hashval % TABLE_SIZE;
+}
 
+void init_lib_func(){
+    table = create_table(5381);
+    CURR_SCOPE=0;
 
+    hash_insert(new_var(fuction,lib_func,"print",0,1,0),table);
+    hash_insert(new_var(fuction,lib_func,"input",0,1,0),table);
+    hash_insert(new_var(fuction,lib_func,"objectmemberkeys",0,1,0),table);
+    hash_insert(new_var(fuction,lib_func,"objecttotalmembers",0,1,0),table);
+    hash_insert(new_var(fuction,lib_func,"totalarguments",0,1,0),table);
+    hash_insert(new_var(fuction,lib_func,"argument",0,1,0),table);
+    hash_insert(new_var(fuction,lib_func,"typeof",0,1,0),table);
+    hash_insert(new_var(fuction,lib_func,"strtonum",0,1,0),table);
+    hash_insert(new_var(fuction,lib_func,"sqrt",0,1,0),table);
+    hash_insert(new_var(fuction,lib_func,"cos",0,1,0),table);
+    hash_insert(new_var(fuction,lib_func,"sin",0,1,0),table);
+}
+
+/*
 int main()
 {
     
@@ -210,4 +234,4 @@ int main()
     //hide(1);
     print_scope(0);   
    
-}
+}*/

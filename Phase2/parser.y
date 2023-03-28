@@ -10,6 +10,7 @@
         extern int yylineno;
         extern char* yytext;
         extern FILE* yyin;
+        int scope=0;
       
 %}
 
@@ -97,7 +98,7 @@
 %nonassoc GRETER_THAN GRE_EQUAL LESS_THAN LES_EQUAL 
 %left ADDITION SUBTRACTION								
 %left MULTI DIVISION MODULUS 							
-%right NOT INCREMENT DECREMENT  		/*EDW LIPI TO - POU DEN KSERW EAN THELEI TO SUBTRACTION OR UMINUS*/
+%right NOT INCREMENT DECREMENT  		
 %left FULL_STOP DOUBLE_FULL_STOP                       		
 %left LEFT_SQUARE_BRACKET RIGHT_SQUARE_BRACKET       	
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS		
@@ -283,9 +284,9 @@ int main(int argc, char **argv) {
     } 
     else 
         input_file = stdin;
-
-    printf("----------------------   Lexical Analysis  --------------------\n");
-   //yyset_in(input_file); // set the input stream for the lexer
+    init_lib_func();
+    print_scope(0);
+    //yyset_in(input_file); // set the input stream for the lexer
     yyparse(); // call the parser function
     fclose(input_file);
     return 0;

@@ -41,7 +41,7 @@ var* new_var(var_type type, var_id id, char* name, int scope, int hide, int line
     
 /**
  * @brief hash table 
- * 
+ *
  */
 typedef struct var_table {
     var **buckets;
@@ -54,7 +54,8 @@ typedef struct var_table {
  * @brief VARIABLES
  * 
  */
-int CURR_SCOPE = 0;
+
+int CURR_SCOPE;
 var* first; // first var for scope_list
 var_table* table ; //table
 
@@ -85,13 +86,7 @@ void scope_insert(var *v);
  * @param str to name
  * @return unsigned int 
  */
-unsigned int hash(char *str) {
-    unsigned int hashval;
-    for (hashval = 0; *str != '\0'; str++) {
-        hashval = *str + 31 * hashval;
-    }
-    return hashval % TABLE_SIZE;
-}
+unsigned int hash(char *str) ;
 
 /**
  * @brief insert ena var sto hash table
@@ -109,9 +104,6 @@ void hash_insert( var *v, var_table *table);
  */
 int lookup_scope(int scope,var *v);
 
-int lookup(char* key_name){
-    return 0;
-}
 
 /**
  * @brief Get the scope var object
@@ -144,21 +136,11 @@ char *enum_type(var_type type);
  */
 int hide (int scope);
 
+void print_scope(int scope);
+
 /**
  * @brief init all lib fuctions
  * 
  * @param lib_func 
  */
-void init_lid_func(){
-    hash_insert(new_var(fuction,lib_func,"print",0,1,0),table);
-    hash_insert(new_var(fuction,lib_func,"input",0,1,0),table);
-    hash_insert(new_var(fuction,lib_func,"objectmemberkeys",0,1,0),table);
-    hash_insert(new_var(fuction,lib_func,"objecttotalmembers",0,1,0),table);
-    hash_insert(new_var(fuction,lib_func,"totalarguments",0,1,0),table);
-    hash_insert(new_var(fuction,lib_func,"argument",0,1,0),table);
-    hash_insert(new_var(fuction,lib_func,"typeof",0,1,0),table);
-    hash_insert(new_var(fuction,lib_func,"strtonum",0,1,0),table);
-    hash_insert(new_var(fuction,lib_func,"sqrt",0,1,0),table);
-    hash_insert(new_var(fuction,lib_func,"cos",0,1,0),table);
-    hash_insert(new_var(fuction,lib_func,"sin",0,1,0),table);
-}
+void init_lib_func();
