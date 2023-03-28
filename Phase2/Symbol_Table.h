@@ -50,14 +50,6 @@ typedef struct var_table {
     unsigned hs; /*hash multiplier*/
 } var_table;
 
-/**
- * @brief VARIABLES
- * 
- */
-
-int CURR_SCOPE;
-var* first; // first var for scope_list
-var_table* table ; //table
 
 /**
  * @brief Create a table object
@@ -102,7 +94,7 @@ void hash_insert( var *v, var_table *table);
  * @param scope 
  * @return return 1 if var is in the scope 0 otherwise 
  */
-int lookup_scope(int scope,var *v);
+int lookup_scope(int scope,char*vname);
 
 
 /**
@@ -118,7 +110,7 @@ var *get_scope_var(int scope);
  * @param v 
  * @return 1 if var already on the table 0 otherwise
  */
-int lookup_globaly(var_table *table, var *v);
+int lookup_globaly(var_table *table, char*vname);
 /**
  * print gia enum(id)
 */
@@ -127,7 +119,7 @@ char *enum_id(var_type id);
  * Print gia enum(type)
 */
 char *enum_type(var_type type);
-
+var_id switch_enum(var_id id );
 /**
  * @brief hide all variables withing scope
  * 
@@ -136,8 +128,10 @@ char *enum_type(var_type type);
  */
 int hide (int scope);
 
+void print_var(var *v);
 void print_scope(int scope);
 
+int max_scope(int current_scope,int previos_scope);
 /**
  * @brief init all lib fuctions
  * 

@@ -4,6 +4,13 @@
 #include "Symbol_Table.h"
 
 
+/**
+ * @brief VARIABLES
+ * 
+ */
+
+var* first; // first var for scope_list
+var_table* table ; //table
 
 var* new_var(var_type type, var_id id, char* name, int scope, int hide, int line){
     var* v = (var*) malloc(sizeof(var));
@@ -72,15 +79,15 @@ void scope_insert(var *v){
     }
 }
 
-int lookup_globaly(var_table *table, var *v){
+int lookup_globaly(var_table *table, char*vname){
     var *curr;
-    int index = hash(v->name); /*get the key*/
+    int index = hash(vname); /*get the key*/
     if ((table->buckets[index]) != NULL){
         curr = table->buckets[index];
         /*tsekare thn alysida tou*/
         while (curr != NULL)
         {
-            if (strcmp(curr->name,v->name) == 0) /*if its the same return 1*/
+            if (strcmp(curr->name,vname) == 0) /*if its the same return 1*/
                 return 1;
             curr = curr->next;
         }
@@ -88,12 +95,12 @@ int lookup_globaly(var_table *table, var *v){
     return 0;
 }
 
-int lookup_scope(int scope,var *v){
+int lookup_scope(int scope,char*vname){
     var *curr = get_scope_var(scope);
     if(curr == NULL)
         return 0;
     while(curr!=NULL && curr->scope == scope){
-            if (strcmp(curr->name,v->name) == 0) /*if its the same return 1*/
+            if (strcmp(curr->name,vname) == 0) /*if its the same return 1*/
                 return 1;
             curr = curr->next;
     }
@@ -153,6 +160,12 @@ char *enum_id(var_type id){
         default : return "ERROR";
     }
 }
+var_id switch_enum(var_id id ){
+    switch(id){
+        case global:      return local;
+        case local :      return global;
+    }
+}
 
 
 void print_scope(int scope){
@@ -201,8 +214,7 @@ unsigned int hash(char *str) {
 
 void init_lib_func(){
     table = create_table(5381);
-    CURR_SCOPE=0;
-
+    
     hash_insert(new_var(fuction,lib_func,"print",0,1,0),table);
     hash_insert(new_var(fuction,lib_func,"input",0,1,0),table);
     hash_insert(new_var(fuction,lib_func,"objectmemberkeys",0,1,0),table);
@@ -214,6 +226,12 @@ void init_lib_func(){
     hash_insert(new_var(fuction,lib_func,"sqrt",0,1,0),table);
     hash_insert(new_var(fuction,lib_func,"cos",0,1,0),table);
     hash_insert(new_var(fuction,lib_func,"sin",0,1,0),table);
+}
+
+int max_scope(int current_scope,int previous_scope){
+    (current_scope > previous_scope) ?  current_scope : previous_scope;
+        
+    
 }
 
 /*

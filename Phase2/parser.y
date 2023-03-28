@@ -10,7 +10,43 @@
         extern int yylineno;
         extern char* yytext;
         extern FILE* yyin;
-        int scope=0;
+        int CURR_SCOPE=0;
+        extern var_table* table ;
+        var* myvar; // global variable to insert to STable
+        var_id Vtype; // for switch the type of the ids
+
+
+        /*function for check ids and insert to STable*/
+        void Id_check(char* name,var_id type){
+                int retValue=lookup_globaly(table,name);
+                if (retValue==0 && type!=local ){ // insert ids globaly 
+                        myvar =new_var(varr,type,name,CURR_SCOPE,1,yylineno); 
+                        hash_insert(myvar,table);
+                        print_var(myvar);
+                }else if (retValue==0 && type==local){  // insert ids in scope 0 but they have local keyword so we switch the type
+                        retValue=lookup_scope(CURR_SCOPE ,name);
+                        if(retValue==1) //if we found the id as global var
+                                exit(0);
+                        else if(CURR_SCOPE==0 && retValue==0){
+                                Vtype= switch_enum(type);
+                                myvar =new_var(varr,Vtype,name,CURR_SCOPE,1,yylineno); 
+                                hash_insert(myvar,table);
+                                print_var(myvar);
+                        }else if (retValue==0){
+                                // NOTE THIS den mporw na apofasisw ti ennow se front3 slide19 me ta collsioin se liub func 
+                                myvar =new_var(varr,type,name,CURR_SCOPE,1,yylineno); 
+                                hash_insert(myvar,table);
+                                print_var(myvar);
+                        }     
+
+                }
+
+                if (lookup_globaly(table,name)==1) //::(global) ids
+                        exit(0);
+                else 
+                        yyerror("ID not found");
+       }
+
       
 %}
 
@@ -86,7 +122,7 @@
 %token EXTRA_CHARS
 
 /*COMMENTS*/
- %token LINE_COMMENT 
+%token LINE_COMMENT 
 %token BLOCK_COMMENT
 
 
@@ -173,9 +209,15 @@ primary:    lvalue
             |const
             ;
 
-lvalue:     ID
-            |LOCAL ID
-            |SCOPE_RESOLUTION ID
+lvalue:     ID {if (CURR_SCOPE ==0 )
+	                Id_check(yylval.stringValue,global);
+                 else {
+                        Vtype=switch_enum(global);
+	                Id_check(yylval.stringValue,Vtype);
+                        }       
+                 }
+            |LOCAL ID {Id_check(yylval.stringValue,local);}
+            |SCOPE_RESOLUTION ID { Id_check(yylval.stringValue,global);}
             |member
             ;             
             
@@ -225,7 +267,7 @@ indexedelem: LEFT_CURLY_BRACKET expr COLON expr RIGHT_CURLY_BRACKET
              ;
 
 
-block:  LEFT_CURLY_BRACKET stmt_list RIGHT_CURLY_BRACKET
+block:  LEFT_CURLY_BRACKET {CURR_SCOPE++;int i=max_scope(0,1); printf("the max is %d,i");} stmt_list RIGHT_CURLY_BRACKET{ CURR_SCOPE--;}
         ;
 
 funcdef:    FUNCTION ID LEFT_PARENTHESIS moreidilist  RIGHT_PARENTHESIS block
@@ -284,8 +326,12 @@ int main(int argc, char **argv) {
     } 
     else 
         input_file = stdin;
+    
+    
     init_lib_func();
-    print_scope(0);
+    print_scope(CURR_SCOPE);
+    
+    
     //yyset_in(input_file); // set the input stream for the lexer
     yyparse(); // call the parser function
     fclose(input_file);
