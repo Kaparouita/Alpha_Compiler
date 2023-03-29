@@ -228,6 +228,13 @@ void init_lib_func(){
     hash_insert(new_var(fuction,lib_func,"sin",0,1,0),table);
 }
 
+/**
+ * @brief Get max scope
+ * 
+ * @param current_scope 
+ * @param previous_scope 
+ * @return int 
+ */
 int max_scope(int current_scope,int previous_scope){
     (current_scope > previous_scope) ?  current_scope : previous_scope;
 }

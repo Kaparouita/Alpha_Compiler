@@ -149,7 +149,7 @@ BLOCK_COMMENT "/*"
 {ID} { yylval.stringValue=strdup(yytext); return ID;}
 
 
-{STRINGS} {
+{STRINGS} { 
 	int i ,buffer_counter = 0,starter_line = yylineno;
 	int buffer_size = INIT_BUFFER_SIZE;
     char *buffer = (char*)malloc(sizeof(char*)*buffer_size),prev;
@@ -188,6 +188,7 @@ BLOCK_COMMENT "/*"
 		}
 	    else if(i == '\"' && prev != '\\'){
 			//do_the_job(buffer,"STRING",buffer,"<-char*");
+			yylval.stringValue=strdup(buffer);
 			return STRING;
 			break;
 		}
@@ -198,7 +199,8 @@ BLOCK_COMMENT "/*"
 	if(i <= 1)
 		printf("ERROR : UNCLOSED STRING REACHED EOF ");	
 	
-	yylval.stringValue=strdup(yytext); return STRING;
+	yylval.stringValue=strdup(buffer); 
+	return STRING;
 
 }
 
@@ -211,7 +213,6 @@ BLOCK_COMMENT "/*"
 		if(i == '\n'){
 			unput(i);
 			//do_the_job("","COMMENT","LINE_COMMENT","enumerated");
-			return LINE_COMMENT;
 			break;
 		}
 		else if(i=='/'){
@@ -225,7 +226,7 @@ BLOCK_COMMENT "/*"
 	}
 	if(i <= 1)
 		//do_the_job("","COMMENT","LINE_COMMENT","enumerated");
-		return LINE_COMMENT;
+		return 0;
 }
 
 
@@ -246,7 +247,7 @@ BLOCK_COMMENT "/*"
 		else if(i == '*'){
 			if((i = input()) == '/'){				
 			   //do_the_job(create_string(line,yylineno),"COMMENT" ,"BLOCK_COMMENT","enumerated");
-			   return BLOCK_COMMENT;
+			   return 0;
 			   break;
 			   }
 			else
