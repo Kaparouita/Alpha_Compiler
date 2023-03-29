@@ -230,8 +230,6 @@ void init_lib_func(){
 
 int max_scope(int current_scope,int previous_scope){
     (current_scope > previous_scope) ?  current_scope : previous_scope;
-        
-    
 }
 
 /*

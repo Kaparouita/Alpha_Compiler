@@ -11,6 +11,8 @@
         extern char* yytext;
         extern FILE* yyin;
         int CURR_SCOPE=0;
+        int PREV_SCOPE=0;
+        int i;
         extern var_table* table ;
         var* myvar; // global variable to insert to STable
         var_id Vtype; // for switch the type of the ids
@@ -19,14 +21,18 @@
         /*function for check ids and insert to STable*/
         void Id_check(char* name,var_id type){
                 int retValue=lookup_globaly(table,name);
+
                 if (retValue==0 && type!=local ){ // insert ids globaly 
                         myvar =new_var(varr,type,name,CURR_SCOPE,1,yylineno); 
                         hash_insert(myvar,table);
                         print_var(myvar);
                 }else if (retValue==0 && type==local){  // insert ids in scope 0 but they have local keyword so we switch the type
                         retValue=lookup_scope(CURR_SCOPE ,name);
-                        if(retValue==1) //if we found the id as global var
+                        if(retValue==1){
+                                //if we found the id as global var
+                                printf("agapeme");
                                 exit(0);
+                        } 
                         else if(CURR_SCOPE==0 && retValue==0){
                                 Vtype= switch_enum(type);
                                 myvar =new_var(varr,Vtype,name,CURR_SCOPE,1,yylineno); 
@@ -39,15 +45,30 @@
                                 print_var(myvar);
                         }     
 
-                }
-
-                if (lookup_globaly(table,name)==1) //::(global) ids
+                }else if (lookup_globaly(table,name)==1) //::(global) ids
                         exit(0);
                 else 
                         yyerror("ID not found");
        }
 
-      
+       /*function for check ids and insert to STable*/
+        void formal_check(char* name,var_id type){
+                if (lookup_globaly(table,name)==0 ){ // insert ids formal 
+                        myvar =new_var(varr,type,name,CURR_SCOPE,1,yylineno); 
+                        hash_insert(myvar,table);
+                        print_var(myvar);
+                }else 
+                        yyerror("The id already exist");
+        }
+
+      void function_check(char* name){
+                if (lookup_globaly(table,name)==0 ){ // insert user  functions 
+                        myvar =new_var(varr,user_func,name,CURR_SCOPE,1,yylineno); 
+                        hash_insert(myvar,table);
+                        print_var(myvar);
+                }else 
+                        yyerror("The function already exist");
+        }
 %}
 
 
@@ -216,7 +237,7 @@ lvalue:     ID {if (CURR_SCOPE ==0 )
 	                Id_check(yylval.stringValue,Vtype);
                         }       
                  }
-            |LOCAL ID {Id_check(yylval.stringValue,local);}
+            |LOCAL ID { printf("mpike local");Id_check(yylval.stringValue,local);}
             |SCOPE_RESOLUTION ID { Id_check(yylval.stringValue,global);}
             |member
             ;             
@@ -267,11 +288,22 @@ indexedelem: LEFT_CURLY_BRACKET expr COLON expr RIGHT_CURLY_BRACKET
              ;
 
 
-block:  LEFT_CURLY_BRACKET {CURR_SCOPE++;int i=max_scope(0,1); printf("the max is %d",i);} stmt_list RIGHT_CURLY_BRACKET{ CURR_SCOPE--;}
+block:  LEFT_CURLY_BRACKET {
+                PREV_SCOPE=CURR_SCOPE; CURR_SCOPE++; i=max_scope(CURR_SCOPE,PREV_SCOPE);} stmt_list RIGHT_CURLY_BRACKET{hide(CURR_SCOPE--); PREV_SCOPE=CURR_SCOPE;}
         ;
 
-funcdef:    FUNCTION ID LEFT_PARENTHESIS moreidilist  RIGHT_PARENTHESIS block
-            |FUNCTION  LEFT_PARENTHESIS moreidilist  RIGHT_PARENTHESIS block   /*anonymous functions here */
+funcdef:    FUNCTION ID  LEFT_PARENTHESIS { 
+                function_check(yylval.stringValue);  
+                PREV_SCOPE=CURR_SCOPE;
+                CURR_SCOPE++;
+                i=max_scope(CURR_SCOPE,PREV_SCOPE);
+        } moreidilist  RIGHT_PARENTHESIS block
+        |FUNCTION  LEFT_PARENTHESIS { 
+                function_check("NO NAME FUNCTION");
+                PREV_SCOPE=CURR_SCOPE;
+                CURR_SCOPE++;
+                i=max_scope(CURR_SCOPE,PREV_SCOPE);
+                } moreidilist  RIGHT_PARENTHESIS block   /*anonymous functions here */
             ;    
 
 const:  INTEGER
@@ -282,8 +314,8 @@ const:  INTEGER
         |FALSE
         ;
 
-idlist: ID
-        |COMMA ID
+idlist: ID {formal_check(yylval.stringValue,formal);}
+        |COMMA ID{formal_check(yylval.stringValue,formal);}
         ;
 
 moreidilist: moreidilist idlist
@@ -318,15 +350,12 @@ int yyerror(char* yaccProvidedMessage){
 
 /*-----------------------------MAIN-----------------------*/
 int main(int argc, char** argv){
-	
-    if(argc>1){
-		if(!(yyin=fopen(argv[1],"r"))){
-		
-			fprintf(stderr,"Error%s\n",argv[1]);
-			
-			return 1;
-		}
-	}
+        if(argc>1){
+                if(!(yyin=fopen(argv[1],"r"))){
+                        fprintf(stderr,"Error%s\n",argv[1]);
+                        return 1;
+                }
+        }
 	else yyin=stdin;
 	 
     
@@ -336,6 +365,6 @@ int main(int argc, char** argv){
     print_scope(0);
     //yyset_in(input_file); // set the input stream for the lexer
     yyparse(); // call the parser function
-    print_scope(CURR_SCOPE);
+    //print_scope(CURR_SCOPE);
     return 0;
 }
