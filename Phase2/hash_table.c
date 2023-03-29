@@ -236,7 +236,17 @@ void init_lib_func(){
  * @return int 
  */
 int max_scope(int current_scope,int previous_scope){
-    (current_scope > previous_scope) ?  current_scope : previous_scope;
+    return ((current_scope > previous_scope) ?  current_scope : previous_scope);
+}
+
+int check_collisions(char *str){
+    char lib_fuctions[11][20] = {{"print"},{"input"},{"objectmemberkeys"},{"objecttotalmembers"},{"totalarguments"}
+    ,{"argument"},{"typeof"},{"strtonum"},{"sqrt"},{"cos"},{"sin"}};
+    for(int i=0;i<11;i++){
+        if(strcmp(str,lib_fuctions[i]) == 0)
+            return 1;
+    }
+    return 0;
 }
 
 /*

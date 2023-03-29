@@ -1092,7 +1092,7 @@ YY_RULE_SETUP
 case 48:
 YY_RULE_SETUP
 #line 152 "scanner.l"
-{
+{ 
 	int i ,buffer_counter = 0,starter_line = yylineno;
 	int buffer_size = INIT_BUFFER_SIZE;
     char *buffer = (char*)malloc(sizeof(char*)*buffer_size),prev;
@@ -1131,6 +1131,7 @@ YY_RULE_SETUP
 		}
 	    else if(i == '\"' && prev != '\\'){
 			//do_the_job(buffer,"STRING",buffer,"<-char*");
+			yylval.stringValue=strdup(buffer);
 			return STRING;
 			break;
 		}
@@ -1141,13 +1142,14 @@ YY_RULE_SETUP
 	if(i <= 1)
 		printf("ERROR : UNCLOSED STRING REACHED EOF ");	
 	
-	yylval.stringValue=strdup(yytext); return STRING;
+	yylval.stringValue=strdup(buffer); 
+	return STRING;
 
 }
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 206 "scanner.l"
+#line 208 "scanner.l"
 {
 	int i ;
 	//TO EOF EIXE BUG
@@ -1174,7 +1176,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 232 "scanner.l"
+#line 234 "scanner.l"
 {
 	int i , line = yylineno;
 	while((i = input()) >= 1)
@@ -1204,10 +1206,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 259 "scanner.l"
+#line 261 "scanner.l"
 ECHO;
 	YY_BREAK
-#line 1211 "scanner.c"
+#line 1213 "scanner.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2224,7 +2226,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 259 "scanner.l"
+#line 261 "scanner.l"
 
 
 /* Checks if the comment

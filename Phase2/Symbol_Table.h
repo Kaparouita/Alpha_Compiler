@@ -128,7 +128,25 @@ var_id switch_enum(var_id id );
  */
 int hide (int scope);
 
+/**
+ * @brief check if its the same with the lib_fucts
+ * 
+ * @param str 
+ * @return 1 if its a lib_fuct name 0 otherwise 
+ */
+int check_collisions(char *str);
+
+/**
+ * @brief print var v
+ * 
+ * @param v 
+ */
 void print_var(var *v);
+/**
+ * @brief print all vars in scope
+ * 
+ * @param scope 
+ */
 void print_scope(int scope);
 
 int max_scope(int current_scope,int previos_scope);

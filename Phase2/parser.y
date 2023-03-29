@@ -20,15 +20,15 @@
 
         /*function for check ids and insert to STable*/
         void Id_check(char* name,var_id type){
-                int retValue=lookup_globaly(table,name);
+                int retValue = lookup_globaly(table,name);
 
-                if (retValue==0 && type!=local ){ // insert ids globaly 
+                if (retValue == 0 && type == global ){ // insert ids globaly 
                         myvar =new_var(varr,type,name,CURR_SCOPE,1,yylineno); 
                         hash_insert(myvar,table);
                         print_var(myvar);
-                }else if (retValue==0 && type==local){  // insert ids in scope 0 but they have local keyword so we switch the type
+                }else if (retValue == 0 && type == local){  // insert ids in scope 0 but they have local keyword so we switch the type
                         retValue=lookup_scope(CURR_SCOPE ,name);
-                        if(retValue==1){
+                        if(retValue==1){ // bro auto den ginete pote true kai einai ligo sad p to agapame einai edw mesa
                                 //if we found the id as global var
                                 printf("agapeme");
                                 exit(0);
@@ -237,7 +237,7 @@ lvalue:     ID {if (CURR_SCOPE ==0 )
 	                Id_check(yylval.stringValue,Vtype);
                         }       
                  }
-            |LOCAL ID { printf("mpike local");Id_check(yylval.stringValue,local);}
+            |LOCAL ID { Id_check(yylval.stringValue,local);}
             |SCOPE_RESOLUTION ID { Id_check(yylval.stringValue,global);}
             |member
             ;             
@@ -289,10 +289,14 @@ indexedelem: LEFT_CURLY_BRACKET expr COLON expr RIGHT_CURLY_BRACKET
 
 
 block:  LEFT_CURLY_BRACKET {
-                PREV_SCOPE=CURR_SCOPE; CURR_SCOPE++; i=max_scope(CURR_SCOPE,PREV_SCOPE);} stmt_list RIGHT_CURLY_BRACKET{hide(CURR_SCOPE--); PREV_SCOPE=CURR_SCOPE;}
+                PREV_SCOPE=CURR_SCOPE; CURR_SCOPE++; 
+                i=max_scope(CURR_SCOPE,PREV_SCOPE);}
+ //edw htan se ena line den kserw paizei a to gamisa                
+stmt_list : RIGHT_CURLY_BRACKET{hide(CURR_SCOPE--); PREV_SCOPE=CURR_SCOPE;}
         ;
 
-funcdef:    FUNCTION ID  LEFT_PARENTHESIS { 
+funcdef:
+        FUNCTION ID  LEFT_PARENTHESIS { 
                 function_check(yylval.stringValue);  
                 PREV_SCOPE=CURR_SCOPE;
                 CURR_SCOPE++;
@@ -303,8 +307,9 @@ funcdef:    FUNCTION ID  LEFT_PARENTHESIS {
                 PREV_SCOPE=CURR_SCOPE;
                 CURR_SCOPE++;
                 i=max_scope(CURR_SCOPE,PREV_SCOPE);
-                } moreidilist  RIGHT_PARENTHESIS block   /*anonymous functions here */
-            ;    
+        } moreidilist  RIGHT_PARENTHESIS block   /*anonymous functions here */
+        
+        ;    
 
 const:  INTEGER
         |REAL
@@ -361,8 +366,8 @@ int main(int argc, char** argv){
     
     
     init_lib_func();
-    
     print_scope(0);
+    check_collisions("hi");
     //yyset_in(input_file); // set the input stream for the lexer
     yyparse(); // call the parser function
     //print_scope(CURR_SCOPE);
