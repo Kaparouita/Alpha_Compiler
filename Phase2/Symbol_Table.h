@@ -163,3 +163,5 @@ int max_scope(int current_scope,int previos_scope);
  * @param lib_func 
  */
 void init_lib_func();
+
+int check_name(char *name);

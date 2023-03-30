@@ -12,6 +12,7 @@
         extern FILE* yyin;
         int CURR_SCOPE=0;
         int PREV_SCOPE=0;
+        int access_scope = 0;
         int i;
         int myfuctions[150];
         extern var_table* table ;
@@ -32,7 +33,8 @@
                         if(check_access(name) == 1){
                                 yyerror("Cannot access var");
                         }
-                        printf("Cannot access %s\n",name);
+                        if(check_name(name) == 0)
+                       { printf("Cannot access %s\n",name);}
                         return;
                 } // einai hdh sto table
                 if(check_collisions(name) == 1){
@@ -52,11 +54,19 @@
                 }
         }
 
+        int check_name(char *name){
+                return 1;
+        }
+
         int check_access(char *name){
                 var* retVar = lookup_var(table,name);
                 if(retVar == NULL)
                         return 1;
-                if(retVar->scope != CURR_SCOPE && retVar->scope != 0)
+                if(retVar->id == 2){
+                        if(retVar->scope != CURR_SCOPE)
+                                return 1;
+                }
+                else if(retVar->scope < access_scope && retVar->scope != 0)
                         return 1;
                 return 0;
         }
@@ -75,7 +85,7 @@
         void formal_check(char* name,var_id type){
                 var *var1 = lookup_var(table,name);
                 if(var1!=NULL)
-                {if(var1->scope == CURR_SCOPE && (var1->id == formal))
+                {if((var1->scope == CURR_SCOPE ) && (var1->id == formal ))
                        { yyerror("Already defined");
                         return;}}
                 if(check_collisions(name) == 1){
@@ -88,7 +98,7 @@
         }
 
         void function_insert(char* name){
-                int retValue = lookup_globaly(table,name);
+                int retValue = lookup_scope(CURR_SCOPE,name);
                 if(retValue == 1){ 
                         printf("Cannot access %s\n",name);
                         return;
@@ -368,7 +378,8 @@ block:  LEFT_CURLY_BRACKET {
 
 funcdef:
         FUNCTION ID{
-                fuction_flag = 1;
+                access_scope++;
+                fuction_flag++;
                 function_insert(yylval.stringValue);
                 PREV_SCOPE=CURR_SCOPE;
                 CURR_SCOPE++;
@@ -377,10 +388,11 @@ funcdef:
                         PREV_SCOPE--;
                 };
                 CURR_SCOPE--;
-        } block{fuction_flag = 0;}
+        } block{fuction_flag--;}
 
         |FUNCTION {
-                fuction_flag = 1;
+                access_scope++;
+                fuction_flag++;
                 function_insert("_");
                 PREV_SCOPE=CURR_SCOPE;
                 CURR_SCOPE++;
@@ -389,7 +401,7 @@ funcdef:
                         PREV_SCOPE--;
                 };
                 CURR_SCOPE--;
-        }block{fuction_flag = 0;} /*anonymous functions here */
+        }block{fuction_flag--;access_scope--;} /*anonymous functions here */
         ;    
 
 const:  INTEGER

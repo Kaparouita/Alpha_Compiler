@@ -81,6 +81,7 @@
         extern FILE* yyin;
         int CURR_SCOPE=0;
         int PREV_SCOPE=0;
+        int access_scope = 0;
         int i;
         int myfuctions[150];
         extern var_table* table ;
@@ -101,7 +102,8 @@
                         if(check_access(name) == 1){
                                 yyerror("Cannot access var");
                         }
-                        printf("Cannot access %s\n",name);
+                        if(check_name(name) == 0)
+                       { printf("Cannot access %s\n",name);}
                         return;
                 } // einai hdh sto table
                 if(check_collisions(name) == 1){
@@ -121,11 +123,19 @@
                 }
         }
 
+        int check_name(char *name){
+                return 1;
+        }
+
         int check_access(char *name){
                 var* retVar = lookup_var(table,name);
                 if(retVar == NULL)
                         return 1;
-                if(retVar->scope != CURR_SCOPE && retVar->scope != 0)
+                if(retVar->id == 2){
+                        if(retVar->scope != CURR_SCOPE)
+                                return 1;
+                }
+                else if(retVar->scope <= access_scope && retVar->scope != 0)
                         return 1;
                 return 0;
         }
@@ -144,7 +154,7 @@
         void formal_check(char* name,var_id type){
                 var *var1 = lookup_var(table,name);
                 if(var1!=NULL)
-                {if(var1->scope == CURR_SCOPE && (var1->id == formal))
+                {if((var1->scope == CURR_SCOPE ) && (var1->id == formal ))
                        { yyerror("Already defined");
                         return;}}
                 if(check_collisions(name) == 1){
@@ -157,7 +167,7 @@
         }
 
         void function_insert(char* name){
-                int retValue = lookup_globaly(table,name);
+                int retValue = lookup_scope(CURR_SCOPE,name);
                 if(retValue == 1){ 
                         printf("Cannot access %s\n",name);
                         return;
@@ -203,7 +213,7 @@
                 return NULL;
         }
 
-#line 207 "parser.c"
+#line 217 "parser.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -355,13 +365,13 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 140 "parser.y"
+#line 150 "parser.y"
 
     char* stringValue;
     int intValue;
     double realValue;
 
-#line 365 "parser.c"
+#line 375 "parser.c"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -741,16 +751,16 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   235,   235,   238,   239,   243,   243,   244,   244,   246,
-     247,   248,   249,   250,   251,   252,   253,   254,   255,   259,
-     260,   261,   262,   263,   264,   265,   266,   267,   268,   269,
-     270,   271,   272,   273,   278,   279,   280,   281,   282,   283,
-     284,   285,   288,   291,   292,   293,   294,   295,   298,   308,
-     309,   310,   313,   314,   315,   316,   319,   320,   321,   325,
-     326,   329,   332,   335,   338,   339,   340,   343,   344,   347,
-     351,   352,   355,   359,   359,   370,   375,   370,   382,   387,
-     382,   395,   396,   397,   398,   399,   400,   403,   404,   407,
-     408,   412,   412,   413,   416,   416,   420,   420,   423,   423
+       0,   245,   245,   248,   249,   253,   253,   254,   254,   256,
+     257,   258,   259,   260,   261,   262,   263,   264,   265,   269,
+     270,   271,   272,   273,   274,   275,   276,   277,   278,   279,
+     280,   281,   282,   283,   288,   289,   290,   291,   292,   293,
+     294,   295,   298,   301,   302,   303,   304,   305,   308,   318,
+     319,   320,   323,   324,   325,   326,   329,   330,   331,   335,
+     336,   339,   342,   345,   348,   349,   350,   353,   354,   357,
+     361,   362,   365,   369,   369,   380,   386,   380,   393,   399,
+     393,   407,   408,   409,   410,   411,   412,   415,   416,   419,
+     420,   424,   424,   425,   428,   428,   432,   432,   435,   435
 };
 #endif
 
@@ -1744,19 +1754,19 @@ yyreduce:
   switch (yyn)
     {
   case 5:
-#line 243 "parser.y"
+#line 253 "parser.y"
               {if(for_flag == 0)yyerror("break w/o loop");}
-#line 1750 "parser.c"
+#line 1760 "parser.c"
     break;
 
   case 7:
-#line 244 "parser.y"
+#line 254 "parser.y"
                  {if(for_flag == 0)yyerror("continue w/o loop");}
-#line 1756 "parser.c"
+#line 1766 "parser.c"
     break;
 
   case 48:
-#line 298 "parser.y"
+#line 308 "parser.y"
                {
                  if(return_flag == 1){
                         if(lookup_globaly(table,yylval.stringValue) == 0)
@@ -1767,158 +1777,160 @@ yyreduce:
                  else 
 	                Id_check(yylval.stringValue,varr,local);     
                  }
-#line 1771 "parser.c"
+#line 1781 "parser.c"
     break;
 
   case 49:
-#line 308 "parser.y"
+#line 318 "parser.y"
                       { insert_local(yylval.stringValue);}
-#line 1777 "parser.c"
+#line 1787 "parser.c"
     break;
 
   case 50:
-#line 309 "parser.y"
+#line 319 "parser.y"
                                  { check_global(yylval.stringValue);}
-#line 1783 "parser.c"
+#line 1793 "parser.c"
     break;
 
   case 73:
-#line 359 "parser.y"
+#line 369 "parser.y"
                            {
                 PREV_SCOPE = CURR_SCOPE; 
                 CURR_SCOPE++;   
                 }
-#line 1792 "parser.c"
+#line 1802 "parser.c"
     break;
 
   case 74:
-#line 362 "parser.y"
+#line 372 "parser.y"
                                               {
                         if(CURR_SCOPE!=0)
                                 hide(CURR_SCOPE--);
                         PREV_SCOPE--;
                 }
-#line 1802 "parser.c"
+#line 1812 "parser.c"
     break;
 
   case 75:
-#line 370 "parser.y"
+#line 380 "parser.y"
                    {
-                fuction_flag = 1;
+                access_scope++;
+                fuction_flag++;
                 function_insert(yylval.stringValue);
                 PREV_SCOPE=CURR_SCOPE;
                 CURR_SCOPE++;
         }
-#line 1813 "parser.c"
+#line 1824 "parser.c"
     break;
 
   case 76:
-#line 375 "parser.y"
+#line 386 "parser.y"
                                                        {
                 if(PREV_SCOPE!=0){
                         PREV_SCOPE--;
                 };
                 CURR_SCOPE--;
         }
-#line 1824 "parser.c"
+#line 1835 "parser.c"
     break;
 
   case 77:
-#line 380 "parser.y"
-               {fuction_flag = 0;}
-#line 1830 "parser.c"
+#line 391 "parser.y"
+               {fuction_flag--;access_scope--;}
+#line 1841 "parser.c"
     break;
 
   case 78:
-#line 382 "parser.y"
+#line 393 "parser.y"
                   {
-                fuction_flag = 1;
+                access_scope++;
+                fuction_flag++;
                 function_insert("_");
                 PREV_SCOPE=CURR_SCOPE;
                 CURR_SCOPE++;
         }
-#line 1841 "parser.c"
+#line 1853 "parser.c"
     break;
 
   case 79:
-#line 387 "parser.y"
+#line 399 "parser.y"
                                                          {
                 if(PREV_SCOPE!=0){
                         PREV_SCOPE--;
                 };
                 CURR_SCOPE--;
         }
-#line 1852 "parser.c"
-    break;
-
-  case 80:
-#line 392 "parser.y"
-              {fuction_flag = 0;}
-#line 1858 "parser.c"
-    break;
-
-  case 87:
-#line 403 "parser.y"
-           {formal_check(yylval.stringValue,formal);}
 #line 1864 "parser.c"
     break;
 
-  case 88:
+  case 80:
 #line 404 "parser.y"
-                 {formal_check(yylval.stringValue,formal);}
+              {fuction_flag--;access_scope--;}
 #line 1870 "parser.c"
     break;
 
-  case 91:
-#line 412 "parser.y"
-                           {if_flag = 1;}
+  case 87:
+#line 415 "parser.y"
+           {formal_check(yylval.stringValue,formal);}
 #line 1876 "parser.c"
     break;
 
-  case 92:
-#line 412 "parser.y"
-                                                                       { if_flag = 0;}
+  case 88:
+#line 416 "parser.y"
+                 {formal_check(yylval.stringValue,formal);}
 #line 1882 "parser.c"
     break;
 
-  case 94:
-#line 416 "parser.y"
-                                 {for_flag = 1;}
+  case 91:
+#line 424 "parser.y"
+                           {if_flag = 1;}
 #line 1888 "parser.c"
     break;
 
-  case 95:
-#line 416 "parser.y"
-                                                                             {for_flag = 0;}
+  case 92:
+#line 424 "parser.y"
+                                                                       { if_flag = 0;}
 #line 1894 "parser.c"
     break;
 
-  case 96:
-#line 420 "parser.y"
-                               {for_flag = 1;}
+  case 94:
+#line 428 "parser.y"
+                                 {for_flag = 1;}
 #line 1900 "parser.c"
     break;
 
-  case 97:
-#line 420 "parser.y"
-                                                                                                                   {for_flag = 0;}
+  case 95:
+#line 428 "parser.y"
+                                                                             {for_flag = 0;}
 #line 1906 "parser.c"
     break;
 
-  case 98:
-#line 423 "parser.y"
-                   {if(fuction_flag == 0)yyerror("return w/o fuction");return_flag = 1;}
+  case 96:
+#line 432 "parser.y"
+                               {for_flag = 1;}
 #line 1912 "parser.c"
     break;
 
-  case 99:
-#line 423 "parser.y"
-                                                                                                       {return_flag = 0;}
+  case 97:
+#line 432 "parser.y"
+                                                                                                                   {for_flag = 0;}
 #line 1918 "parser.c"
     break;
 
+  case 98:
+#line 435 "parser.y"
+                   {if(fuction_flag == 0)yyerror("return w/o fuction");return_flag = 1;}
+#line 1924 "parser.c"
+    break;
 
-#line 1922 "parser.c"
+  case 99:
+#line 435 "parser.y"
+                                                                                                       {return_flag = 0;}
+#line 1930 "parser.c"
+    break;
+
+
+#line 1934 "parser.c"
 
       default: break;
     }
@@ -2150,7 +2162,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 425 "parser.y"
+#line 437 "parser.y"
 
 
 int yyerror(char* yaccProvidedMessage){
