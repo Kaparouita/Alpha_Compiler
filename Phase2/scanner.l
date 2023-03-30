@@ -247,8 +247,8 @@ BLOCK_COMMENT "/*"
 		else if(i == '*'){
 			if((i = input()) == '/'){				
 			   //do_the_job(create_string(line,yylineno),"COMMENT" ,"BLOCK_COMMENT","enumerated");
-			   return 0;
-			   break;
+			   printf("ERROR : UNCLOSED STAR_COMMENT REACHE %d ",yylineno);
+			   return;
 			   }
 			else
 			   unput(i);
@@ -256,6 +256,7 @@ BLOCK_COMMENT "/*"
 	}
 	if(i <= 1)
 		printf("ERROR : UNCLOSED STAR_COMMENT REACHED EOF ");	
+	return 0;
 }
 
 %%
@@ -283,7 +284,7 @@ int star_comment_checker(int i,int what){
 		else if(i == '*'){
 			if((i = input()) == '/'){
 				//do_the_job(create_string(line,yylineno),"COMMENT","NESTED_STAR_COMMENT","enumerated");
-					return 0;
+					break;
 			}
 			else
 				unput(i);
@@ -292,7 +293,7 @@ int star_comment_checker(int i,int what){
 	}
 	if(i <= 1 && what != 1){
 		printf("ERROR : UNCLOSED STAR_COMMENT REACHED EOF ");	
-		exit(0);
+		//exit(0);
 	}
 	unput(i);
 	return 1; 	

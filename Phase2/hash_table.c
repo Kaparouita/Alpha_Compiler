@@ -48,9 +48,7 @@ void hash_insert(var *v,var_table *table) {
         while (curr->next != NULL &&(strcmp(curr->name,v->name) != 0) ) {
             curr = curr->next;
         }
-        if(strcmp(curr->name,v->name) == 0)
-            printf("VAR ALREADY IN THE TABLE!\n");
-        else{  
+        if(strcmp(curr->name,v->name) != 0){
             curr->next = v;
             scope_insert(v); //insert sto scope tou 
         }

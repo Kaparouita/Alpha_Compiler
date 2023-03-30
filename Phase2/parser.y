@@ -28,7 +28,7 @@
                         if(check_access(name) == 1){
                                 yyerror("No access cause var is in another scope");
                         }
-                        printf("To var %s einai hdh sto table",name);
+                        printf("To var %s einai hdh sto table line %d\n",name,yylineno);
                         return;
                 } // einai hdh sto table
                 if(check_collisions(name) == 1){
@@ -51,7 +51,7 @@
                 var* retVar = lookup_var(table,name);
                 if(retVar == NULL)
                         return 1;
-                if(retVar->scope != CURR_SCOPE && CURR_SCOPE != 0)
+                if(retVar->scope != CURR_SCOPE && retVar->scope != 0)
                         return 1;
                 return 0;
         }
@@ -68,6 +68,9 @@
        /*function for check ids and insert to STable*/
         void formal_check(char* name,var_id type){
                 if (lookup_globaly(table,name)==0 ){ // insert ids formal 
+                        if(check_collisions(name) == 1){
+                                yyerror("This is a lib_fuct");
+                        }
                         myvar =new_var(varr,type,name,CURR_SCOPE,1,yylineno); 
                         hash_insert(myvar,table);
                         print_var(myvar);
@@ -286,12 +289,12 @@ lvalue:     ID {if (CURR_SCOPE == 0 )
 	                Id_check(yylval.stringValue,varr,local);     
                  }
             |LOCAL ID { insert_local(yylval.stringValue);}
-            |SCOPE_RESOLUTION ID { check_global(yylval.stringValue);}
+            |SCOPE_RESOLUTION ID { check_global(yylval.stringValue);} //::
             |member
             ;             
             
 member:     lvalue FULL_STOP ID
-            |lvalue LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET
+            |lvalue LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET // []
             |call FULL_STOP ID
             |call LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET
             ;
@@ -355,7 +358,7 @@ funcdef:
                 };
                 CURR_SCOPE--;
         } block
-        FUNCTION {
+        |FUNCTION {
                 function_insert("_");
                 PREV_SCOPE=CURR_SCOPE;
                 CURR_SCOPE++;
