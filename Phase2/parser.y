@@ -13,43 +13,57 @@
         int CURR_SCOPE=0;
         int PREV_SCOPE=0;
         int i;
+        int myfuctions[150];
         extern var_table* table ;
         var* myvar; // global variable to insert to STable
         var_id Vtype; // for switch the type of the ids
+        int curr_anonymous = 0; //keep track for anonymous
 
 
         /*function for check ids and insert to STable*/
-        void Id_check(char* name,var_id type){
+        void Id_check(char* name,var_type var_type,var_id type){
                 int retValue = lookup_globaly(table,name);
-
-                if (retValue == 0 && type == global ){ // insert ids globaly 
-                        myvar =new_var(varr,type,name,CURR_SCOPE,1,yylineno); 
+                if(retValue == 1){ 
+                        //check if we have access
+                        if(check_access(name) == 1){
+                                yyerror("No access cause var is in another scope");
+                        }
+                        printf("To var %s einai hdh sto table",name);
+                        return;
+                } // einai hdh sto table
+                if(check_collisions(name) == 1){
+                        yyerror("This is a lib_fuct");
+                }
+                if(CURR_SCOPE == 0){
+                        //an einai mhden panta global
+                        myvar =new_var(varr,global,name,CURR_SCOPE,1,yylineno); 
                         hash_insert(myvar,table);
                         print_var(myvar);
-                }else if (retValue == 0 && type == local){  // insert ids in scope 0 but they have local keyword so we switch the type
-                        retValue=lookup_scope(CURR_SCOPE ,name);
-                        if(retValue==1){ // bro auto den ginete pote true kai einai ligo sad p to agapame einai edw mesa
-                                //if we found the id as global var
-                                printf("agapeme");
-                                exit(0);
-                        } 
-                        else if(CURR_SCOPE==0 && retValue==0){
-                                Vtype= switch_enum(type);
-                                myvar =new_var(varr,Vtype,name,CURR_SCOPE,1,yylineno); 
-                                hash_insert(myvar,table);
-                                print_var(myvar);
-                        }else if (retValue==0){
-                                // NOTE THIS den mporw na apofasisw ti ennow se front3 slide19 me ta collsioin se liub func 
-                                myvar =new_var(varr,type,name,CURR_SCOPE,1,yylineno); 
-                                hash_insert(myvar,table);
-                                print_var(myvar);
-                        }     
+                }
+                else{   //alliws local
+                        myvar =new_var(varr,type,name,CURR_SCOPE,1,yylineno); 
+                        hash_insert(myvar,table);
+                        print_var(myvar);   
+                }
+        }
 
-                }else if (lookup_globaly(table,name)==1) //::(global) ids
-                        exit(0);
-                else 
+        int check_access(char *name){
+                var* retVar = lookup_var(table,name);
+                if(retVar == NULL)
+                        return 1;
+                if(retVar->scope != CURR_SCOPE && CURR_SCOPE != 0)
+                        return 1;
+                return 0;
+        }
+
+        void check_global(char *name){
+                if (lookup_scope(0,name) == 0 ) //::(global) ids
                         yyerror("ID not found");
-       }
+                if(check_collisions(name) == 1){
+                        yyerror("This is a lib_fuct");
+                        return;
+                }
+        }
 
        /*function for check ids and insert to STable*/
         void formal_check(char* name,var_id type){
@@ -61,13 +75,49 @@
                         yyerror("The id already exist");
         }
 
-      void function_check(char* name){
-                if (lookup_globaly(table,name)==0 ){ // insert user  functions 
-                        myvar =new_var(varr,user_func,name,CURR_SCOPE,1,yylineno); 
-                        hash_insert(myvar,table);
-                        print_var(myvar);
-                }else 
-                        yyerror("The function already exist");
+        void function_insert(char* name){
+                int retValue = lookup_globaly(table,name);
+                if(retValue == 1){ 
+                        printf("To fuction %s einai hdh sto table",name);
+                        return;
+                } // einai hdh sto table
+                if(check_collisions(name) == 1){
+                        yyerror("This is a lib_fuct");
+                }
+                //check if anonymous
+                if(check_anonymous(name) != NULL){
+                        curr_anonymous--;
+                        name = check_anonymous(name);
+                }
+                var *myfuction = new_var(fuction,user_func,name,CURR_SCOPE,1,yylineno); 
+                hash_insert(myfuction,table);
+                print_var(myfuction);
+        }
+
+        void insert_local(char* name){
+                int retValue = lookup_scope(CURR_SCOPE,name);
+                var_id curr_id= local;
+                if(retValue == 1){ 
+                        printf("To var %s einai hdh sto table",name);
+                        return;
+                } // einai hdh sto table
+                if(check_collisions(name) == 1){
+                        yyerror("This is a lib_fuct");
+                }
+                if(CURR_SCOPE == 0)
+                        curr_id = global;
+                var *myvar =new_var(varr,curr_id,name,CURR_SCOPE,1,yylineno); 
+                hash_insert(myvar,table);
+                print_var(myvar);          
+        }
+
+        char *check_anonymous(char *name){
+                if(strcmp(name,"_") == 0){
+                        char* str = malloc(sizeof(char) * 30);
+		        sprintf(str,"_f%d",curr_anonymous++);
+		        return str;
+                }
+                return NULL;
         }
 %}
 
@@ -230,15 +280,13 @@ primary:    lvalue
             |const
             ;
 
-lvalue:     ID {if (CURR_SCOPE ==0 )
-	                Id_check(yylval.stringValue,global);
-                 else {
-                        Vtype=switch_enum(global);
-	                Id_check(yylval.stringValue,Vtype);
-                        }       
+lvalue:     ID {if (CURR_SCOPE == 0 )
+	                Id_check(yylval.stringValue,varr,global);
+                 else 
+	                Id_check(yylval.stringValue,varr,local);     
                  }
-            |LOCAL ID { Id_check(yylval.stringValue,local);}
-            |SCOPE_RESOLUTION ID { Id_check(yylval.stringValue,global);}
+            |LOCAL ID { insert_local(yylval.stringValue);}
+            |SCOPE_RESOLUTION ID { check_global(yylval.stringValue);}
             |member
             ;             
             
@@ -284,31 +332,39 @@ moreindexedelem:   indexedelem
                    |moreindexedelem COMMA indexedelem
                    ;
 
-indexedelem: LEFT_CURLY_BRACKET expr COLON expr RIGHT_CURLY_BRACKET
+indexedelem: LEFT_CURLY_BRACKET expr COLON expr RIGHT_CURLY_BRACKET 
              ;
 
 
 block:  LEFT_CURLY_BRACKET {
-                PREV_SCOPE=CURR_SCOPE; CURR_SCOPE++; 
-                i=max_scope(CURR_SCOPE,PREV_SCOPE);}
- //edw htan se ena line den kserw paizei a to gamisa                
-stmt_list : RIGHT_CURLY_BRACKET{hide(CURR_SCOPE--); PREV_SCOPE=CURR_SCOPE;}
+                PREV_SCOPE = CURR_SCOPE; 
+                CURR_SCOPE++;   
+                }stmt_list RIGHT_CURLY_BRACKET{
+                        hide(CURR_SCOPE--); PREV_SCOPE--;
+                }
         ;
 
 funcdef:
-        FUNCTION ID  LEFT_PARENTHESIS { 
-                function_check(yylval.stringValue);  
+        FUNCTION ID{
+                function_insert(yylval.stringValue);
                 PREV_SCOPE=CURR_SCOPE;
                 CURR_SCOPE++;
-                i=max_scope(CURR_SCOPE,PREV_SCOPE);
-        } moreidilist  RIGHT_PARENTHESIS block
-        |FUNCTION  LEFT_PARENTHESIS { 
-                function_check("NO NAME FUNCTION");
+        }LEFT_PARENTHESIS moreidilist RIGHT_PARENTHESIS{
+                if(PREV_SCOPE!=0){
+                        PREV_SCOPE--;
+                };
+                CURR_SCOPE--;
+        } block
+        FUNCTION {
+                function_insert("_");
                 PREV_SCOPE=CURR_SCOPE;
                 CURR_SCOPE++;
-                i=max_scope(CURR_SCOPE,PREV_SCOPE);
-        } moreidilist  RIGHT_PARENTHESIS block   /*anonymous functions here */
-        
+        }LEFT_PARENTHESIS moreidilist  RIGHT_PARENTHESIS {
+                if(PREV_SCOPE!=0){
+                        PREV_SCOPE--;
+                };
+                CURR_SCOPE--;
+        }block   /*anonymous functions here */
         ;    
 
 const:  INTEGER
@@ -346,7 +402,7 @@ returnstmt: RETURN expr SEMICOLON
 int yyerror(char* yaccProvidedMessage){
                 //provide error message example:
         fprintf(stderr,"%s: error at line %d , before token %s\n",yaccProvidedMessage,yylineno,yytext);
-        fprintf(stderr,"INVALID INPUT\n");
+        //fprintf(stderr,"INVALID INPUT\n");
 }
 
 

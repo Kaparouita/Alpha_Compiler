@@ -87,13 +87,31 @@ int lookup_globaly(var_table *table, char*vname){
         /*tsekare thn alysida tou*/
         while (curr != NULL)
         {
-            if (strcmp(curr->name,vname) == 0) /*if its the same return 1*/
+            if (strcmp(curr->name,vname) == 0 && curr->hide == 1) /*if its the same return 1*/
                 return 1;
             curr = curr->next;
         }
     }
     return 0;
 }
+
+
+var *lookup_var(var_table *table, char* vname){
+    var *curr;
+    int index = hash(vname); /*get the key*/
+    if ((table->buckets[index]) != NULL){
+        curr = table->buckets[index];
+        /*tsekare thn alysida tou*/
+        while (curr != NULL)
+        {
+            if (strcmp(curr->name,vname) == 0 && curr->hide == 1) /*if its the same return 1*/
+                return curr;
+            curr = curr->next;
+        }
+    }
+    return NULL;
+}
+
 
 int lookup_scope(int scope,char*vname){
     var *curr = get_scope_var(scope);
@@ -249,22 +267,41 @@ int check_collisions(char *str){
     return 0;
 }
 
+void hide_all(int Curr_scope){
+    Curr_scope--;
+    var *curr = get_scope_var(Curr_scope);
+    while(Curr_scope != 0){
+         while(curr == NULL){
+            Curr_scope--;
+            curr = get_scope_var(Curr_scope);
+            if(Curr_scope == 0)
+                return;
+        }
+        if(curr->type != fuction && curr->id != formal){
+            curr->hide = 0;
+        }
+        curr = curr->same_scope_next;
+    } 
+}
+
 /*
 int main()
 {
     
     table = create_table(5381);
 
-    var *x= new_var(varr,global,"x",1,1,0);
+    var *x= new_var(fuction,global,"x",1,1,0);
     var *y=new_var(varr,global,"y",1,1,8);
     var *k=new_var(fuction,lib_func,"k",2,1,0);
     hash_insert(y,table);
-    hash_insert(new_var(varr,global,"x",1,1,3),table);
+   // hash_insert(new_var(varr,global,"x",1,1,3),table);
+   hash_insert(new_var(varr,local,"t",2,1,3),table);
     hash_insert(k,table);
     hash_insert(x,table);
-    init_lid_func();
+    init_lib_func();
 
+    hide_all(2);
     //hide(1);
-    print_scope(0);   
+    print_scope(2);   
    
 }*/

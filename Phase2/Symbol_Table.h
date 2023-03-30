@@ -149,6 +149,11 @@ void print_var(var *v);
  */
 void print_scope(int scope);
 
+char *check_anonymous(char *name);
+
+var *lookup_var(var_table *table, char* vname);
+int check_access(char *name);
+
 int max_scope(int current_scope,int previos_scope);
 /**
  * @brief init all lib fuctions
