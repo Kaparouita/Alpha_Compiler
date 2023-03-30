@@ -18,6 +18,10 @@
         var* myvar; // global variable to insert to STable
         var_id Vtype; // for switch the type of the ids
         int curr_anonymous = 0; //keep track for anonymous
+        int if_flag = 0;
+        int for_flag = 0;
+        int fuction_flag = 0;
+        int return_flag = 0;
 
 
         /*function for check ids and insert to STable*/
@@ -26,13 +30,14 @@
                 if(retValue == 1){ 
                         //check if we have access
                         if(check_access(name) == 1){
-                               // yyerror("No access cause var is in another scope");
+                                yyerror("Cannot access var");
                         }
-                        //printf("To var %s einai hdh sto table line %d\n",name,yylineno);
+                        printf("Cannot access %s\n",name);
                         return;
                 } // einai hdh sto table
                 if(check_collisions(name) == 1){
                         yyerror("This is a lib_fuct");
+                        return;
                 }
                 if(CURR_SCOPE == 0){
                         //an einai mhden panta global
@@ -58,7 +63,8 @@
 
         void check_global(char *name){
                 if (lookup_global(name) == 1 ) //::(global) ids
-                        yyerror("ID not found");
+                        {yyerror("ID not found");
+                        return;}
                 if(check_collisions(name) == 1){
                         yyerror("This is a lib_fuct");
                         return;
@@ -67,25 +73,29 @@
 
        /*function for check ids and insert to STable*/
         void formal_check(char* name,var_id type){
-                if (lookup_globaly(table,name)==0 ){ // insert ids formal 
-                        if(check_collisions(name) == 1){
-                                yyerror("This is a lib_fuct");
-                        }
-                        myvar =new_var(varr,type,name,CURR_SCOPE,1,yylineno); 
-                        hash_insert(myvar,table);
-                        print_var(myvar);
-                }else 
-                        yyerror("The id already exist");
+                var *var1 = lookup_var(table,name);
+                if(var1!=NULL)
+                {if(var1->scope == CURR_SCOPE && (var1->id == formal))
+                       { yyerror("Already defined");
+                        return;}}
+                if(check_collisions(name) == 1){
+                        yyerror("This is a lib_fuct");
+                        return;
+                }
+                myvar =new_var(varr,type,name,CURR_SCOPE,1,yylineno); 
+                hash_insert(myvar,table);
+                print_var(myvar);
         }
 
         void function_insert(char* name){
-                int retValue = lookup_scope(CURR_SCOPE,name);
+                int retValue = lookup_globaly(table,name);
                 if(retValue == 1){ 
-                       // printf("To fuction %s einai hdh sto table",name);
+                        printf("Cannot access %s\n",name);
                         return;
                 } // einai hdh sto table
                 if(check_collisions(name) == 1){
                         yyerror("This is a lib_fuct");
+                        return;
                 }
                 //check if anonymous
                 if(check_anonymous(name) != NULL){
@@ -106,6 +116,7 @@
                 } // einai hdh sto table
                 if(check_collisions(name) == 1){
                         yyerror("This is a lib_fuct");
+                        return;
                 }
                 if(CURR_SCOPE == 0)
                         curr_id = global;
@@ -139,7 +150,7 @@
 %token FOR
 %token FUNCTION
 %token RETURN
-%token BREAK;
+%token BREAK
 %token CONTINUE
 %token AND 
 %token NOT  
@@ -229,8 +240,8 @@ stmt_list: stmt_list  stmt
            ;
 
 
-brk_stm:BREAK SEMICOLON;
-cnt_stm:CONTINUE SEMICOLON ;
+brk_stm:BREAK {if(for_flag == 0)yyerror("break w/o loop");} SEMICOLON ;
+cnt_stm:CONTINUE {if(for_flag == 0)yyerror("continue w/o loop");} SEMICOLON ;
  
 stmt:   expr SEMICOLON
         |ifstmt
@@ -284,7 +295,12 @@ primary:    lvalue
             |const
             ;
 
-lvalue:     ID {if (CURR_SCOPE == 0 )
+lvalue:     ID {
+                 if(return_flag == 1){
+                        if(lookup_globaly(table,yylval.stringValue) == 0)
+                                yyerror("No var\n");
+                 }
+                 else if (CURR_SCOPE == 0 )
 	                Id_check(yylval.stringValue,varr,global);
                  else 
 	                Id_check(yylval.stringValue,varr,local);     
@@ -352,6 +368,7 @@ block:  LEFT_CURLY_BRACKET {
 
 funcdef:
         FUNCTION ID{
+                fuction_flag = 1;
                 function_insert(yylval.stringValue);
                 PREV_SCOPE=CURR_SCOPE;
                 CURR_SCOPE++;
@@ -360,8 +377,10 @@ funcdef:
                         PREV_SCOPE--;
                 };
                 CURR_SCOPE--;
-        } block
+        } block{fuction_flag = 0;}
+
         |FUNCTION {
+                fuction_flag = 1;
                 function_insert("_");
                 PREV_SCOPE=CURR_SCOPE;
                 CURR_SCOPE++;
@@ -370,7 +389,7 @@ funcdef:
                         PREV_SCOPE--;
                 };
                 CURR_SCOPE--;
-        }block   /*anonymous functions here */
+        }block{fuction_flag = 0;} /*anonymous functions here */
         ;    
 
 const:  INTEGER
@@ -390,18 +409,18 @@ moreidilist: moreidilist idlist
              ;
 
 
-ifstmt: IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt
+ifstmt: IF LEFT_PARENTHESIS{if_flag = 1;} expr RIGHT_PARENTHESIS  stmt { if_flag = 0;}
         |ELSE stmt
         ;
 
-whilestmt: WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt
+whilestmt: WHILE LEFT_PARENTHESIS{for_flag = 1;} expr RIGHT_PARENTHESIS stmt {for_flag = 0;} 
            ;
 
 /*note this for elist*/
-forstmt:   FOR LEFT_PARENTHESIS moreElist SEMICOLON expr SEMICOLON moreElist RIGHT_PARENTHESIS stmt
+forstmt:   FOR LEFT_PARENTHESIS{for_flag = 1;} moreElist SEMICOLON expr SEMICOLON moreElist RIGHT_PARENTHESIS stmt {for_flag = 0;} 
            ;
 
-returnstmt: RETURN expr SEMICOLON
+returnstmt: RETURN {if(fuction_flag == 0)yyerror("return w/o fuction");return_flag = 1;} expr SEMICOLON{return_flag = 0;}
             ;   
 %%
 

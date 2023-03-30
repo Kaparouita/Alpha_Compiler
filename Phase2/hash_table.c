@@ -113,6 +113,8 @@ var *lookup_var(var_table *table, char* vname){
 
 int lookup_global(char* vname){
     var *myvar=lookup_var(table,vname);
+    if(myvar == NULL)
+        return 1;
     if(myvar->scope==0)
         return 0;
     return 1;
