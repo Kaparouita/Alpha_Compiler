@@ -26,9 +26,9 @@
                 if(retValue == 1){ 
                         //check if we have access
                         if(check_access(name) == 1){
-                                yyerror("No access cause var is in another scope");
+                               // yyerror("No access cause var is in another scope");
                         }
-                        printf("To var %s einai hdh sto table line %d\n",name,yylineno);
+                        //printf("To var %s einai hdh sto table line %d\n",name,yylineno);
                         return;
                 } // einai hdh sto table
                 if(check_collisions(name) == 1){
@@ -57,7 +57,7 @@
         }
 
         void check_global(char *name){
-                if (lookup_scope(0,name) == 0 ) //::(global) ids
+                if (lookup_global(name) == 1 ) //::(global) ids
                         yyerror("ID not found");
                 if(check_collisions(name) == 1){
                         yyerror("This is a lib_fuct");
@@ -79,9 +79,9 @@
         }
 
         void function_insert(char* name){
-                int retValue = lookup_globaly(table,name);
+                int retValue = lookup_scope(CURR_SCOPE,name);
                 if(retValue == 1){ 
-                        printf("To fuction %s einai hdh sto table",name);
+                       // printf("To fuction %s einai hdh sto table",name);
                         return;
                 } // einai hdh sto table
                 if(check_collisions(name) == 1){
@@ -101,7 +101,7 @@
                 int retValue = lookup_scope(CURR_SCOPE,name);
                 var_id curr_id= local;
                 if(retValue == 1){ 
-                        printf("To var %s einai hdh sto table",name);
+                        //printf("To var %s einai hdh sto table",name);
                         return;
                 } // einai hdh sto table
                 if(check_collisions(name) == 1){
@@ -196,8 +196,9 @@
 %token EXTRA_CHARS
 
 /*COMMENTS*/
-%token LINE_COMMENT 
-%token BLOCK_COMMENT
+%token LINE_COMMENT  
+%token BLOCK_COMMENT 
+
 
 
 /*proteraiothtes*/
@@ -343,7 +344,9 @@ block:  LEFT_CURLY_BRACKET {
                 PREV_SCOPE = CURR_SCOPE; 
                 CURR_SCOPE++;   
                 }stmt_list RIGHT_CURLY_BRACKET{
-                        hide(CURR_SCOPE--); PREV_SCOPE--;
+                        if(CURR_SCOPE!=0)
+                                hide(CURR_SCOPE--);
+                        PREV_SCOPE--;
                 }
         ;
 

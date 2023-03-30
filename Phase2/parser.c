@@ -95,9 +95,9 @@
                 if(retValue == 1){ 
                         //check if we have access
                         if(check_access(name) == 1){
-                                yyerror("No access cause var is in another scope");
+                               // yyerror("No access cause var is in another scope");
                         }
-                        printf("To var %s einai hdh sto table line %d\n",name,yylineno);
+                        //printf("To var %s einai hdh sto table line %d\n",name,yylineno);
                         return;
                 } // einai hdh sto table
                 if(check_collisions(name) == 1){
@@ -126,7 +126,7 @@
         }
 
         void check_global(char *name){
-                if (lookup_scope(0,name) == 0 ) //::(global) ids
+                if (lookup_global(name) == 1 ) //::(global) ids
                         yyerror("ID not found");
                 if(check_collisions(name) == 1){
                         yyerror("This is a lib_fuct");
@@ -148,9 +148,9 @@
         }
 
         void function_insert(char* name){
-                int retValue = lookup_globaly(table,name);
+                int retValue = lookup_scope(CURR_SCOPE,name);
                 if(retValue == 1){ 
-                        printf("To fuction %s einai hdh sto table",name);
+                       // printf("To fuction %s einai hdh sto table",name);
                         return;
                 } // einai hdh sto table
                 if(check_collisions(name) == 1){
@@ -170,7 +170,7 @@
                 int retValue = lookup_scope(CURR_SCOPE,name);
                 var_id curr_id= local;
                 if(retValue == 1){ 
-                        printf("To var %s einai hdh sto table",name);
+                        //printf("To var %s einai hdh sto table",name);
                         return;
                 } // einai hdh sto table
                 if(check_collisions(name) == 1){
@@ -730,16 +730,16 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   223,   223,   226,   227,   231,   232,   234,   235,   236,
-     237,   238,   239,   240,   241,   242,   243,   247,   248,   249,
-     250,   251,   252,   253,   254,   255,   256,   257,   258,   259,
-     260,   261,   266,   267,   268,   269,   270,   271,   272,   273,
-     276,   279,   280,   281,   282,   283,   286,   291,   292,   293,
-     296,   297,   298,   299,   302,   303,   304,   308,   309,   312,
-     315,   318,   321,   322,   323,   326,   327,   330,   334,   335,
-     338,   342,   342,   351,   355,   351,   361,   365,   361,   373,
-     374,   375,   376,   377,   378,   381,   382,   385,   386,   390,
-     391,   394,   398,   401
+       0,   224,   224,   227,   228,   232,   233,   235,   236,   237,
+     238,   239,   240,   241,   242,   243,   244,   248,   249,   250,
+     251,   252,   253,   254,   255,   256,   257,   258,   259,   260,
+     261,   262,   267,   268,   269,   270,   271,   272,   273,   274,
+     277,   280,   281,   282,   283,   284,   287,   292,   293,   294,
+     297,   298,   299,   300,   303,   304,   305,   309,   310,   313,
+     316,   319,   322,   323,   324,   327,   328,   331,   335,   336,
+     339,   343,   343,   354,   358,   354,   364,   368,   364,   376,
+     377,   378,   379,   380,   381,   384,   385,   388,   389,   393,
+     394,   397,   401,   404
 };
 #endif
 
@@ -1723,7 +1723,7 @@ yyreduce:
   switch (yyn)
     {
   case 46:
-#line 286 "parser.y"
+#line 287 "parser.y"
                {if (CURR_SCOPE == 0 )
 	                Id_check(yylval.stringValue,varr,global);
                  else 
@@ -1733,19 +1733,19 @@ yyreduce:
     break;
 
   case 47:
-#line 291 "parser.y"
+#line 292 "parser.y"
                       { insert_local(yylval.stringValue);}
 #line 1739 "parser.c"
     break;
 
   case 48:
-#line 292 "parser.y"
+#line 293 "parser.y"
                                  { check_global(yylval.stringValue);}
 #line 1745 "parser.c"
     break;
 
   case 71:
-#line 342 "parser.y"
+#line 343 "parser.y"
                            {
                 PREV_SCOPE = CURR_SCOPE; 
                 CURR_SCOPE++;   
@@ -1754,69 +1754,71 @@ yyreduce:
     break;
 
   case 72:
-#line 345 "parser.y"
+#line 346 "parser.y"
                                               {
-                        hide(CURR_SCOPE--); PREV_SCOPE--;
+                        if(CURR_SCOPE!=0)
+                                hide(CURR_SCOPE--);
+                        PREV_SCOPE--;
                 }
-#line 1762 "parser.c"
+#line 1764 "parser.c"
     break;
 
   case 73:
-#line 351 "parser.y"
+#line 354 "parser.y"
                    {
                 function_insert(yylval.stringValue);
                 PREV_SCOPE=CURR_SCOPE;
                 CURR_SCOPE++;
         }
-#line 1772 "parser.c"
+#line 1774 "parser.c"
     break;
 
   case 74:
-#line 355 "parser.y"
+#line 358 "parser.y"
                                                        {
                 if(PREV_SCOPE!=0){
                         PREV_SCOPE--;
                 };
                 CURR_SCOPE--;
         }
-#line 1783 "parser.c"
+#line 1785 "parser.c"
     break;
 
   case 76:
-#line 361 "parser.y"
+#line 364 "parser.y"
                   {
                 function_insert("_");
                 PREV_SCOPE=CURR_SCOPE;
                 CURR_SCOPE++;
         }
-#line 1793 "parser.c"
+#line 1795 "parser.c"
     break;
 
   case 77:
-#line 365 "parser.y"
+#line 368 "parser.y"
                                                          {
                 if(PREV_SCOPE!=0){
                         PREV_SCOPE--;
                 };
                 CURR_SCOPE--;
         }
-#line 1804 "parser.c"
+#line 1806 "parser.c"
     break;
 
   case 85:
-#line 381 "parser.y"
+#line 384 "parser.y"
            {formal_check(yylval.stringValue,formal);}
-#line 1810 "parser.c"
+#line 1812 "parser.c"
     break;
 
   case 86:
-#line 382 "parser.y"
+#line 385 "parser.y"
                  {formal_check(yylval.stringValue,formal);}
-#line 1816 "parser.c"
+#line 1818 "parser.c"
     break;
 
 
-#line 1820 "parser.c"
+#line 1822 "parser.c"
 
       default: break;
     }
@@ -2048,7 +2050,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 403 "parser.y"
+#line 406 "parser.y"
 
 
 int yyerror(char* yaccProvidedMessage){

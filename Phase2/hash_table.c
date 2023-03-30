@@ -111,6 +111,13 @@ var *lookup_var(var_table *table, char* vname){
 }
 
 
+int lookup_global(char* vname){
+    var *myvar=lookup_var(table,vname);
+    if(myvar->scope==0)
+        return 0;
+    return 1;
+}
+
 int lookup_scope(int scope,char*vname){
     var *curr = get_scope_var(scope);
     if(curr == NULL)
@@ -142,7 +149,7 @@ int hide(int scope){
     var *curr = get_scope_var(scope);
     if(curr == NULL)
         return 1;//nothing within the scope
-    while(curr != NULL){
+    while(curr != NULL && curr->scope != 0){
         curr->hide = 0;
         curr = curr->same_scope_next;
     }
@@ -269,6 +276,7 @@ void hide_all(int Curr_scope){
     Curr_scope--;
     var *curr = get_scope_var(Curr_scope);
     while(Curr_scope != 0){
+        
          while(curr == NULL){
             Curr_scope--;
             curr = get_scope_var(Curr_scope);

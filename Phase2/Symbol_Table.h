@@ -154,6 +154,8 @@ char *check_anonymous(char *name);
 var *lookup_var(var_table *table, char* vname);
 int check_access(char *name);
 
+int lookup_global(char* vname);
+
 int max_scope(int current_scope,int previos_scope);
 /**
  * @brief init all lib fuctions
