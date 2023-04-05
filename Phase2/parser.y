@@ -2,7 +2,7 @@
         #include <stdio.h>
         //#include "lex.yy.h" // alphayylex?
         #include "Symbol_Table.h"
-       
+        
 
         int yyerror (char* yaccProvidedMessage);
         int yylex (void);
@@ -33,8 +33,8 @@
                         if(check_access(name) == 1){
                                 yyerror("Cannot access var");
                         }
-                        if(check_name(name) == 0)
-                       { printf("Cannot access %s\n",name);}
+                        if(check_name(name) == 0){
+                                printf("Cannot access %s\n",name);}
                         return;
                 } // einai hdh sto table
                 if(check_collisions(name) == 1){
@@ -81,12 +81,12 @@
                 }
         }
 
-       /*function for check ids and insert to STable*/
+        /*function for check ids and insert to STable*/
         void formal_check(char* name,var_id type){
                 var *var1 = lookup_var(table,name);
                 if(var1!=NULL)
                 {if((var1->scope == CURR_SCOPE ) && (var1->id == formal ))
-                       { yyerror("Already defined");
+                        { yyerror("Already defined");
                         return;}}
                 if(check_collisions(name) == 1){
                         yyerror("This is a lib_fuct");
@@ -118,12 +118,12 @@
         }
 
         void insert_local(char* name){
-                int retValue = lookup_scope(CURR_SCOPE,name);
+                var* retValue = lookup_scope(CURR_SCOPE,name);
                 var_id curr_id= local;
-                if(retValue == 1){ 
-                        //printf("To var %s einai hdh sto table",name);
+                if(retValue != NULL){  // einai hdh sto table
+                        printf("To var %s einai hdh sto table",name);
                         return;
-                } // einai hdh sto table
+                }
                 if(check_collisions(name) == 1){
                         yyerror("This is a lib_fuct");
                         return;
@@ -148,9 +148,9 @@
 
 /* Bison declarations and definitions */
 %union {
-    char* stringValue;
-    int intValue;
-    double realValue;
+        char* stringValue;
+        int intValue;
+        double realValue;
 }
 
 /*KEYWORDS*/
@@ -296,7 +296,7 @@ term:   LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
         ;        
 
 assignexpr: lvalue ASSIGNMENT expr
-            ;    
+        ;    
 
 primary:    lvalue
             |call

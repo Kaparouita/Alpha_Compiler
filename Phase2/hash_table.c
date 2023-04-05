@@ -120,16 +120,34 @@ int lookup_global(char* vname){
     return 1;
 }
 
-int lookup_scope(int scope,char*vname){
+var* lookup_scope(int scope,char* vname){
     var *curr = get_scope_var(scope);
     if(curr == NULL)
-        return 0;
+        return NULL;
     while(curr!=NULL && curr->scope == scope){
-            if (strcmp(curr->name,vname) == 0) /*if its the same return 1*/
-                return 1;
+            if (strcmp(curr->name,vname) == 0 && curr->hide == 1) /*if its the same return 1*/
+                return curr;
             curr = curr->next;
     }
-    return 0;
+    return NULL;
+}
+
+var* lookup_in_out(int scope,char* vname){
+    var *curr = get_scope_var(scope);
+    while(curr == NULL && scope >= 0){
+        scope--;
+        curr = get_scope_var(scope);
+    }
+    while(scope >= 0){
+        if (strcmp(curr->name,vname) == 0 && curr->hide == 1) /*if its the same return 1*/
+            return curr;
+        curr = curr->next;
+        while(curr == NULL && scope >= 0){
+            scope--;
+            curr = get_scope_var(scope);
+        }
+    }
+    return NULL;
 }
 
 
@@ -292,7 +310,7 @@ void hide_all(int Curr_scope){
     } 
 }
 
-/*
+
 int main()
 {
     
@@ -304,12 +322,18 @@ int main()
     hash_insert(y,table);
    // hash_insert(new_var(varr,global,"x",1,1,3),table);
    hash_insert(new_var(varr,local,"t",2,1,3),table);
+   hash_insert(new_var(varr,local,"Y",3,1,3),table);
+   hash_insert(new_var(varr,local,"U",3,1,3),table);
+
     hash_insert(k,table);
     hash_insert(x,table);
     init_lib_func();
 
+    var *new = lookup_in_out(3,"t");
+    if(new!=NULL)
+        printf("YO %s\n",new->name);
     hide_all(2);
     //hide(1);
     print_scope(2);   
    
-}*/
+}
