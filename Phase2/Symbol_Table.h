@@ -20,7 +20,6 @@ typedef struct var{
     int hide;             // 0 gia hidden 1 gia visable
     int line;
     struct var *next;    // gia to next var an pesei se idio bucket sto table
-    struct var *same_scope_next; // gia to same scope
     struct var *s_next;   // scope next
 }var;
 
@@ -50,6 +49,10 @@ typedef struct var_table {
     unsigned hs; /*hash multiplier*/
 } var_table;
 
+typedef struct last_fuction_scope {
+    int scope;
+    struct last_fuction_scope *next;// keep track of the scope of the last fuction
+} last_fuction_scope;
 
 /**
  * @brief Create a table object
@@ -92,9 +95,9 @@ void hash_insert( var *v, var_table *table);
  * @brief lookup for a var in spesific scope
  * 
  * @param scope 
- * @return return 1 if var is in the scope 0 otherwise 
+ * @return return var if var is in the scope NULL otherwise 
  */
-int lookup_scope(int scope,char*vname);
+var* lookup_scope(int scope,char*vname);
 
 
 /**
@@ -110,7 +113,7 @@ var *get_scope_var(int scope);
  * @param v 
  * @return 1 if var already on the table 0 otherwise
  */
-int lookup_globaly(var_table *table, char*vname);
+var *lookup_globaly( char*vname);
 /**
  * print gia enum(id)
 */
@@ -136,6 +139,7 @@ int hide (int scope);
  */
 int check_collisions(char *str);
 
+var* lookup_in_out(int scope,char* vname);
 /**
  * @brief print var v
  * 
@@ -149,12 +153,22 @@ void print_var(var *v);
  */
 void print_scope(int scope);
 
+/*gia ta last scope checks*/
+void delete_last_fuction_scope();
+void fuction_scope_insert(int scope);
+
 char *check_anonymous(char *name);
 
-var *lookup_var(var_table *table, char* vname);
-int check_access(char *name);
+var *lookup_var(char* vname);
+/**
+ * @brief check where the last fuction was and if my var has access
+ * 
+ * @param myvar 
+ * @return 1 if it has access 0 otherwess
+ */
+int check_access(var *myvar);
 
-int lookup_global(char* vname);
+var *lookup_global(char* vname);
 
 int max_scope(int current_scope,int previos_scope);
 /**
@@ -164,4 +178,4 @@ int max_scope(int current_scope,int previos_scope);
  */
 void init_lib_func();
 
-int check_name(char *name);
+void print_table(var_table *oSymTable);

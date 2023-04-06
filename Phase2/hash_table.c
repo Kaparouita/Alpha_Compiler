@@ -11,6 +11,7 @@
 
 var* first; // first var for scope_list
 var_table* table ; //table
+last_fuction_scope *fuction_scope ;
 
 var* new_var(var_type type, var_id id, char* name, int scope, int hide, int line){
     var* v = (var*) malloc(sizeof(var));
@@ -22,7 +23,6 @@ var* new_var(var_type type, var_id id, char* name, int scope, int hide, int line
     v->line = line;
     v->next = NULL;
     v->s_next = NULL;
-    v->same_scope_next = NULL;
     return v;
 }
 
@@ -45,13 +45,11 @@ void hash_insert(var *v,var_table *table) {
         // append this one to the end of the list.
         // kai den exoume vrei var me to idio name
         var *curr = table->buckets[index];
-        while (curr->next != NULL &&(strcmp(curr->name,v->name) != 0) ) {
+        while (curr->next != NULL) {
             curr = curr->next;
         }
-        if(strcmp(curr->name,v->name) != 0){
-            curr->next = v;
-            scope_insert(v); //insert sto scope tou 
-        }
+        curr->next = v;
+        scope_insert(v); //insert sto scope tou 
     }
     table->size++;
 }
@@ -62,39 +60,50 @@ void scope_insert(var *v){
         return;
     }
     var *curr = first;
+    //phgene sto scope tou
     while(curr->scope != v->scope && curr->s_next != NULL){
         curr = curr->s_next;
     }
-    if(curr->scope == v->scope){
-        //proxwra mexri to last element kai kantw insert sthn list
-        while(curr->same_scope_next != NULL){
-            curr = curr->same_scope_next;
-        }
-        curr->same_scope_next = v;
+    //proxwra mexri to last element kai kantw insert sthn list
+    while(curr->s_next != NULL && curr->s_next->scope == v->scope){
+        curr = curr->s_next;        
     }
-    else{
-        curr->s_next = v;
-    }
+    curr->s_next = v;
 }
 
-int lookup_globaly(var_table *table, char*vname){
-    var *curr;
-    int index = hash(vname); /*get the key*/
-    if ((table->buckets[index]) != NULL){
-        curr = table->buckets[index];
-        /*tsekare thn alysida tou*/
-        while (curr != NULL)
-        {
-            if (strcmp(curr->name,vname) == 0 && curr->hide == 1) /*if its the same return 1*/
-                return 1;
-            curr = curr->next;
-        }
+void fuction_scope_insert(int scope){
+    if(fuction_scope == NULL){
+        fuction_scope = malloc(sizeof(last_fuction_scope *));
+        fuction_scope->scope = scope;
+        fuction_scope->next = NULL;
+        return;
     }
-    return 0;
+    last_fuction_scope *curr = fuction_scope;
+    //create new 
+    last_fuction_scope *new = malloc(sizeof(last_fuction_scope *));
+    new->next = NULL;
+    new->scope = scope;
+    while(curr->next != NULL)
+        curr = curr->next;
+    //insert new
+    curr->next = new;
+    
 }
 
+void delete_last_fuction_scope(){
+    if(fuction_scope == NULL)
+        return;
+    last_fuction_scope *curr = fuction_scope;
+    last_fuction_scope *prev = curr;
+    while(curr->next != NULL){
+        prev = curr;
+        curr = curr->next;
+    }
+    prev->next = NULL;
+    free(curr);
+}
 
-var *lookup_var(var_table *table, char* vname){
+var *lookup_globaly(char*vname){
     var *curr;
     int index = hash(vname); /*get the key*/
     if ((table->buckets[index]) != NULL){
@@ -111,23 +120,28 @@ var *lookup_var(var_table *table, char* vname){
 }
 
 
-int lookup_global(char* vname){
-    var *myvar=lookup_var(table,vname);
-    if(myvar == NULL)
-        return 1;
-    if(myvar->scope==0)
-        return 0;
-    return 1;
+var *lookup_var(char* vname){
+    var *curr;
+    int index = hash(vname); /*get the key*/
+    if ((table->buckets[index]) != NULL){
+        curr = table->buckets[index];
+        /*tsekare thn alysida tou*/
+        while (curr != NULL)
+        {
+            if (strcmp(curr->name,vname) == 0 && curr->hide == 1) /*if its the same return 1*/
+                return curr;
+            curr = curr->next;
+        }
+    }
+    return NULL;
 }
 
 var* lookup_scope(int scope,char* vname){
     var *curr = get_scope_var(scope);
-    if(curr == NULL)
-        return NULL;
     while(curr!=NULL && curr->scope == scope){
             if (strcmp(curr->name,vname) == 0 && curr->hide == 1) /*if its the same return 1*/
                 return curr;
-            curr = curr->next;
+            curr = curr->s_next;
     }
     return NULL;
 }
@@ -141,7 +155,7 @@ var* lookup_in_out(int scope,char* vname){
     while(scope >= 0){
         if (strcmp(curr->name,vname) == 0 && curr->hide == 1) /*if its the same return 1*/
             return curr;
-        curr = curr->next;
+        curr = curr->s_next;
         while(curr == NULL && scope >= 0){
             scope--;
             curr = get_scope_var(scope);
@@ -171,8 +185,19 @@ int hide(int scope){
         return 1;//nothing within the scope
     while(curr != NULL && curr->scope != 0){
         curr->hide = 0;
-        curr = curr->same_scope_next;
+        curr = curr->s_next;
     }
+    return 0;
+}
+
+int check_access(var *myVar){
+    if(fuction_scope == NULL)
+        return 1;
+    last_fuction_scope *curr = fuction_scope;
+    while(curr->next != NULL)
+        curr = curr->next;
+    if(myVar->scope > curr->scope)
+        return 1; 
     return 0;
 }
 
@@ -203,49 +228,44 @@ char *enum_id(var_type id){
         default : return "ERROR";
     }
 }
-var_id switch_enum(var_id id ){
-    switch(id){
-        case global:      return local;
-        case local :      return global;
-    }
-}
-
 
 void print_scope(int scope){
+    printf("START PRINTING\n/----------------------------------------/\n");
     if(first == NULL)
         return;
-    var *curr = first;
-    while(curr->scope != scope && curr->s_next != NULL){
-        curr = curr->s_next;
-    }
+    var *curr = get_scope_var(scope);
     while(curr != NULL && curr->scope == scope){
-        if(curr->hide == 1)
+        
             print_var(curr);
-        curr = curr->same_scope_next;
+        curr = curr->s_next;
     }
     if(curr != NULL && curr->scope != scope)
         printf("NO VAR/FUNC WITH THAT SCOPE FOUND\n");
+     printf("END PRINTING\n/----------------------------------------/\n");
 }
 
 void print_table(var_table *oSymTable)
 {
     int i = 0;
-    printf("START PRINTING\n");
+    printf("START PRINTING\n/----------------------------------------/\n");
 
     for (i = 0; i < oSymTable->num_buckets; i++)
     {
-        if (oSymTable->buckets[i] != NULL)
+        var *curr = oSymTable->buckets[i];
+        if (curr != NULL)
         {
             printf("TABLE INDEX : %d ,", i);
-            while(oSymTable->buckets[i]!=NULL){
-                print_var(oSymTable->buckets[i]);
-                oSymTable->buckets[i]=oSymTable->buckets[i]->next;
+            while(curr!=NULL){
+                print_var(curr);
+                curr=curr->next;
             }
         }
     }
     printf("END PRINTING\n/----------------------------------------/\n");
     return;
 }
+
+
 
 unsigned int hash(char *str) {
     unsigned int hashval;
@@ -269,17 +289,6 @@ void init_lib_func(){
     hash_insert(new_var(fuction,lib_func,"sqrt",0,1,0),table);
     hash_insert(new_var(fuction,lib_func,"cos",0,1,0),table);
     hash_insert(new_var(fuction,lib_func,"sin",0,1,0),table);
-}
-
-/**
- * @brief Get max scope
- * 
- * @param current_scope 
- * @param previous_scope 
- * @return int 
- */
-int max_scope(int current_scope,int previous_scope){
-    return ((current_scope > previous_scope) ?  current_scope : previous_scope);
 }
 
 int check_collisions(char *str){
@@ -306,11 +315,11 @@ void hide_all(int Curr_scope){
         if(curr->type != fuction && curr->id != formal){
             curr->hide = 0;
         }
-        curr = curr->same_scope_next;
+        curr = curr->s_next;
     } 
 }
 
-
+/*
 int main()
 {
     
@@ -336,4 +345,4 @@ int main()
     //hide(1);
     print_scope(2);   
    
-}
+}*/

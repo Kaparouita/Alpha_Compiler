@@ -71,7 +71,7 @@
         #include <stdio.h>
         //#include "lex.yy.h" // alphayylex?
         #include "Symbol_Table.h"
-       
+        
 
         int yyerror (char* yaccProvidedMessage);
         int yylex (void);
@@ -81,12 +81,12 @@
         extern FILE* yyin;
         int CURR_SCOPE=0;
         int PREV_SCOPE=0;
-        int access_scope = 0;
         int i;
         int myfuctions[150];
         extern var_table* table ;
         var* myvar; // global variable to insert to STable
         var_id Vtype; // for switch the type of the ids
+
         int curr_anonymous = 0; //keep track for anonymous
         int if_flag = 0;
         int for_flag = 0;
@@ -95,115 +95,116 @@
 
 
         /*function for check ids and insert to STable*/
-        void Id_check(char* name,var_type var_type,var_id type){
-                int retValue = lookup_globaly(table,name);
-                if(retValue == 1){ 
+        void insert_ID(char* name){
+                //kanoume lookup apo mesa pros ta eksw
+                var *myvar = lookup_in_out(CURR_SCOPE,name);
+                var_id curr_id = local;
+               
+                //An den vrethei tpt kanthn insert sto Curr_scope
+                if(myvar == NULL){
+                        if(CURR_SCOPE == 0) // an einai global
+                                curr_id = global;
+                        myvar =new_var(varr,curr_id,name,CURR_SCOPE,1,yylineno); 
+                        hash_insert(myvar,table);
+                        print_var(myvar);                    
+                } 
+                /*an yparxei hdh */
+                else{ 
+                        //aneferomaste kai menei na doume an exoume prosvash
+                        printf("Anafora sto %s : %s \n",enum_type(myvar->type) ,myvar->name);
                         //check if we have access
-                        if(check_access(name) == 1){
-                                yyerror("Cannot access var");
+                        if(check_access(myvar) == 0 && myvar->scope != 0){
+                                yyerror("Cannot access var ");
                         }
-                        if(check_name(name) == 0)
-                       { printf("Cannot access %s\n",name);}
-                        return;
                 } // einai hdh sto table
-                if(check_collisions(name) == 1){
-                        yyerror("This is a lib_fuct");
-                        return;
-                }
-                if(CURR_SCOPE == 0){
-                        //an einai mhden panta global
-                        myvar =new_var(varr,global,name,CURR_SCOPE,1,yylineno); 
-                        hash_insert(myvar,table);
-                        print_var(myvar);
-                }
-                else{   //alliws local
-                        myvar =new_var(varr,type,name,CURR_SCOPE,1,yylineno); 
-                        hash_insert(myvar,table);
-                        print_var(myvar);   
-                }
         }
 
-        int check_name(char *name){
-                return 1;
-        }
-
-        int check_access(char *name){
-                var* retVar = lookup_var(table,name);
-                if(retVar == NULL)
-                        return 1;
-                if(retVar->id == 2){
-                        if(retVar->scope != CURR_SCOPE)
-                                return 1;
-                }
-                else if(retVar->scope <= access_scope && retVar->scope != 0)
-                        return 1;
-                return 0;
-        }
-
+        /*check if global variable exist p.x. ::x (global x)*/
         void check_global(char *name){
-                if (lookup_global(name) == 1 ) //::(global) ids
-                        {yyerror("ID not found");
-                        return;}
-                if(check_collisions(name) == 1){
-                        yyerror("This is a lib_fuct");
+                //kanoume lookup sto global scope 0
+                var *myvar = lookup_scope(0,name);
+                //an einai NULL den iparxei
+                if (myvar == NULL ) {
+                        yyerror("Global var not found");
                         return;
                 }
+                //alliws anaferomaste ekei
+                printf("Anafora sto %s : %s \n",enum_type(myvar->type) ,myvar->name);
         }
 
-       /*function for check ids and insert to STable*/
-        void formal_check(char* name,var_id type){
-                var *var1 = lookup_var(table,name);
-                if(var1!=NULL)
-                {if((var1->scope == CURR_SCOPE ) && (var1->id == formal ))
-                       { yyerror("Already defined");
-                        return;}}
+        /*function to insert formal variables*/
+        void insert_formal(char* name){
+                var *myvar = lookup_scope(CURR_SCOPE,name);
+                /*an yparxei sto idio scope error p.x. fuction (x,y,x) */
+                if(myvar != NULL){
+                        yyerror("Already defined");
+                        return;
+                }
+                /*an exei collision me libfuction error */
                 if(check_collisions(name) == 1){
                         yyerror("This is a lib_fuct");
                         return;
                 }
-                myvar =new_var(varr,type,name,CURR_SCOPE,1,yylineno); 
+                /*alliws insert sto syble table san formal */
+                myvar = new_var(varr,formal,name,CURR_SCOPE,1,yylineno); 
                 hash_insert(myvar,table);
                 print_var(myvar);
         }
 
+        /*insert a new fuction to the table*/
         void function_insert(char* name){
-                int retValue = lookup_scope(CURR_SCOPE,name);
-                if(retValue == 1){ 
-                        printf("Cannot access %s\n",name);
-                        return;
-                } // einai hdh sto table
-                if(check_collisions(name) == 1){
-                        yyerror("This is a lib_fuct");
-                        return;
-                }
-                //check if anonymous
+                //check if anonymous and insert if true
                 if(check_anonymous(name) != NULL){
                         curr_anonymous--;
                         name = check_anonymous(name);
-                }
-                var *myfuction = new_var(fuction,user_func,name,CURR_SCOPE,1,yylineno); 
-                hash_insert(myfuction,table);
-                print_var(myfuction);
-        }
-
-        void insert_local(char* name){
-                int retValue = lookup_scope(CURR_SCOPE,name);
-                var_id curr_id= local;
-                if(retValue == 1){ 
-                        //printf("To var %s einai hdh sto table",name);
+                        var *myfuction = new_var(fuction,user_func,name,CURR_SCOPE,1,yylineno); 
+                        hash_insert(myfuction,table);
+                        print_var(myfuction); //na ftiaksw ta print
                         return;
-                } // einai hdh sto table
+                }
+                //kanoume lookuop sto trexon scope
+                var* myVar = lookup_scope(CURR_SCOPE,name);
+                
+                //an vrethei metavlhth h synarthsh einai error
+                if(myVar != NULL){ 
+                        yyerror("Already defined");
+                        return;
+                } // an yparxei collision me lib_fuct einai error
                 if(check_collisions(name) == 1){
                         yyerror("This is a lib_fuct");
                         return;
                 }
-                if(CURR_SCOPE == 0)
-                        curr_id = global;
-                var *myvar =new_var(varr,curr_id,name,CURR_SCOPE,1,yylineno); 
-                hash_insert(myvar,table);
-                print_var(myvar);          
+                //alliws thn kanoume insert
+                myVar = new_var(fuction,user_func,name,CURR_SCOPE,1,yylineno); 
+                hash_insert(myVar,table);
+                print_var(myVar);
         }
 
+        /*Insert a local var with name = name */
+        void insert_local(char* name){
+                /*koita sto trexon scope*/
+                var* currVar = lookup_scope(CURR_SCOPE,name);
+                var_id curr_id= local;
+                /*an vrethei metavlhth sto table aneferomaste ekei*/
+                if(currVar != NULL){  
+                        printf("Anafora sto %s : %s \n",enum_type(currVar->type) ,currVar->name);
+                        return;
+                }
+                /*tsekare an yparxoun collisions me lib fuction*/
+                if(check_collisions(name) == 1){
+                        yyerror("This is a lib_fuct");
+                        return;
+                }
+                /*an eimaste sto scope 0 tote thn kanoume insert san global*/
+                if(CURR_SCOPE == 0)
+                        curr_id = global;
+                        //printf("GT %d\n",currVar->hide);
+                currVar = new_var(varr,curr_id,name,CURR_SCOPE,1,yylineno); 
+                hash_insert(currVar,table);
+                print_var(currVar);          
+        }
+
+        /*check if the curr string is '_' to create the next anonymous fuction*/
         char *check_anonymous(char *name){
                 if(strcmp(name,"_") == 0){
                         char* str = malloc(sizeof(char) * 30);
@@ -213,7 +214,7 @@
                 return NULL;
         }
 
-#line 217 "parser.c"
+#line 218 "parser.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -365,13 +366,13 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 150 "parser.y"
+#line 151 "parser.y"
 
-    char* stringValue;
-    int intValue;
-    double realValue;
+        char* stringValue;
+        int intValue;
+        double realValue;
 
-#line 375 "parser.c"
+#line 376 "parser.c"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -751,16 +752,16 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   245,   245,   248,   249,   253,   253,   254,   254,   256,
-     257,   258,   259,   260,   261,   262,   263,   264,   265,   269,
-     270,   271,   272,   273,   274,   275,   276,   277,   278,   279,
-     280,   281,   282,   283,   288,   289,   290,   291,   292,   293,
-     294,   295,   298,   301,   302,   303,   304,   305,   308,   318,
-     319,   320,   323,   324,   325,   326,   329,   330,   331,   335,
-     336,   339,   342,   345,   348,   349,   350,   353,   354,   357,
-     361,   362,   365,   369,   369,   380,   386,   380,   393,   399,
-     393,   407,   408,   409,   410,   411,   412,   415,   416,   419,
-     420,   424,   424,   425,   428,   428,   432,   432,   435,   435
+       0,   246,   246,   249,   250,   254,   254,   255,   255,   257,
+     258,   259,   260,   261,   262,   263,   264,   265,   266,   270,
+     271,   272,   273,   274,   275,   276,   277,   278,   279,   280,
+     281,   282,   283,   284,   289,   290,   291,   292,   293,   294,
+     295,   296,   299,   302,   303,   304,   305,   306,   309,   310,
+     311,   312,   315,   316,   317,   318,   321,   322,   323,   327,
+     328,   331,   334,   337,   340,   341,   342,   345,   346,   349,
+     353,   354,   357,   361,   361,   370,   373,   370,   377,   381,
+     377,   386,   387,   388,   389,   390,   391,   394,   395,   398,
+     399,   403,   403,   404,   407,   407,   411,   411,   414,   414
 };
 #endif
 
@@ -1754,183 +1755,161 @@ yyreduce:
   switch (yyn)
     {
   case 5:
-#line 253 "parser.y"
+#line 254 "parser.y"
               {if(for_flag == 0)yyerror("break w/o loop");}
-#line 1760 "parser.c"
+#line 1761 "parser.c"
     break;
 
   case 7:
-#line 254 "parser.y"
+#line 255 "parser.y"
                  {if(for_flag == 0)yyerror("continue w/o loop");}
-#line 1766 "parser.c"
+#line 1767 "parser.c"
     break;
 
   case 48:
-#line 308 "parser.y"
-               {
-                 if(return_flag == 1){
-                        if(lookup_globaly(table,yylval.stringValue) == 0)
-                                yyerror("No var\n");
-                 }
-                 else if (CURR_SCOPE == 0 )
-	                Id_check(yylval.stringValue,varr,global);
-                 else 
-	                Id_check(yylval.stringValue,varr,local);     
-                 }
-#line 1781 "parser.c"
+#line 309 "parser.y"
+               { insert_ID(yylval.stringValue);  }
+#line 1773 "parser.c"
     break;
 
   case 49:
-#line 318 "parser.y"
+#line 310 "parser.y"
                       { insert_local(yylval.stringValue);}
-#line 1787 "parser.c"
+#line 1779 "parser.c"
     break;
 
   case 50:
-#line 319 "parser.y"
+#line 311 "parser.y"
                                  { check_global(yylval.stringValue);}
-#line 1793 "parser.c"
+#line 1785 "parser.c"
     break;
 
   case 73:
-#line 369 "parser.y"
-                           {
-                PREV_SCOPE = CURR_SCOPE; 
+#line 361 "parser.y"
+                           { 
                 CURR_SCOPE++;   
+                }
+#line 1793 "parser.c"
+    break;
+
+  case 74:
+#line 363 "parser.y"
+                                              {
+                        if(CURR_SCOPE!=0)
+                                hide(CURR_SCOPE--);       
                 }
 #line 1802 "parser.c"
     break;
 
-  case 74:
-#line 372 "parser.y"
-                                              {
-                        if(CURR_SCOPE!=0)
-                                hide(CURR_SCOPE--);
-                        PREV_SCOPE--;
-                }
-#line 1812 "parser.c"
-    break;
-
   case 75:
-#line 380 "parser.y"
+#line 370 "parser.y"
                    {
-                access_scope++;
-                fuction_flag++;
-                function_insert(yylval.stringValue);
-                PREV_SCOPE=CURR_SCOPE;
-                CURR_SCOPE++;
+                function_insert(yylval.stringValue);  // insert to fuction
+                fuction_scope_insert(CURR_SCOPE++);   // gia na kratame to teleutaio scope
         }
-#line 1824 "parser.c"
+#line 1811 "parser.c"
     break;
 
   case 76:
-#line 386 "parser.y"
+#line 373 "parser.y"
                                                        {
-                if(PREV_SCOPE!=0){
-                        PREV_SCOPE--;
-                };
                 CURR_SCOPE--;
+        }
+#line 1819 "parser.c"
+    break;
+
+  case 77:
+#line 375 "parser.y"
+                {delete_last_fuction_scope();}
+#line 1825 "parser.c"
+    break;
+
+  case 78:
+#line 377 "parser.y"
+                  {
+                //no name fuct
+                function_insert("_");  //regognize anonymous fuctions
+                fuction_scope_insert(CURR_SCOPE++);  
         }
 #line 1835 "parser.c"
     break;
 
-  case 77:
-#line 391 "parser.y"
-               {fuction_flag--;access_scope--;}
-#line 1841 "parser.c"
-    break;
-
-  case 78:
-#line 393 "parser.y"
-                  {
-                access_scope++;
-                fuction_flag++;
-                function_insert("_");
-                PREV_SCOPE=CURR_SCOPE;
-                CURR_SCOPE++;
-        }
-#line 1853 "parser.c"
-    break;
-
   case 79:
-#line 399 "parser.y"
+#line 381 "parser.y"
                                                          {
-                if(PREV_SCOPE!=0){
-                        PREV_SCOPE--;
-                };
                 CURR_SCOPE--;
         }
-#line 1864 "parser.c"
+#line 1843 "parser.c"
     break;
 
   case 80:
-#line 404 "parser.y"
-              {fuction_flag--;access_scope--;}
-#line 1870 "parser.c"
+#line 383 "parser.y"
+              { delete_last_fuction_scope(); }
+#line 1849 "parser.c"
     break;
 
   case 87:
-#line 415 "parser.y"
-           {formal_check(yylval.stringValue,formal);}
-#line 1876 "parser.c"
+#line 394 "parser.y"
+           {insert_formal(yylval.stringValue);}
+#line 1855 "parser.c"
     break;
 
   case 88:
-#line 416 "parser.y"
-                 {formal_check(yylval.stringValue,formal);}
-#line 1882 "parser.c"
+#line 395 "parser.y"
+                 {insert_formal(yylval.stringValue);}
+#line 1861 "parser.c"
     break;
 
   case 91:
-#line 424 "parser.y"
+#line 403 "parser.y"
                            {if_flag = 1;}
-#line 1888 "parser.c"
+#line 1867 "parser.c"
     break;
 
   case 92:
-#line 424 "parser.y"
+#line 403 "parser.y"
                                                                        { if_flag = 0;}
-#line 1894 "parser.c"
+#line 1873 "parser.c"
     break;
 
   case 94:
-#line 428 "parser.y"
+#line 407 "parser.y"
                                  {for_flag = 1;}
-#line 1900 "parser.c"
+#line 1879 "parser.c"
     break;
 
   case 95:
-#line 428 "parser.y"
+#line 407 "parser.y"
                                                                              {for_flag = 0;}
-#line 1906 "parser.c"
+#line 1885 "parser.c"
     break;
 
   case 96:
-#line 432 "parser.y"
+#line 411 "parser.y"
                                {for_flag = 1;}
-#line 1912 "parser.c"
+#line 1891 "parser.c"
     break;
 
   case 97:
-#line 432 "parser.y"
+#line 411 "parser.y"
                                                                                                                    {for_flag = 0;}
-#line 1918 "parser.c"
+#line 1897 "parser.c"
     break;
 
   case 98:
-#line 435 "parser.y"
-                   {if(fuction_flag == 0)yyerror("return w/o fuction");return_flag = 1;}
-#line 1924 "parser.c"
+#line 414 "parser.y"
+                   {}
+#line 1903 "parser.c"
     break;
 
   case 99:
-#line 435 "parser.y"
-                                                                                                       {return_flag = 0;}
-#line 1930 "parser.c"
+#line 414 "parser.y"
+                                    {}
+#line 1909 "parser.c"
     break;
 
 
-#line 1934 "parser.c"
+#line 1913 "parser.c"
 
       default: break;
     }
@@ -2162,7 +2141,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 437 "parser.y"
+#line 416 "parser.y"
 
 
 int yyerror(char* yaccProvidedMessage){
@@ -2188,7 +2167,6 @@ int main(int argc, char** argv){
     
     
     init_lib_func();
-    print_scope(0);
     check_collisions("hi");
     //yyset_in(input_file); // set the input stream for the lexer
     yyparse(); // call the parser function
