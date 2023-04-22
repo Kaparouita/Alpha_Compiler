@@ -11,18 +11,12 @@
         extern char* yytext;
         extern FILE* yyin;
         int CURR_SCOPE=0;
-        int PREV_SCOPE=0;
-        int i;
         int myfuctions[150];
         extern var_table* table ;
-        var* myvar; // global variable to insert to STable
-        var_id Vtype; // for switch the type of the ids
 
         int curr_anonymous = 0; //keep track for anonymous
         int if_flag = 0;
         int for_flag = 0;
-        int fuction_flag = 0;
-        int return_flag = 0;
 
 
         /*function for check ids and insert to STable*/
@@ -30,7 +24,6 @@
                 //kanoume lookup apo mesa pros ta eksw
                 var *myvar = lookup_in_out(CURR_SCOPE,name);
                 var_id curr_id = local;
-               
                 //An den vrethei tpt kanthn insert sto Curr_scope
                 if(myvar == NULL){
                         if(CURR_SCOPE == 0) // an einai global
@@ -68,7 +61,7 @@
                 var *myvar = lookup_scope(CURR_SCOPE,name);
                 /*an yparxei sto idio scope error p.x. fuction (x,y,x) */
                 if(myvar != NULL){
-                        yyerror("Already defined");
+                        yyerror("Already defined ");
                         return;
                 }
                 /*an exei collision me libfuction error */
@@ -96,13 +89,14 @@
                 //kanoume lookuop sto trexon scope
                 var* myVar = lookup_scope(CURR_SCOPE,name);
                 
+                // an yparxei collision me lib_fuct einai error
+                if(check_collisions(name) == 1){
+                        yyerror("This is a lib_fuct");
+                        return;
+                }
                 //an vrethei metavlhth h synarthsh einai error
                 if(myVar != NULL){ 
                         yyerror("Already defined");
-                        return;
-                } // an yparxei collision me lib_fuct einai error
-                if(check_collisions(name) == 1){
-                        yyerror("This is a lib_fuct");
                         return;
                 }
                 //alliws thn kanoume insert
@@ -206,8 +200,8 @@
 %token RIGHT_PARENTHESIS
 %token SEMICOLON
 %token COMMA
-%token COLON
 %token SCOPE_RESOLUTION
+%token COLON
 %token FULL_STOP
 %token DOUBLE_FULL_STOP
 
@@ -243,17 +237,17 @@
 
 
 %%
-program:    stmt_list 
-            ;
+program:   stmt_list 
+        ;
 
 stmt_list: stmt_list  stmt
-           |
-           ;
+        |
+        ;
 
 
 brk_stm:BREAK {if(for_flag == 0)yyerror("break w/o loop");} SEMICOLON ;
 cnt_stm:CONTINUE {if(for_flag == 0)yyerror("continue w/o loop");} SEMICOLON ;
- 
+
 stmt:   expr SEMICOLON
         |ifstmt
         |whilestmt
@@ -284,12 +278,12 @@ expr:   assignexpr
         |term
         ;
 
-     
-
 term:   LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
         |SUBTRACTION expr
         |NOT expr
-        |INCREMENT lvalue
+        |INCREMENT lvalue {if((lookup_scope(CURR_SCOPE,yylval.stringValue)->type) == 0){
+                "hi";
+        }}
         |lvalue INCREMENT
         |DECREMENT lvalue
         |lvalue DECREMENT
@@ -299,63 +293,63 @@ term:   LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
 assignexpr: lvalue ASSIGNMENT expr
         ;    
 
-primary:    lvalue
-            |call
-            |objectdef
-            |LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS
-            |const
-            ;
+primary: lvalue
+        |call
+        |objectdef
+        |LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS
+        |const
+        ;
 
-lvalue:     ID { insert_ID(yylval.stringValue);  }
-            |LOCAL ID { insert_local(yylval.stringValue);}
-            |SCOPE_RESOLUTION ID { check_global(yylval.stringValue);} //::
-            |member
-            ;             
-            
-member:     lvalue FULL_STOP ID
-            |lvalue LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET // []
-            |call FULL_STOP ID
-            |call LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET
-            ;
+lvalue:  ID { insert_ID(yylval.stringValue);  }
+        |LOCAL ID { insert_local(yylval.stringValue);}
+        |SCOPE_RESOLUTION ID { check_global(yylval.stringValue);} //::
+        |member
+        ;             
 
-call:       call LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS
-            |lvalue callsuffix
-            |LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS
-            ;
+member:  lvalue FULL_STOP ID
+        |lvalue LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET // []
+        |call FULL_STOP ID
+        |call LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET
+        ;
+
+call:    call LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS
+        |lvalue callsuffix
+        |LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS
+        ;
 
 
-callsuffix:     normcall
-                |methodcall
-                ;
+callsuffix: normcall
+        |methodcall
+        ;
 
 normcall:   LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS 
-            ;
+        ;
 
 methodcall: DOUBLE_FULL_STOP ID LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS 
-            ;    
+        ;    
 
 elist:  expr
         ;
 
 moreElist: elist        
-           |moreElist COMMA elist
-           |
-           ;     
+        |moreElist COMMA elist
+        |
+        ;     
 
 objectdef: LEFT_SQUARE_BRACKET  moreElist RIGHT_SQUARE_BRACKET
-           |LEFT_SQUARE_BRACKET   indexed  RIGHT_SQUARE_BRACKET
-           ;     
+        |LEFT_SQUARE_BRACKET   indexed  RIGHT_SQUARE_BRACKET
+        ;     
 
 indexed: moreindexedelem
-           ; 
+        ; 
 
 /*1 or + times for indexedelems*/
 moreindexedelem:   indexedelem     
-                   |moreindexedelem COMMA indexedelem
-                   ;
+        |moreindexedelem COMMA indexedelem
+        ;
 
 indexedelem: LEFT_CURLY_BRACKET expr COLON expr RIGHT_CURLY_BRACKET 
-             ;
+        ;
 
 
 block:  LEFT_CURLY_BRACKET { 
@@ -380,7 +374,7 @@ funcdef:
                 fuction_scope_insert(CURR_SCOPE++);  
         }LEFT_PARENTHESIS moreidilist  RIGHT_PARENTHESIS {
                 CURR_SCOPE--;
-        }block{ delete_last_fuction_scope(); } /*anonymous functions here */
+        }block{ delete_last_fuction_scope();} /*anonymous functions here */
         ;    
 
 const:  INTEGER
@@ -396,8 +390,8 @@ idlist: ID {insert_formal(yylval.stringValue);}
         ;
 
 moreidilist: moreidilist idlist
-             |
-             ;
+        |
+        ;
 
 
 ifstmt: IF LEFT_PARENTHESIS{if_flag = 1;} expr RIGHT_PARENTHESIS  stmt { if_flag = 0;}
@@ -405,14 +399,14 @@ ifstmt: IF LEFT_PARENTHESIS{if_flag = 1;} expr RIGHT_PARENTHESIS  stmt { if_flag
         ;
 
 whilestmt: WHILE LEFT_PARENTHESIS{for_flag = 1;} expr RIGHT_PARENTHESIS stmt {for_flag = 0;} 
-           ;
+        ;
 
 /*note this for elist*/
 forstmt:   FOR LEFT_PARENTHESIS{for_flag = 1;} moreElist SEMICOLON expr SEMICOLON moreElist RIGHT_PARENTHESIS stmt {for_flag = 0;} 
-           ;
+        ;
 
-returnstmt: RETURN {} expr SEMICOLON{}
-            ;   
+returnstmt: RETURN {if(CURR_SCOPE == 0)yyerror("return w/o function");} expr SEMICOLON{}
+        ;   
 %%
 
 int yyerror(char* yaccProvidedMessage){
@@ -438,9 +432,8 @@ int main(int argc, char** argv){
     
     
     init_lib_func();
-    check_collisions("hi");
     //yyset_in(input_file); // set the input stream for the lexer
     yyparse(); // call the parser function
-    //print_scope(CURR_SCOPE);
+    //print_format();
     return 0;
 }

@@ -178,4 +178,5 @@ int max_scope(int current_scope,int previos_scope);
  */
 void init_lib_func();
 
+void print_format();
 void print_table(var_table *oSymTable);

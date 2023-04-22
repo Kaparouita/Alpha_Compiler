@@ -247,8 +247,7 @@ BLOCK_COMMENT "/*"
 		else if(i == '*'){
 			if((i = input()) == '/'){				
 			   //do_the_job(create_string(line,yylineno),"COMMENT" ,"BLOCK_COMMENT","enumerated");
-			   printf("ERROR : UNCLOSED STAR_COMMENT REACHE %d ",yylineno);
-			   return 0;
+			   break;
 			   }
 			else
 			   unput(i);
@@ -256,7 +255,6 @@ BLOCK_COMMENT "/*"
 	}
 	if(i <= 1)
 		printf("ERROR : UNCLOSED STAR_COMMENT REACHED EOF ");	
-	return 0;
 }
 
 %%

@@ -68,7 +68,9 @@ void scope_insert(var *v){
     while(curr->s_next != NULL && curr->s_next->scope == v->scope){
         curr = curr->s_next;        
     }
+    var *tmp = curr->s_next;
     curr->s_next = v;
+    v->s_next = tmp;
 }
 
 void fuction_scope_insert(int scope){
@@ -87,7 +89,6 @@ void fuction_scope_insert(int scope){
         curr = curr->next;
     //insert new
     curr->next = new;
-    
 }
 
 void delete_last_fuction_scope(){
@@ -100,7 +101,7 @@ void delete_last_fuction_scope(){
         curr = curr->next;
     }
     prev->next = NULL;
-    free(curr);
+   // free(curr);
 }
 
 var *lookup_globaly(char*vname){
@@ -230,7 +231,7 @@ char *enum_id(var_type id){
 }
 
 void print_scope(int scope){
-    printf("START PRINTING\n/----------------------------------------/\n");
+    printf("\n/-------------   SCOPE #%d   -------------------/\n",scope);
     if(first == NULL)
         return;
     var *curr = get_scope_var(scope);
@@ -240,8 +241,7 @@ void print_scope(int scope){
         curr = curr->s_next;
     }
     if(curr != NULL && curr->scope != scope)
-        printf("NO VAR/FUNC WITH THAT SCOPE FOUND\n");
-     printf("END PRINTING\n/----------------------------------------/\n");
+        {}
 }
 
 void print_table(var_table *oSymTable)
@@ -301,24 +301,14 @@ int check_collisions(char *str){
     return 0;
 }
 
-void hide_all(int Curr_scope){
-    Curr_scope--;
-    var *curr = get_scope_var(Curr_scope);
-    while(Curr_scope != 0){
-        
-         while(curr == NULL){
-            Curr_scope--;
-            curr = get_scope_var(Curr_scope);
-            if(Curr_scope == 0)
-                return;
-        }
-        if(curr->type != fuction && curr->id != formal){
-            curr->hide = 0;
-        }
-        curr = curr->s_next;
-    } 
+void print_format(){
+    int scope = 0;
+    var* myvar = get_scope_var(scope);
+    while(myvar != NULL){
+        print_scope(scope);
+        myvar = get_scope_var(++scope);
+    }
 }
-
 /*
 int main()
 {
