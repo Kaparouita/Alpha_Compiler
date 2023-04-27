@@ -130,8 +130,8 @@ BLOCK_COMMENT "/*"
 {LES_EQUAL} {return LES_EQUAL;}
 
 
-{INTEGER} {yylval.intValue=atoi(yytext); return INTEGER; } //number
-{REAL} {yylval.realValue=atoi(yytext); return REAL;}
+{INTEGER} {yylval.intValue = atoi(yytext); return INTEGER; } //number
+{REAL} {yylval.realValue = atoi(yytext); return REAL;}
 
 {LEFT_CURLY_BRACKET} { return LEFT_CURLY_BRACKET;}
 {RIGHT_CURLY_BRACKET} { return RIGHT_CURLY_BRACKET;}
@@ -146,7 +146,7 @@ BLOCK_COMMENT "/*"
 {FULL_STOP} { return FULL_STOP;}
 {DOUBLE_FULL_STOP} { return DOUBLE_FULL_STOP;}
 
-{ID} { yylval.stringValue=strdup(yytext); return ID;}
+{ID} { yylval.stringValue = strdup(yytext); return ID;}
 
 
 {STRINGS} { 
@@ -188,7 +188,7 @@ BLOCK_COMMENT "/*"
 		}
 	    else if(i == '\"' && prev != '\\'){
 			//do_the_job(buffer,"STRING",buffer,"<-char*");
-			yylval.stringValue=strdup(buffer);
+			yylval.stringValue = strdup(buffer);
 			return STRING;
 			break;
 		}
@@ -216,12 +216,12 @@ BLOCK_COMMENT "/*"
 			break;
 		}
 		else if(i=='/'){
-			 if((i = input()) == '*'){
+			if((i = input()) == '*'){
 				if(star_comment_checker(i,1) == 1)
 					printf("ERROR : UNCLOSED STAR_COMMENT LINE : %d\n",yylineno);		
 			}
 		    else
-			   unput(i);			   
+			    unput(i);			   
 		}
 	}
 	if(i <= 1)

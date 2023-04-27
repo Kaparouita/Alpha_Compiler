@@ -7,12 +7,14 @@
         int yyerror (char* yaccProvidedMessage);
         int yylex (void);
 
+
         extern int yylineno;
         extern char* yytext;
         extern FILE* yyin;
         int CURR_SCOPE=0;
         int myfuctions[150];
         extern var_table* table ;
+        var *curr = NULL;
 
         int curr_anonymous = 0; //keep track for anonymous
         int if_flag = 0;
@@ -20,7 +22,7 @@
 
 
         /*function for check ids and insert to STable*/
-        void insert_ID(char* name){
+        var *insert_ID(char* name){
                 //kanoume lookup apo mesa pros ta eksw
                 var *myvar = lookup_in_out(CURR_SCOPE,name);
                 var_id curr_id = local;
@@ -41,6 +43,7 @@
                                 yyerror("Cannot access var ");
                         }
                 } // einai hdh sto table
+                return myvar;
         }
 
         /*check if global variable exist p.x. ::x (global x)*/
@@ -146,6 +149,7 @@
         char* stringValue;
         int intValue;
         double realValue;
+        struct var *exprNode;
 }
 
 /*KEYWORDS*/
@@ -168,7 +172,7 @@
 /*OPERATORS*/   
 %token ASSIGNMENT 
 %token ADDITION
-%token SUBTRACTION 
+%token SUBTRACTION      
 %token MULTI
 %token DIVISION 
 %token MODULUS
@@ -230,7 +234,8 @@
 %left LEFT_SQUARE_BRACKET RIGHT_SQUARE_BRACKET       	
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS		
 
-
+%type <intValue> expr
+%type <exprNode> lvalue 
 
 %start program  /*specify the start symbol of the grammar*/
 
@@ -262,28 +267,28 @@ stmt:   expr SEMICOLON
 
 
 expr:   assignexpr
-        |expr ADDITION expr
-        |expr SUBTRACTION expr
-        |expr MULTI expr
-        |expr DIVISION expr
-        |expr MODULUS expr
-        |expr GRETER_THAN expr
-        |expr GRE_EQUAL expr
-        |expr LESS_THAN expr
-        |expr LES_EQUAL expr
-        |expr EQUAL expr
-        |expr NOTEQUAL expr
-        |expr AND expr
-        |expr OR expr
+        |expr ADDITION expr     {$$ =  $1 + $3;}
+        |expr SUBTRACTION expr  {$$ =  $1 - $3;}
+        |expr MULTI expr        {$$ =  $1 * $3;}
+        |expr DIVISION expr     {$$ =  $1 / $3;}
+        |expr MODULUS expr      {$$ =  $1 % $3;}
+        |expr GRETER_THAN expr  {$$ =  $1 > $3;}
+        |expr GRE_EQUAL expr    {$$ =  $1 >= $3;}
+        |expr LESS_THAN expr    {$$ =  $1 < $3;}
+        |expr LES_EQUAL expr    {$$ =  $1 <= $3;}
+        |expr EQUAL expr        {$$ =  $1 == $3;}
+        |expr NOTEQUAL expr     {$$ =  $1 != $3;}
+        |expr AND expr          {$$ =  $1 && $3;}
+        |expr OR expr           {$$ =  $1 || $3;}
         |term
         ;
 
 term:   LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
         |SUBTRACTION expr
         |NOT expr
-        |INCREMENT lvalue {if((lookup_scope(CURR_SCOPE,yylval.stringValue)->type) == 0){
-                "hi";
-        }}
+        |INCREMENT lvalue {if(yylval.exprNode->type == fuction)
+                                yyerror("Cant incrment fuction");
+        }
         |lvalue INCREMENT
         |DECREMENT lvalue
         |lvalue DECREMENT
@@ -300,7 +305,7 @@ primary: lvalue
         |const
         ;
 
-lvalue:  ID { insert_ID(yylval.stringValue);  }
+lvalue:  ID { yylval.exprNode = insert_ID(yylval.stringValue);  }
         |LOCAL ID { insert_local(yylval.stringValue);}
         |SCOPE_RESOLUTION ID { check_global(yylval.stringValue);} //::
         |member
