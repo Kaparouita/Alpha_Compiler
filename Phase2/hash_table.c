@@ -3,6 +3,7 @@
 #include <string.h>
 #include "Symbol_Table.h"
 
+extern int yyerror (char* yaccProvidedMessage);
 
 /**
  * @brief VARIABLES
@@ -308,6 +309,14 @@ void print_format(){
         print_scope(scope);
         myvar = get_scope_var(++scope);
     }
+}
+
+void check_if_fuction(var *v){
+    if(v == NULL)
+        return;
+    if(v->type == fuction)
+        yyerror("Illegal operation with fuction");
+    return;
 }
 /*
 int main()

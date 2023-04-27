@@ -19,6 +19,7 @@
         int curr_anonymous = 0; //keep track for anonymous
         int if_flag = 0;
         int for_flag = 0;
+        int error_flag = 0;     // check if there were errors
 
 
         /*function for check ids and insert to STable*/
@@ -37,7 +38,7 @@
                 /*an yparxei hdh */
                 else{ 
                         //aneferomaste kai menei na doume an exoume prosvash
-                        printf("Anafora sto %s : %s \n",enum_type(myvar->type) ,myvar->name);
+                        printf("Anafora sto %s : %s \n",enum_type(myvar->type) ,myvar->name); //TESTING PRINT
                         //check if we have access
                         if(check_access(myvar) == 0 && myvar->scope != 0){
                                 yyerror("Cannot access var ");
@@ -56,7 +57,7 @@
                         return;
                 }
                 //alliws anaferomaste ekei
-                printf("Anafora sto %s : %s \n",enum_type(myvar->type) ,myvar->name);
+                printf("Anafora sto %s : %s \n",enum_type(myvar->type) ,myvar->name);  //TESTING PRINT
         }
 
         /*function to insert formal variables*/
@@ -115,7 +116,7 @@
                 var_id curr_id= local;
                 /*an vrethei metavlhth sto table aneferomaste ekei*/
                 if(currVar != NULL){  
-                        printf("Anafora sto %s : %s \n",enum_type(currVar->type) ,currVar->name);
+                        printf("Anafora sto %s : %s \n",enum_type(currVar->type) ,currVar->name);  //TESTING PRINT
                         return;
                 }
                 /*tsekare an yparxoun collisions me lib fuction*/
@@ -266,7 +267,7 @@ stmt:   expr SEMICOLON
         ;
 
 
-expr:   assignexpr
+expr:   assignexpr              {}
         |expr ADDITION expr     {$$ =  $1 + $3;}
         |expr SUBTRACTION expr  {$$ =  $1 - $3;}
         |expr MULTI expr        {$$ =  $1 * $3;}
@@ -280,22 +281,21 @@ expr:   assignexpr
         |expr NOTEQUAL expr     {$$ =  $1 != $3;}
         |expr AND expr          {$$ =  $1 && $3;}
         |expr OR expr           {$$ =  $1 || $3;}
-        |term
+        |term                   {}
         ;
 
 term:   LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
-        |SUBTRACTION expr
-        |NOT expr
-        |INCREMENT lvalue {if(yylval.exprNode->type == fuction)
-                                yyerror("Cant incrment fuction");
-        }
-        |lvalue INCREMENT
-        |DECREMENT lvalue
-        |lvalue DECREMENT
+        |SUBTRACTION expr {check_if_fuction(yylval.exprNode);}
+        |NOT expr         {check_if_fuction(yylval.exprNode);}
+        |INCREMENT lvalue {check_if_fuction(yylval.exprNode);}
+        |lvalue INCREMENT {check_if_fuction(yylval.exprNode);}
+        |DECREMENT lvalue {check_if_fuction(yylval.exprNode);}
+        |lvalue DECREMENT {check_if_fuction(yylval.exprNode);}
         |primary
         ;        
 
-assignexpr: lvalue ASSIGNMENT expr
+assignexpr: lvalue      {check_if_fuction(yylval.exprNode);}
+        ASSIGNMENT      expr
         ;    
 
 primary: lvalue
@@ -305,16 +305,16 @@ primary: lvalue
         |const
         ;
 
-lvalue:  ID { yylval.exprNode = insert_ID(yylval.stringValue);  }
-        |LOCAL ID { insert_local(yylval.stringValue);}
-        |SCOPE_RESOLUTION ID { check_global(yylval.stringValue);} //::
-        |member
+lvalue:  ID                     { yylval.exprNode = insert_ID(yylval.stringValue);  }
+        |LOCAL ID               { insert_local(yylval.stringValue);}
+        |SCOPE_RESOLUTION ID    { check_global(yylval.stringValue);} //::
+        |member                 {}
         ;             
 
 member:  lvalue FULL_STOP ID
         |lvalue LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET // []
-        |call FULL_STOP ID
-        |call LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET
+        |call   FULL_STOP ID
+        |call   LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET
         ;
 
 call:    call LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS
@@ -417,6 +417,7 @@ returnstmt: RETURN {if(CURR_SCOPE == 0)yyerror("return w/o function");} expr SEM
 int yyerror(char* yaccProvidedMessage){
                 //provide error message example:
         fprintf(stderr,"%s: error at line %d , before token %s\n",yaccProvidedMessage,yylineno,yytext);
+        error_flag = 1;
         //fprintf(stderr,"INVALID INPUT\n");
 }
 
@@ -439,6 +440,8 @@ int main(int argc, char** argv){
     init_lib_func();
     //yyset_in(input_file); // set the input stream for the lexer
     yyparse(); // call the parser function
-    //print_format();
+    if(error_flag != 0)
+        printf("/-------------   ERRORS     -------------------/\n");
+    print_format();
     return 0;
 }

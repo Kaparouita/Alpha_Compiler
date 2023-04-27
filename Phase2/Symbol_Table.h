@@ -107,7 +107,7 @@ var* lookup_scope(int scope,char*vname);
  */
 var *get_scope_var(int scope);
 /**
- * @brief 
+ * @brief look up all the table
  * 
  * @param table 
  * @param v 
@@ -122,7 +122,6 @@ char *enum_id(var_type id);
  * Print gia enum(type)
 */
 char *enum_type(var_type type);
-var_id switch_enum(var_id id );
 /**
  * @brief hide all variables withing scope
  * 
@@ -153,10 +152,20 @@ void print_var(var *v);
  */
 void print_scope(int scope);
 
-/*gia ta last scope checks*/
+/**
+ * @brief gia ta checks tou last fuction
+ * ousiastika gia ta access einai
+ */
 void delete_last_fuction_scope();
 void fuction_scope_insert(int scope);
 
+/**
+ * @brief check if the fuction is anonymous
+ * if the name equals '_' it is
+ * 
+ * @param name 
+ * @return the fuction name 
+ */
 char *check_anonymous(char *name);
 
 var *lookup_var(char* vname);
@@ -168,9 +177,6 @@ var *lookup_var(char* vname);
  */
 int check_access(var *myvar);
 
-var *lookup_global(char* vname);
-
-int max_scope(int current_scope,int previos_scope);
 /**
  * @brief init all lib fuctions
  * 
@@ -178,5 +184,20 @@ int max_scope(int current_scope,int previos_scope);
  */
 void init_lib_func();
 
+/**
+ * @brief printing opws tou savvidh
+ * 
+ */
 void print_format();
+/**
+ * @brief print olo to table
+ * 
+ * @param oSymTable 
+ */
 void print_table(var_table *oSymTable);
+
+/**
+ * @brief check if v is a fuction
+ * error if not
+ */
+void check_if_fuction(var *v);
