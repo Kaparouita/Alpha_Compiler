@@ -7,6 +7,7 @@ unsigned programVarOffset=0;
 unsigned functionLocalOffset=0;
 unsigned formalArgOffset=0;
 unsigned scopeSpaceCounter=1;
+int tempcounter=0;
 
 #define EXPAND_SIZE 1024
 #define CURR_SIZE (total*sizeof(quad))
@@ -14,7 +15,7 @@ unsigned scopeSpaceCounter=1;
 
 typedef enum iopcode{
     assign, add , sub,
-    mul,    div,    mod,
+    mul,    n_div,    mod,
     uminus, and,    or,
     not,    if_eq,  if_noteq,
     if_lesseq,  if_geatereq, if_less,
@@ -65,12 +66,12 @@ typedef struct symbol{
 
 typedef struct expr{
     expr_t  type;
-    symbol *   sym;
-    expr *  index;  
+    var *   sym;
+    struct expr *  index;  
     double  numConst;
     char *  strConst;
     unsigned char   boolConst;
-    expr * next;
+    struct expr * next;
 }expr;
 
 typedef struct quad{
@@ -118,12 +119,115 @@ scopespace_t currscopespace(){
 }
 
 unsigned currscopeoffset(){
-    switch (currscopespace)
-    {
-    case /* constant-expression */:
-        /* code */
-        break;
-    
-    default: assert(0);
+    switch (currscopespace()){
+        case programvar : return programVarOffset;
+        case functionlocal : return functionLocalOffset;
+        case formalarg : return formalArgOffset;
+        default: assert(0);
     }
+}
+
+void inccurrscopeoffset(){
+    switch (currscopespace()){
+        case programvar :  ++programVarOffset; break;
+        case functionlocal :++functionLocalOffset; break;
+        case formalarg : ++formalArgOffset; break;
+        default: assert(0);
+    }
+}
+
+void enterscopespace(){ ++scopeSpaceCounter;}
+
+void exitscopespace(){ 
+    assert(scopeSpaceCounter>1);
+    --scopeSpaceCounter;
+}
+
+void resetformalargsofset(){ formalArgOffset=0;}
+
+void resetfunctionlocaloffset(){ functionLocalOffset=0;}
+
+void restorecurrscopeoffset(unsigned n){
+    switch (currscopespace()){
+        case programvar :  programVarOffset=n; break;
+        case functionlocal :functionLocalOffset=n; break;
+        case formalarg : formalArgOffset=n; break;
+        default: assert(0);
+    }
+}
+
+unsigned nextquadlabel(){ return currQuad;}
+
+void patchlabel(unsigned quadNo, unsigned label){
+    assert(quadNo<currQuad);
+    quads[quadNo].label=label; //edw mporei na thelei alagh 
+}
+
+expr* lvalue_expr(var* sym){
+    assert(sym);
+    expr* e=(expr*)malloc(sizeof(expr));
+    memset(e,0,sizeof(expr));
+
+    e->next=(expr*) 0;
+    e->sym=sym;
+
+    switch (sym->type){
+        case var_s :  e->type=var_e; break;
+        case programfunc_s :e->type=programfunc_e; break;
+        case libraryfunc_s : e->type=libraryfunc_e; break;
+        default: assert(0);
+    }
+    return e;
+}
+
+expr* newexpr(expr_t t){
+    expr* e=(expr*)malloc(sizeof(expr));
+    memset(e,0,sizeof(expr));
+    e->type=t;
+    return e;
+}
+
+expr* newexpr_conststring(char* s){
+    expr* e=newexpr(conststring_e);
+    e->strConst=strdup(s);
+    return e;
+} 
+
+char* newtempvars() {
+    char buffer[32];             // allocate a fixed-size buffer on the stack
+    sprintf(buffer, "_t%d", tempcounter++);
+    return strdup(buffer);      // use strdup to allocate a new string on the heap
+}
+
+// !!!PREPEI NA TO FTIAKSUME AFTO 
+symrec_t* newtemp() {
+    char *name = newtempvars();
+    symrec_t *sym = LOOKUP(scope,name); //!!!!PREPEI NA TO FTIAKSUME AFTO 
+    if (sym == NULL) 
+        sym = insert(scope, 0, SYM_LOCAL_VAR, name);  //!!!!PREPEI NA TO FTIAKSUME AFTO
+  
+    return sym;
+}
+
+expr* emit_iftableitem(expr* e){
+    if(e->type!=tableitem_e) return e;
+    else{
+        expr* result=newexpr(var_e);
+        result->sym=newtemp(); 
+        emit(tablegetelem,e,e->index,result);
+        return result;
+    }
+}
+
+expr* make_call(expr* lv,expr* reversed_elist){
+    expr*func=emit_iftableitem(lv);
+    while ((reversed_elist)){
+        emit(param,reversed_elist,NULL,NULL);
+        reversed_elist=reversed_elist->next;
+    }
+    emit(call,func,NULL,NULL);
+    expr* result=newexpr(var_e);
+    result->sym=newtemp();
+    emit(getretval,NULL,NULL,result);
+    return result;
 }

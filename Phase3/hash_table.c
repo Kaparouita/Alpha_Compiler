@@ -318,30 +318,3 @@ void check_if_fuction(var *v){
         yyerror("Illegal operation with fuction");
     return;
 }
-/*
-int main()
-{
-    
-    table = create_table(5381);
-
-    var *x= new_var(fuction,global,"x",1,1,0);
-    var *y=new_var(varr,global,"y",1,1,8);
-    var *k=new_var(fuction,lib_func,"k",2,1,0);
-    hash_insert(y,table);
-   // hash_insert(new_var(varr,global,"x",1,1,3),table);
-   hash_insert(new_var(varr,local,"t",2,1,3),table);
-   hash_insert(new_var(varr,local,"Y",3,1,3),table);
-   hash_insert(new_var(varr,local,"U",3,1,3),table);
-
-    hash_insert(k,table);
-    hash_insert(x,table);
-    init_lib_func();
-
-    var *new = lookup_in_out(3,"t");
-    if(new!=NULL)
-        printf("YO %s\n",new->name);
-    hide_all(2);
-    //hide(1);
-    print_scope(2);   
-   
-}*/
