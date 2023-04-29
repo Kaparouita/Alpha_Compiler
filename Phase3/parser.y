@@ -2,12 +2,12 @@
         #include <stdio.h>
         //#include "lex.yy.h" // alphayylex?
         #include "Symbol_Table.h"
-        
+        #include "quads.h"
 
         int yyerror (char* yaccProvidedMessage);
         int yylex (void);
 
-
+        extern unsigned scopeSpaceCounter;
         extern int yylineno;
         extern char* yytext;
         extern FILE* yyin;
@@ -332,11 +332,19 @@ block:  LEFT_CURLY_BRACKET {
 
 funcdef:
         FUNCTION ID{
+                scopeSpaceCounter++;   // auksanoume to counter gia to ti var einai kata 1
                 function_insert(yylval.stringValue);  // insert to fuction
                 fuction_scope_insert(CURR_SCOPE++);   // gia na kratame to teleutaio scope
-        }LEFT_PARENTHESIS moreidilist RIGHT_PARENTHESIS{
-                CURR_SCOPE--;
-        } block {delete_last_fuction_scope();}
+        }LEFT_PARENTHESIS 
+                moreidilist {
+                        scopeSpaceCounter++;
+                }
+                RIGHT_PARENTHESIS{
+                        CURR_SCOPE--;
+        } block {
+                delete_last_fuction_scope();
+                scopeSpaceCounter-=2;
+        }
 
         |FUNCTION {
                 //no name fuct

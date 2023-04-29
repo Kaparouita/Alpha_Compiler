@@ -1,14 +1,3 @@
-#include "Symbol_Table.h"
-#include <assert.h>
-
-unsigned total=0;
-unsigned int currQuad=0;
-unsigned programVarOffset=0;
-unsigned functionLocalOffset=0;
-unsigned formalArgOffset=0;
-unsigned scopeSpaceCounter=1;
-int tempcounter=0;
-
 #define EXPAND_SIZE 1024
 #define CURR_SIZE (total*sizeof(quad))
 #define NEW_SIZE (EXPAND_SIZE*sizeof(quad)+CURR_SIZE)
@@ -55,7 +44,7 @@ typedef enum scopespace_t{
 typedef enum symbol_t{var_s,programfunc_s,libraryfunc_s} symbol_t;
 
 typedef struct symbol{
-    symbol_t * type;
+    symbol_t  type;
     char *  name; //dynamic string
     scopespace_t space; //originating scope space
     unsigned   offset;  //offset in scope space
@@ -66,7 +55,7 @@ typedef struct symbol{
 
 typedef struct expr{
     expr_t  type;
-    var *   sym;
+    symbol *   sym; // check this 
     struct expr *  index;  
     double  numConst;
     char *  strConst;
@@ -85,149 +74,146 @@ typedef struct quad{
 
 quad* quads=(quad*)0;  //nitializes the pointer to the memory address 0,
 
+/**
+ * epektini ton pinaka twn quads
+*/
+void expand(void);
 
-void expand(){
-    assert(total==currQuad);
-    quad* p=(quad*)malloc(NEW_SIZE);
-    if(quads==0){
-        memcpy(p,quads,CURR_SIZE);
-        free(quads);
-    }
-    quads=p;
-    total+=EXPAND_SIZE;
-}
+/**
+ * @brief constractor gia quad 
+ * to vazei sto teleuteo quads
+ * @param iopcode op
+ * @param expr* arg1
+ * @param expr* arg2
+ * @param expr* result
+ * @param unsigned int label
+ * @param unsigned int line
+ * @return void
+*/
+void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned int label, unsigned int  line);
 
-void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned label, unsigned line){
-    if(currQuad==total) expand();
 
-    quad* p=quads+currQuad++;
-    p->arg1=arg1;
-    p->arg2=arg2;
-    p->result=result;
-    p->label=label;
-    p->line=line;
-}
+/**
+ * @brief to type ths metavlhths analoga to scope ths
+ * @return scopespace_t
+ * @param none
+*/
+scopespace_t currscopespace(void);
 
-scopespace_t currscopespace(){
-    if(scopeSpaceCounter==1)
-        return programvar;
-    else
-        if(scopeSpaceCounter%2==0)
-            return formalarg;
-        else 
-            return functionlocal;
-}
+/**
+ * @brief to offset sto current scope space
+ * @param void
+ * @return unsigned int 
+*/
+unsigned int  currscopeoffset(void);
 
-unsigned currscopeoffset(){
-    switch (currscopespace()){
-        case programvar : return programVarOffset;
-        case functionlocal : return functionLocalOffset;
-        case formalarg : return formalArgOffset;
-        default: assert(0);
-    }
-}
+/**
+ * increment to offset in to current scope space
+ * depend the type of var  , insert in to ST
+ * @param void
+ * @return void
+*/
+void inccurrscopeoffset(void);
 
-void inccurrscopeoffset(){
-    switch (currscopespace()){
-        case programvar :  ++programVarOffset; break;
-        case functionlocal :++functionLocalOffset; break;
-        case formalarg : ++formalArgOffset; break;
-        default: assert(0);
-    }
-}
+/**
+ * increment to the counter scopeSpaceCounter
+ * @param void
+ * @return void
+*/
+void enterscopespace(void);
 
-void enterscopespace(){ ++scopeSpaceCounter;}
+/**
+ * decrement to the counter scopeSpaceCounter 
+ * @param void
+ * @return void
+*/
+void exitscopespace(void);
 
-void exitscopespace(){ 
-    assert(scopeSpaceCounter>1);
-    --scopeSpaceCounter;
-}
+/**
+ * assign 0 to the offset of forml args
+ * @param void
+ * @return void
+*/
+void resetformalargsofset(void);
 
-void resetformalargsofset(){ formalArgOffset=0;}
+/**
+ * assign 0 to the offset of function locals
+ * @param void
+ * @return void
+*/
+void resetfunctionlocaloffset(void);
 
-void resetfunctionlocaloffset(){ functionLocalOffset=0;}
+/**
+ * reset the initial scope space
+ * @param void
+ * @return void
+*/
+void restorecurrscopeoffset(unsigned int  n);
 
-void restorecurrscopeoffset(unsigned n){
-    switch (currscopespace()){
-        case programvar :  programVarOffset=n; break;
-        case functionlocal :functionLocalOffset=n; break;
-        case formalarg : formalArgOffset=n; break;
-        default: assert(0);
-    }
-}
+/**
+ * retern the label from the next quad
+ * @param void
+ * @return unsigned int
+*/
+unsigned int nextquadlabel(void);
 
-unsigned nextquadlabel(){ return currQuad;}
+/**
+ * function for backpatching
+ * @param unsigned int quadNo
+ * @param unsigned int label
+ * @return void
+*/
+void patchlabel(unsigned int quadNo, unsigned int label);
 
-void patchlabel(unsigned quadNo, unsigned label){
-    assert(quadNo<currQuad);
-    quads[quadNo].label=label; //edw mporei na thelei alagh 
-}
+/**
+ * create a lvalue expr and return it
+ * @param symbol* sym
+ * @return expr*
+*/
+expr* lvalue_expr(symbol* sym);
 
-expr* lvalue_expr(var* sym){
-    assert(sym);
-    expr* e=(expr*)malloc(sizeof(expr));
-    memset(e,0,sizeof(expr));
+/**
+ * create a table member
+ * @param expr* lv
+ * @param char* name
+ * @return expr*
+*/
+expr* member_item (expr* lv, char* name);
+-------------------------------------------
+/**
+ * create a lvalue expr and return it
+ * @param expr_t  t
+ * @return expr*
+*/
+expr* newexpr(expr_t t);
 
-    e->next=(expr*) 0;
-    e->sym=sym;
+/**
+ * create a lvalue expr and return it
+ * @param char* s
+ * @return expr*
+*/
+expr* newexpr_conststring(char* s);
 
-    switch (sym->type){
-        case var_s :  e->type=var_e; break;
-        case programfunc_s :e->type=programfunc_e; break;
-        case libraryfunc_s : e->type=libraryfunc_e; break;
-        default: assert(0);
-    }
-    return e;
-}
+/**
+ * create a lvalue expr and return it
+ * @return char*
+*/
+char* newtempvars(void);
 
-expr* newexpr(expr_t t){
-    expr* e=(expr*)malloc(sizeof(expr));
-    memset(e,0,sizeof(expr));
-    e->type=t;
-    return e;
-}
 
-expr* newexpr_conststring(char* s){
-    expr* e=newexpr(conststring_e);
-    e->strConst=strdup(s);
-    return e;
-} 
+symrec_t* newtemp(void);
 
-char* newtempvars() {
-    char buffer[32];             // allocate a fixed-size buffer on the stack
-    sprintf(buffer, "_t%d", tempcounter++);
-    return strdup(buffer);      // use strdup to allocate a new string on the heap
-}
+/**
+ * create a lvalue expr and return it
+ * @param expr* e
+ * @return expr*
+*/
+expr* emit_iftableitem(expr* e);
 
-// !!!PREPEI NA TO FTIAKSUME AFTO 
-symrec_t* newtemp() {
-    char *name = newtempvars();
-    symrec_t *sym = LOOKUP(scope,name); //!!!!PREPEI NA TO FTIAKSUME AFTO 
-    if (sym == NULL) 
-        sym = insert(scope, 0, SYM_LOCAL_VAR, name);  //!!!!PREPEI NA TO FTIAKSUME AFTO
-  
-    return sym;
-}
-
-expr* emit_iftableitem(expr* e){
-    if(e->type!=tableitem_e) return e;
-    else{
-        expr* result=newexpr(var_e);
-        result->sym=newtemp(); 
-        emit(tablegetelem,e,e->index,result);
-        return result;
-    }
-}
-
-expr* make_call(expr* lv,expr* reversed_elist){
-    expr*func=emit_iftableitem(lv);
-    while ((reversed_elist)){
-        emit(param,reversed_elist,NULL,NULL);
-        reversed_elist=reversed_elist->next;
-    }
-    emit(call,func,NULL,NULL);
-    expr* result=newexpr(var_e);
-    result->sym=newtemp();
-    emit(getretval,NULL,NULL,result);
-    return result;
-}
+/**
+ * create a lvalue expr and return it
+ * @param expr* lv
+ * @param expr* reversed_elist
+ * @return expr*
+*/
+expr* make_call(expr* lv,expr* reversed_elist);
