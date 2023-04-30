@@ -1,5 +1,8 @@
 #include <assert.h>
 #include "quads.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
 unsigned total=0;
 unsigned int currQuad=0;
@@ -8,6 +11,7 @@ unsigned functionLocalOffset=0;
 unsigned formalArgOffset=0;
 unsigned scopeSpaceCounter=1;
 int tempcounter=0;
+quad* quads=(quad*)0;  //nitializes the pointer to the memory address 0,
 
 void expand(){
     assert(total==currQuad);
@@ -23,13 +27,14 @@ void expand(){
 void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned int label, unsigned int line){
     if(currQuad==total) 
         expand();
-
     quad* p=quads+currQuad++;
+    p->op  = op;
     p->arg1=arg1;
     p->arg2=arg2;
     p->result=result;
     p->label=label;
     p->line=line;
+    print_quad(p);
 }
 
 scopespace_t currscopespace(){
@@ -105,7 +110,7 @@ expr* lvalue_expr(symbol* sym){
 }
 
 expr* member_item (expr* lv, char* name) {
-    lv = emit_iftableitem(lv); // Emit code if r-value use of table item
+    //lv = emit_iftableitem(lv); // Emit code if r-value use of table item
     expr* ti = newexpr(tableitem_e); // Make a new expression
     ti->sym = lv->sym;
     ti->index = newexpr_conststring(name); // Const string index
@@ -132,6 +137,7 @@ char* newtempvars() {
     return strdup(buffer);      // use strdup to allocate a new string on the heap
 }
 
+/*
 //!!! SLIDE 45 LEC 9
 symrec_t* newtemp() {
     char *name = newtempvars();
@@ -164,4 +170,110 @@ expr* make_call(expr* lv,expr* reversed_elist){
     emit(getretval,NULL,NULL,result);
     return result;
 }
+*/
 
+
+
+/*PAIZW ME PRINTS IGNORE*/
+void print_quad(struct quad *q) {
+    printf("op: %s, result: ", get_op_name(q->op));
+    print_expr(q->result);
+    printf(", arg1: ");
+    print_expr(q->arg1);
+    printf(", arg2: ");
+    print_expr(q->arg2);
+    printf(", label: %d, line: %d\n", q->label, q->line);
+}
+
+
+void print_expr(struct expr* e) {
+    if (e == NULL) {
+        printf("expr is NULL\n");
+        return;
+    }
+    printf("expr_t: %s\n", get_expr_t_name(e->type));
+    //printf("sym: %s\n", e->sym->name);
+    if (e->index != NULL) {
+        printf("index:\n");
+        print_expr(e->index);
+    }
+    if (e->next != NULL) {
+        printf("next:\n");
+        print_expr(e->next);
+    }
+}
+
+const char* get_op_name(iopcode opcode) {
+    switch(opcode) {
+        case assign:
+            return "assign";
+        case add:
+            return "add";
+        case sub:
+            return "sub";
+        case mul:
+            return "mul";
+        case n_div:
+            return "n_div";
+        case mod:
+            return "mod";
+        case uminus:
+            return "uminus";
+        case and:
+            return "and";
+        case or:
+            return "or";
+        case not:
+            return "not";
+        case if_eq:
+            return "if_eq";
+        case if_noteq:
+            return "if_noteq";
+        case if_lesseq:
+            return "if_lesseq";
+        case if_geatereq:
+            return "if_geatereq";
+        case if_less:
+            return "if_less";
+        case if_greater:
+            return "if_greater";
+        case call:
+            return "call";
+        case param:
+            return "param";
+        case ret:
+            return "ret";
+        case getretval:
+            return "getretval";
+        case funcstart:
+            return "funcstart";
+        case funcdef:
+            return "funcdef";
+        case tablecreate:
+            return "tablecreate";
+        case tablegetelem:
+            return "tablegetelem";
+        case tablesetelem:
+            return "tablesetelem";
+        default:
+            return "unknown";
+    }
+}
+
+const char* get_expr_t_name(expr_t type) {
+    switch(type) {
+        case var_e: return "var_e";
+        case tableitem_e: return "tableitem_e";
+        case programfunc_e: return "programfunc_e";
+        case libraryfunc_e: return "libraryfunc_e";
+        case arithexpr_e: return "arithexpr_e";
+        case boolexpr_e: return "boolexpr_e";
+        case assignexpr_e: return "assignexpr_e";
+        case newtable_e: return "newtable_e";
+        case constnum_e: return "constnum_e";
+        case constbool_e: return "constbool_e";
+        case conststring_e: return "conststring_e";
+        case nil_e: return "nil_e";
+        default: return "unknown";
+    }
+}

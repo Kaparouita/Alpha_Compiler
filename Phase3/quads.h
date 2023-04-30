@@ -2,6 +2,7 @@
 #define CURR_SIZE (total*sizeof(quad))
 #define NEW_SIZE (EXPAND_SIZE*sizeof(quad)+CURR_SIZE)
 
+
 typedef enum iopcode{
     assign, add , sub,
     mul,    n_div,    mod,
@@ -11,8 +12,7 @@ typedef enum iopcode{
     if_greater, call,   param,
     ret,    getretval,  funcstart,
     funcdef, tablecreate,   
-    tablegetelem, tablesetelem     
-    
+    tablegetelem, tablesetelem        
 }iopcode;
 
 typedef enum expr_t{
@@ -72,7 +72,6 @@ typedef struct quad{
     unsigned  line;
 }quad;
 
-quad* quads=(quad*)0;  //nitializes the pointer to the memory address 0,
 
 /**
  * epektini ton pinaka twn quads
@@ -94,8 +93,8 @@ void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned int label, 
 
 
 /**
- * @brief to type ths metavlhths analoga to scope ths
- * @return scopespace_t
+ * @brief 
+ * @return to type ths metavlhths analoga to scope ths
  * @param none
 */
 scopespace_t currscopespace(void);
@@ -179,7 +178,9 @@ expr* lvalue_expr(symbol* sym);
  * @return expr*
 */
 expr* member_item (expr* lv, char* name);
--------------------------------------------
+
+//-------------------------------------------
+
 /**
  * create a lvalue expr and return it
  * @param expr_t  t
@@ -201,7 +202,7 @@ expr* newexpr_conststring(char* s);
 char* newtempvars(void);
 
 
-symrec_t* newtemp(void);
+//symrec_t* newtemp(void);
 
 /**
  * create a lvalue expr and return it
@@ -217,3 +218,9 @@ expr* emit_iftableitem(expr* e);
  * @return expr*
 */
 expr* make_call(expr* lv,expr* reversed_elist);
+
+
+void print_expr(expr* e);
+void print_quad(struct quad* q);
+const char* get_op_name(iopcode opcode);
+const char* get_expr_t_name(expr_t type);

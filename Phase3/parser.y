@@ -151,6 +151,7 @@
         int intValue;
         double realValue;
         struct var *exprNode;
+        struct expr *currExpr;
 }
 
 /*KEYWORDS*/
@@ -201,7 +202,7 @@ RIGHT_PARENTHESIS SEMICOLON COMMA SCOPE_RESOLUTION COLON FULL_STOP DOUBLE_FULL_S
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS		
 
 %type <intValue> expr
-%type <exprNode> lvalue 
+%type <currExpr> lvalue
 
 %start program  /*specify the start symbol of the grammar*/
 
@@ -298,15 +299,15 @@ normcall:   LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS
 methodcall: DOUBLE_FULL_STOP ID LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS 
         ;    
 
-elist:  expr
+elist:  expr   //elist polla expr
         ;
 
 moreElist: elist        
         |moreElist COMMA elist
-        |
+        |  //?
         ;     
 
-objectdef: LEFT_SQUARE_BRACKET  moreElist RIGHT_SQUARE_BRACKET
+objectdef: LEFT_SQUARE_BRACKET  {emit(tablecreate,newexpr(tableitem_e),NULL,NULL,1,yylineno);} moreElist RIGHT_SQUARE_BRACKET   
         |LEFT_SQUARE_BRACKET   indexed  RIGHT_SQUARE_BRACKET
         ;     
 
@@ -415,6 +416,6 @@ int main(int argc, char** argv){
     yyparse(); // call the parser function
     if(error_flag != 0)
         printf("/-------------   ERRORS     -------------------/\n");
-    print_format();
+   // print_format();
     return 0;
 }
