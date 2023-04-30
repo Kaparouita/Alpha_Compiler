@@ -144,6 +144,18 @@ expr* newexpr_conststring(char* s){
     return e;
 } 
 
+expr* newexpr_constnum(int n){
+    expr* e=newexpr(constnum_e);
+    e->numConst= n;
+    return e;
+} 
+
+expr* newexpr_constbool(char c){
+    expr* e=newexpr(boolexpr_e);
+    e->boolConst= c;
+    return e;    
+}
+
 char* newtempvars() {
     char buffer[32];             // allocate a fixed-size buffer on the stack
     sprintf(buffer, "_t%d", tempcounter++);
@@ -294,7 +306,7 @@ const char* get_expr_t_name(expr_t type) {
 void check_if_fuction(expr* e){
     if(e == NULL)
         return;
-    if(e->sym->type != var_s)
+    if(e->type == tableitem_e || e->type == programfunc_e || e->type == libraryfunc_e || e->type == boolexpr_e || e->type == nil_e)
         yyerror("Illegal operation with fuction");
     return;
 }
@@ -306,4 +318,50 @@ symbol_t sym_var_type(int type){
         return programfunc_s;
     else 
         return libraryfunc_s;
+}
+
+expr* do_maths(expr* expr1,expr* expr2,iopcode op){
+    return NULL; // kapws prepei na anashrw ta expr apo ton parser prin auto
+    check_if_fuction(expr1);
+    check_if_fuction(expr2);
+    expr* r = newexpr(arithexpr_e);
+    switch (op)
+    {
+    case add:
+        return newexpr_constnum( expr1->numConst + expr2->numConst);
+    case sub:
+        return newexpr_constnum( expr1->numConst - expr2->numConst);
+    case mul:
+        return newexpr_constnum( expr1->numConst * expr2->numConst);
+    case n_div:
+        return newexpr_constnum( expr1->numConst / expr2->numConst);
+    case if_lesseq:
+        return newexpr_constnum( expr1->numConst <= expr2->numConst);
+    case if_geatereq:
+        return newexpr_constnum( expr1->numConst >= expr2->numConst);
+    case if_greater:
+        return newexpr_constnum( expr1->numConst > expr2->numConst);
+    case if_less:
+        return newexpr_constnum( expr1->numConst < expr2->numConst);
+    default:
+        yyerror("wrong operation");
+    }
+}
+
+expr* do_bool(expr* expr1,expr* expr2,iopcode op){
+    return NULL; // kapws prepei na anashrw ta expr apo ton parser prin auto
+    check_if_fuction(expr1);
+    check_if_fuction(expr2);
+    switch (op){
+    case if_eq:
+        return newexpr_constbool(expr1->numConst == expr2->numConst);
+    case if_noteq:
+        return newexpr_constbool(expr1->numConst != expr2->numConst);
+    case and:
+        return newexpr_constbool(expr1->numConst && expr2->numConst);
+    case or:
+        return newexpr_constbool(expr1->numConst || expr2->numConst);
+    default:
+        yyerror("wrong operation");
+    }
 }

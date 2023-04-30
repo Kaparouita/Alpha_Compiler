@@ -206,6 +206,9 @@ expr* newexpr(expr_t t);
 */
 expr* newexpr_conststring(char* s);
 
+expr* newexpr_constnum(int n);
+expr* newexpr_constbool(char c);
+
 /**
  * create a lvalue expr and return it
  * @return char*
@@ -242,3 +245,6 @@ const char* get_expr_t_name(expr_t type);
 void check_if_fuction(expr* e);
 
 symbol_t sym_var_type(int type);
+
+expr* do_maths(expr* expr1,expr* expr2,iopcode op);
+expr* do_bool(expr* expr1,expr* expr2,iopcode op);

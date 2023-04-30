@@ -104,7 +104,7 @@
                         myvar =new_var(varr,curr_id,name,CURR_SCOPE,1,yylineno); 
                         hash_insert(myvar,table);
                         print_var(myvar);
-                        //inccurrscopeoffset();              
+                        inccurrscopeoffset();              
                 } 
                 /*an yparxei hdh */
                 else{ 
@@ -767,12 +767,12 @@ static const yytype_int16 yyrline[] =
      247,   248,   249,   250,   251,   252,   253,   254,   255,   256,
      257,   258,   259,   260,   263,   264,   265,   266,   267,   268,
      269,   270,   273,   273,   277,   278,   279,   280,   281,   284,
-     285,   286,   287,   290,   291,   292,   293,   296,   297,   298,
-     302,   303,   306,   309,   312,   315,   316,   317,   320,   320,
-     323,   326,   330,   331,   334,   338,   338,   347,   352,   355,
-     347,   362,   366,   362,   371,   372,   373,   374,   375,   376,
-     379,   380,   383,   384,   388,   388,   389,   392,   392,   396,
-     396,   399,   399
+     285,   286,   287,   291,   292,   293,   294,   297,   298,   299,
+     303,   304,   307,   310,   313,   316,   317,   318,   321,   321,
+     324,   327,   331,   332,   335,   339,   339,   348,   353,   356,
+     348,   363,   367,   363,   372,   373,   374,   375,   376,   377,
+     380,   381,   384,   385,   389,   389,   390,   393,   393,   397,
+     397,   400,   400
 };
 #endif
 
@@ -856,12 +856,12 @@ static const yytype_int8 yydefact[] =
 {
        4,     0,     2,     1,     0,     0,     0,     0,    81,   101,
        5,     7,     0,     0,    88,    89,    87,     0,     0,     0,
-      84,    85,    86,    75,    68,     0,    18,     0,    49,    14,
-      15,     3,     0,    33,    19,    41,    44,    52,    45,    46,
+      84,    85,    86,    75,    68,     0,    18,     0,    50,    14,
+      15,     3,     0,    33,    19,    41,    44,    49,    45,    46,
       16,    17,    48,    10,    11,    12,    13,    94,    96,    97,
-      99,    77,     0,     0,     0,     0,    36,    50,    35,     0,
+      99,    77,     0,     0,     0,     0,    36,    51,    35,     0,
       37,     0,    39,     4,     0,    67,     0,    71,    72,     0,
-       0,    51,     0,     0,     0,     0,     0,     0,     0,     0,
+       0,    52,     0,     0,     0,     0,     0,     0,     0,     0,
        0,     0,     0,     0,     0,     9,    38,    40,     0,    67,
        0,     0,     0,    58,    60,    61,     0,    67,     0,     0,
        0,    67,     0,    93,     0,     6,     8,     0,     0,     0,
@@ -1061,7 +1061,7 @@ static const yytype_int8 yyr2[] =
        3,     3,     3,     3,     3,     3,     3,     3,     3,     3,
        3,     3,     3,     1,     3,     2,     2,     2,     2,     2,
        2,     1,     0,     4,     1,     1,     1,     3,     1,     1,
-       2,     2,     1,     3,     4,     3,     4,     4,     2,     6,
+       1,     2,     2,     3,     4,     3,     4,     4,     2,     6,
        1,     1,     3,     5,     1,     1,     3,     0,     0,     4,
        3,     1,     1,     3,     5,     0,     4,     0,     0,     0,
        9,     0,     0,     7,     1,     1,     1,     1,     1,     1,
@@ -1781,79 +1781,79 @@ yyreduce:
 
   case 20:
 #line 247 "parser.y"
-                                {(yyval.intValue) =  (yyvsp[-2].intValue) + (yyvsp[0].intValue);}
+                                {(yyval.exprValue) =  do_maths((yyvsp[-2].exprValue),(yyvsp[0].exprValue),add);}
 #line 1786 "parser.c"
     break;
 
   case 21:
 #line 248 "parser.y"
-                                {(yyval.intValue) =  (yyvsp[-2].intValue) - (yyvsp[0].intValue);}
+                                {(yyval.exprValue) =  do_maths((yyvsp[-2].exprValue),(yyvsp[0].exprValue),sub);}
 #line 1792 "parser.c"
     break;
 
   case 22:
 #line 249 "parser.y"
-                                {(yyval.intValue) =  (yyvsp[-2].intValue) * (yyvsp[0].intValue);}
+                                {(yyval.exprValue) =  do_maths((yyvsp[-2].exprValue),(yyvsp[0].exprValue),mul);}
 #line 1798 "parser.c"
     break;
 
   case 23:
 #line 250 "parser.y"
-                                {(yyval.intValue) =  (yyvsp[-2].intValue) / (yyvsp[0].intValue);}
+                                {(yyval.exprValue) =  do_maths((yyvsp[-2].exprValue),(yyvsp[0].exprValue),n_div);}
 #line 1804 "parser.c"
     break;
 
   case 24:
 #line 251 "parser.y"
-                                {(yyval.intValue) =  (yyvsp[-2].intValue) % (yyvsp[0].intValue);}
+                                {(yyval.exprValue) =  do_maths((yyvsp[-2].exprValue),(yyvsp[0].exprValue),mod);}
 #line 1810 "parser.c"
     break;
 
   case 25:
 #line 252 "parser.y"
-                                {(yyval.intValue) =  (yyvsp[-2].intValue) > (yyvsp[0].intValue);}
+                                {(yyval.exprValue) =  do_maths((yyvsp[-2].exprValue),(yyvsp[0].exprValue),if_greater);}
 #line 1816 "parser.c"
     break;
 
   case 26:
 #line 253 "parser.y"
-                                {(yyval.intValue) =  (yyvsp[-2].intValue) >= (yyvsp[0].intValue);}
+                                {(yyval.exprValue) =  do_maths((yyvsp[-2].exprValue),(yyvsp[0].exprValue),if_greater);}
 #line 1822 "parser.c"
     break;
 
   case 27:
 #line 254 "parser.y"
-                                {(yyval.intValue) =  (yyvsp[-2].intValue) < (yyvsp[0].intValue);}
+                                {(yyval.exprValue) =  do_maths((yyvsp[-2].exprValue),(yyvsp[0].exprValue),if_greater);}
 #line 1828 "parser.c"
     break;
 
   case 28:
 #line 255 "parser.y"
-                                {(yyval.intValue) =  (yyvsp[-2].intValue) <= (yyvsp[0].intValue);}
+                                {(yyval.exprValue) =  do_maths((yyvsp[-2].exprValue),(yyvsp[0].exprValue),if_greater);}
 #line 1834 "parser.c"
     break;
 
   case 29:
 #line 256 "parser.y"
-                                {(yyval.intValue) =  (yyvsp[-2].intValue) == (yyvsp[0].intValue);}
+                                {(yyval.exprValue) =  do_bool((yyvsp[-2].exprValue),(yyvsp[0].exprValue),if_greater);}
 #line 1840 "parser.c"
     break;
 
   case 30:
 #line 257 "parser.y"
-                                {(yyval.intValue) =  (yyvsp[-2].intValue) != (yyvsp[0].intValue);}
+                                {(yyval.exprValue) =  do_bool((yyvsp[-2].exprValue),(yyvsp[0].exprValue),if_greater);}
 #line 1846 "parser.c"
     break;
 
   case 31:
 #line 258 "parser.y"
-                                {(yyval.intValue) =  (yyvsp[-2].intValue) && (yyvsp[0].intValue);}
+                                {(yyval.exprValue) =  do_bool((yyvsp[-2].exprValue),(yyvsp[0].exprValue),if_greater);}
 #line 1852 "parser.c"
     break;
 
   case 32:
 #line 259 "parser.y"
-                                {(yyval.intValue) =  (yyvsp[-2].intValue) || (yyvsp[0].intValue);}
+                                {(yyval.exprValue) =  do_bool((yyvsp[-2].exprValue),(yyvsp[0].exprValue),if_greater);}
 #line 1858 "parser.c"
     break;
 
@@ -1865,216 +1865,223 @@ yyreduce:
 
   case 35:
 #line 264 "parser.y"
-                          {check_if_fuction(yylval.exprValue);}
+                          {check_if_fuction((yyvsp[0].exprValue));}
 #line 1870 "parser.c"
     break;
 
   case 36:
 #line 265 "parser.y"
-                          {check_if_fuction(yylval.exprValue);}
+                          {check_if_fuction((yyvsp[0].exprValue));}
 #line 1876 "parser.c"
     break;
 
   case 37:
 #line 266 "parser.y"
-                          {check_if_fuction(yylval.exprValue);}
+                          {check_if_fuction((yyvsp[0].exprValue));}
 #line 1882 "parser.c"
     break;
 
   case 38:
 #line 267 "parser.y"
-                          {check_if_fuction(yylval.exprValue);}
+                          {check_if_fuction((yyvsp[-1].exprValue));}
 #line 1888 "parser.c"
     break;
 
   case 39:
 #line 268 "parser.y"
-                          {check_if_fuction(yylval.exprValue);}
+                          {check_if_fuction((yyvsp[0].exprValue));}
 #line 1894 "parser.c"
     break;
 
   case 40:
 #line 269 "parser.y"
-                          {check_if_fuction(yylval.exprValue);}
+                          {check_if_fuction((yyvsp[-1].exprValue));}
 #line 1900 "parser.c"
     break;
 
   case 42:
 #line 273 "parser.y"
-                        {check_if_fuction(yylval.exprValue);}
+                        {}
 #line 1906 "parser.c"
     break;
 
   case 49:
 #line 284 "parser.y"
-                                {  yylval.exprValue = lvalue_expr(insert_ID(yylval.stringValue));  }
+                                {(yyval.exprValue) = (yyvsp[0].exprValue);}
 #line 1912 "parser.c"
     break;
 
   case 50:
 #line 285 "parser.y"
-                                {  yylval.exprValue = lvalue_expr(insert_local(yylval.stringValue));   }
+                                {  (yyval.exprValue) = lvalue_expr(insert_ID(yylval.stringValue)); }
 #line 1918 "parser.c"
     break;
 
   case 51:
 #line 286 "parser.y"
-                                { check_global(yylval.stringValue);}
+                                {  (yyval.exprValue) = lvalue_expr(insert_local(yylval.stringValue));   }
 #line 1924 "parser.c"
     break;
 
   case 52:
 #line 287 "parser.y"
-                                {}
-#line 1930 "parser.c"
+                                { check_global(yylval.stringValue);
+                                }
+#line 1931 "parser.c"
+    break;
+
+  case 59:
+#line 299 "parser.y"
+                                                                                                {}
+#line 1937 "parser.c"
     break;
 
   case 68:
-#line 320 "parser.y"
+#line 321 "parser.y"
                                 {
         //emit(tablecreate,newexpr(tableitem_e),NULL,NULL,1,yylineno);
         }
-#line 1938 "parser.c"
+#line 1945 "parser.c"
     break;
 
   case 75:
-#line 338 "parser.y"
+#line 339 "parser.y"
                            { 
                 CURR_SCOPE++;   
                 }
-#line 1946 "parser.c"
+#line 1953 "parser.c"
     break;
 
   case 76:
-#line 340 "parser.y"
+#line 341 "parser.y"
                                               {
                         if(CURR_SCOPE!=0)
                                 hide(CURR_SCOPE--);       
                 }
-#line 1955 "parser.c"
+#line 1962 "parser.c"
     break;
 
   case 77:
-#line 347 "parser.y"
+#line 348 "parser.y"
                    {
                 scopeSpaceCounter++;   // auksanoume to counter gia to ti var einai kata 1
                 function_insert(yylval.stringValue);  // insert to fuction
                 fuction_scope_insert(CURR_SCOPE++);   // gia na kratame to teleutaio scope
         }
-#line 1965 "parser.c"
+#line 1972 "parser.c"
     break;
 
   case 78:
-#line 352 "parser.y"
+#line 353 "parser.y"
                             {
                         scopeSpaceCounter++;
                 }
-#line 1973 "parser.c"
+#line 1980 "parser.c"
     break;
 
   case 79:
-#line 355 "parser.y"
+#line 356 "parser.y"
                                  {
                         CURR_SCOPE--;
         }
-#line 1981 "parser.c"
+#line 1988 "parser.c"
     break;
 
   case 80:
-#line 357 "parser.y"
+#line 358 "parser.y"
                 {
                 delete_last_fuction_scope();
                 scopeSpaceCounter-=2;
         }
-#line 1990 "parser.c"
+#line 1997 "parser.c"
     break;
 
   case 81:
-#line 362 "parser.y"
+#line 363 "parser.y"
                   {
                 //no name fuct
                 function_insert("_");  //regognize anonymous fuctions
                 fuction_scope_insert(CURR_SCOPE++);  
         }
-#line 2000 "parser.c"
+#line 2007 "parser.c"
     break;
 
   case 82:
-#line 366 "parser.y"
+#line 367 "parser.y"
                                                          {
                 CURR_SCOPE--;
         }
-#line 2008 "parser.c"
+#line 2015 "parser.c"
     break;
 
   case 83:
-#line 368 "parser.y"
+#line 369 "parser.y"
               { delete_last_fuction_scope();}
-#line 2014 "parser.c"
+#line 2021 "parser.c"
     break;
 
   case 90:
-#line 379 "parser.y"
+#line 380 "parser.y"
            {insert_formal(yylval.stringValue);}
-#line 2020 "parser.c"
+#line 2027 "parser.c"
     break;
 
   case 91:
-#line 380 "parser.y"
+#line 381 "parser.y"
                  {insert_formal(yylval.stringValue);}
-#line 2026 "parser.c"
+#line 2033 "parser.c"
     break;
 
   case 94:
-#line 388 "parser.y"
+#line 389 "parser.y"
                            {if_flag = 1;}
-#line 2032 "parser.c"
+#line 2039 "parser.c"
     break;
 
   case 95:
-#line 388 "parser.y"
+#line 389 "parser.y"
                                                                        { if_flag = 0;}
-#line 2038 "parser.c"
+#line 2045 "parser.c"
     break;
 
   case 97:
-#line 392 "parser.y"
+#line 393 "parser.y"
                                  {for_flag = 1;}
-#line 2044 "parser.c"
+#line 2051 "parser.c"
     break;
 
   case 98:
-#line 392 "parser.y"
+#line 393 "parser.y"
                                                                              {for_flag = 0;}
-#line 2050 "parser.c"
+#line 2057 "parser.c"
     break;
 
   case 99:
-#line 396 "parser.y"
+#line 397 "parser.y"
                                {for_flag = 1;}
-#line 2056 "parser.c"
+#line 2063 "parser.c"
     break;
 
   case 100:
-#line 396 "parser.y"
+#line 397 "parser.y"
                                                                                                                    {for_flag = 0;}
-#line 2062 "parser.c"
+#line 2069 "parser.c"
     break;
 
   case 101:
-#line 399 "parser.y"
+#line 400 "parser.y"
                    {if(CURR_SCOPE == 0)yyerror("return w/o function");}
-#line 2068 "parser.c"
+#line 2075 "parser.c"
     break;
 
   case 102:
-#line 399 "parser.y"
+#line 400 "parser.y"
                                                                                       {}
-#line 2074 "parser.c"
+#line 2081 "parser.c"
     break;
 
 
-#line 2078 "parser.c"
+#line 2085 "parser.c"
 
       default: break;
     }
@@ -2306,7 +2313,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 401 "parser.y"
+#line 402 "parser.y"
 
 
 int yyerror(char* yaccProvidedMessage){

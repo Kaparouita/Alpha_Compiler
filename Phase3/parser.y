@@ -211,8 +211,8 @@ RIGHT_PARENTHESIS SEMICOLON COMMA SCOPE_RESOLUTION COLON FULL_STOP DOUBLE_FULL_S
 %left LEFT_SQUARE_BRACKET RIGHT_SQUARE_BRACKET       	
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS		
 
-%type <intValue> expr
-%type <exprValue> lvalue
+//%type <intValue>  expr
+%type <exprValue> lvalue expr member call elist
 
 %start program  /*specify the start symbol of the grammar*/
 
@@ -231,7 +231,7 @@ brk_stm:BREAK {if(for_flag == 0)yyerror("break w/o loop");} SEMICOLON ;
 cnt_stm:CONTINUE {if(for_flag == 0)yyerror("continue w/o loop");} SEMICOLON ;
 
 stmt:   expr SEMICOLON
-        |ifstmt
+        |ifstmt         
         |whilestmt
         |forstmt
         |returnstmt
@@ -244,47 +244,48 @@ stmt:   expr SEMICOLON
 
 
 expr:   assignexpr              {}
-        |expr ADDITION expr     {$$ =  $1 + $3;}
-        |expr SUBTRACTION expr  {$$ =  $1 - $3;}
-        |expr MULTI expr        {$$ =  $1 * $3;}
-        |expr DIVISION expr     {$$ =  $1 / $3;}
-        |expr MODULUS expr      {$$ =  $1 % $3;}
-        |expr GRETER_THAN expr  {$$ =  $1 > $3;}
-        |expr GRE_EQUAL expr    {$$ =  $1 >= $3;}
-        |expr LESS_THAN expr    {$$ =  $1 < $3;}
-        |expr LES_EQUAL expr    {$$ =  $1 <= $3;}
-        |expr EQUAL expr        {$$ =  $1 == $3;}
-        |expr NOTEQUAL expr     {$$ =  $1 != $3;}
-        |expr AND expr          {$$ =  $1 && $3;}
-        |expr OR expr           {$$ =  $1 || $3;}
+        |expr ADDITION expr     {$$ =  do_maths($1,$3,add);}
+        |expr SUBTRACTION expr  {$$ =  do_maths($1,$3,sub);}
+        |expr MULTI expr        {$$ =  do_maths($1,$3,mul);}
+        |expr DIVISION expr     {$$ =  do_maths($1,$3,n_div);}
+        |expr MODULUS expr      {$$ =  do_maths($1,$3,mod);}
+        |expr GRETER_THAN expr  {$$ =  do_maths($1,$3,if_greater);}
+        |expr GRE_EQUAL expr    {$$ =  do_maths($1,$3,if_greater);}
+        |expr LESS_THAN expr    {$$ =  do_maths($1,$3,if_greater);}
+        |expr LES_EQUAL expr    {$$ =  do_maths($1,$3,if_greater);}
+        |expr EQUAL expr        {$$ =  do_bool($1,$3,if_greater);}
+        |expr NOTEQUAL expr     {$$ =  do_bool($1,$3,if_greater);}
+        |expr AND expr          {$$ =  do_bool($1,$3,if_greater);}
+        |expr OR expr           {$$ =  do_bool($1,$3,if_greater);}
         |term                   {}
         ;
 
 term:   LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
-        |SUBTRACTION expr {check_if_fuction(yylval.exprValue);}
-        |NOT expr         {check_if_fuction(yylval.exprValue);}
-        |INCREMENT lvalue {check_if_fuction(yylval.exprValue);}
-        |lvalue INCREMENT {check_if_fuction(yylval.exprValue);}
-        |DECREMENT lvalue {check_if_fuction(yylval.exprValue);}
-        |lvalue DECREMENT {check_if_fuction(yylval.exprValue);}
+        |SUBTRACTION expr {check_if_fuction($2);}
+        |NOT expr         {check_if_fuction($2);}
+        |INCREMENT lvalue {check_if_fuction($2);}
+        |lvalue INCREMENT {check_if_fuction($1);}
+        |DECREMENT lvalue {check_if_fuction($2);}
+        |lvalue DECREMENT {check_if_fuction($1);}
         |primary
         ;        
 
-assignexpr: lvalue      {check_if_fuction(yylval.exprValue);}
+assignexpr: lvalue      {}
         ASSIGNMENT      expr
         ;    
 
 primary: lvalue
-        |call
+        |call   
         |objectdef
         |LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS
         |const
         ;
 
-lvalue:  ID                     {  yylval.exprValue = lvalue_expr(insert_ID(yylval.stringValue));  }
-        |LOCAL ID               {  yylval.exprValue = lvalue_expr(insert_local(yylval.stringValue));   }
-        |SCOPE_RESOLUTION ID    { check_global(yylval.stringValue);} //::
-        |member                 {}
+lvalue: member                  {$$ = $1;} 
+        |ID                     {  $$ = lvalue_expr(insert_ID(yylval.stringValue)); }
+        |LOCAL ID               {  $$ = lvalue_expr(insert_local(yylval.stringValue));   }
+        |SCOPE_RESOLUTION ID    { check_global(yylval.stringValue);
+                                } //::
         ;             
 
 member:  lvalue FULL_STOP ID
@@ -295,7 +296,7 @@ member:  lvalue FULL_STOP ID
 
 call:    call LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS
         |lvalue callsuffix
-        |LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS
+        |LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS{}
         ;
 
 
