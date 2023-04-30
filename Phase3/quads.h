@@ -44,32 +44,32 @@ typedef enum scopespace_t{
 typedef enum symbol_t{var_s,programfunc_s,libraryfunc_s} symbol_t;
 
 typedef struct symbol{
-    symbol_t  type;
-    char *  name; //dynamic string
-    scopespace_t space; //originating scope space
-    unsigned   offset;  //offset in scope space
-    unsigned   scope;   //scope value
-    unsigned   line;    //source line of declaration
+    symbol_t        type;
+    char *          name;       //dynamic string
+    scopespace_t    space;      //originating scope space
+    unsigned        offset;     //offset in scope space
+    unsigned        scope;      //scope value
+    unsigned        line;       //source line of declaration
 }symbol;
 
 
 typedef struct expr{
-    expr_t  type;
-    symbol *   sym; // check this 
-    struct expr *  index;  
-    double  numConst;
-    char *  strConst;
+    expr_t          type;
+    symbol *        sym; // check this 
+    struct expr *   index;  
+    double          numConst;
+    char *          strConst;
     unsigned char   boolConst;
-    struct expr * next;
+    struct expr *   next;
 }expr;
 
 typedef struct quad{
     iopcode     op;
-    expr * result;
-    expr * arg1;
-    expr * arg2;
-    unsigned  label;
-    unsigned  line;
+    expr *      result;
+    expr *      arg1;
+    expr *      arg2;
+    unsigned    label;
+    unsigned    line;
 }quad;
 
 
@@ -91,7 +91,18 @@ void expand(void);
 */
 void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned int label, unsigned int  line);
 
-
+/**
+ * @brief Create a symbol object
+ * 
+ * @param type to type tou sumbol(var,fuct,lib)
+ * @param name to name
+ * @param space an einai (programvar,functionlocal,formalarg)
+ * @param offset poios einai o arithmos sto scope tou
+ * @param scope to scope
+ * @param line  to line
+ * @return symbol* 
+ */
+symbol* create_symbol(symbol_t type, char* name, scopespace_t space, unsigned offset, unsigned scope, unsigned line);
 /**
  * @brief 
  * @return to type ths metavlhths analoga to scope ths
@@ -224,3 +235,10 @@ void print_expr(expr* e);
 void print_quad(struct quad* q);
 const char* get_op_name(iopcode opcode);
 const char* get_expr_t_name(expr_t type);
+/**
+ * @brief check if v is a fuction
+ * error if not
+ */
+void check_if_fuction(expr* e);
+
+symbol_t sym_var_type(int type);

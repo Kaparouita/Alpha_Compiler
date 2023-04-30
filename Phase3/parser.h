@@ -66,38 +66,37 @@ extern int yydebug;
     NILL = 272,
     ASSIGNMENT = 273,
     ADDITION = 274,
-    MULTI = 275,
-    DIVISION = 276,
-    MODULUSEQUAL = 277,
-    NOTEQUAL = 278,
-    INCREMENT = 279,
-    DECREMENT = 280,
-    GRETER_THAN = 281,
-    LESS_THAN = 282,
-    GRE_EQUAL = 283,
-    LES_EQUAL = 284,
-    INTEGER = 285,
-    REAL = 286,
-    STRING = 287,
-    LEFT_CURLY_BRACKET = 288,
-    RIGHT_CURLY_BRACKET = 289,
-    RIGHT_SQUARE_BRACKET = 290,
-    RIGHT_PARENTHESIS = 291,
-    SEMICOLON = 292,
-    COMMA = 293,
-    SCOPE_RESOLUTION = 294,
-    COLON = 295,
-    FULL_STOP = 296,
-    DOUBLE_FULL_STOP = 297,
-    ID = 298,
-    EXTRA_CHARS = 299,
-    LINE_COMMENT = 300,
-    BLOCK_COMMENT = 301,
-    EQUAL = 302,
-    SUBTRACTION = 303,
-    MODULUS = 304,
-    LEFT_SQUARE_BRACKET = 305,
-    LEFT_PARENTHESIS = 306
+    SUBTRACTION = 275,
+    MULTI = 276,
+    DIVISION = 277,
+    MODULUS = 278,
+    EQUAL = 279,
+    NOTEQUAL = 280,
+    INCREMENT = 281,
+    DECREMENT = 282,
+    GRETER_THAN = 283,
+    LESS_THAN = 284,
+    GRE_EQUAL = 285,
+    LES_EQUAL = 286,
+    INTEGER = 287,
+    REAL = 288,
+    STRING = 289,
+    LEFT_CURLY_BRACKET = 290,
+    RIGHT_CURLY_BRACKET = 291,
+    LEFT_SQUARE_BRACKET = 292,
+    RIGHT_SQUARE_BRACKET = 293,
+    LEFT_PARENTHESIS = 294,
+    RIGHT_PARENTHESIS = 295,
+    SEMICOLON = 296,
+    COMMA = 297,
+    SCOPE_RESOLUTION = 298,
+    COLON = 299,
+    FULL_STOP = 300,
+    DOUBLE_FULL_STOP = 301,
+    ID = 302,
+    EXTRA_CHARS = 303,
+    LINE_COMMENT = 304,
+    BLOCK_COMMENT = 305
   };
 #endif
 /* Tokens.  */
@@ -118,51 +117,51 @@ extern int yydebug;
 #define NILL 272
 #define ASSIGNMENT 273
 #define ADDITION 274
-#define MULTI 275
-#define DIVISION 276
-#define MODULUSEQUAL 277
-#define NOTEQUAL 278
-#define INCREMENT 279
-#define DECREMENT 280
-#define GRETER_THAN 281
-#define LESS_THAN 282
-#define GRE_EQUAL 283
-#define LES_EQUAL 284
-#define INTEGER 285
-#define REAL 286
-#define STRING 287
-#define LEFT_CURLY_BRACKET 288
-#define RIGHT_CURLY_BRACKET 289
-#define RIGHT_SQUARE_BRACKET 290
-#define RIGHT_PARENTHESIS 291
-#define SEMICOLON 292
-#define COMMA 293
-#define SCOPE_RESOLUTION 294
-#define COLON 295
-#define FULL_STOP 296
-#define DOUBLE_FULL_STOP 297
-#define ID 298
-#define EXTRA_CHARS 299
-#define LINE_COMMENT 300
-#define BLOCK_COMMENT 301
-#define EQUAL 302
-#define SUBTRACTION 303
-#define MODULUS 304
-#define LEFT_SQUARE_BRACKET 305
-#define LEFT_PARENTHESIS 306
+#define SUBTRACTION 275
+#define MULTI 276
+#define DIVISION 277
+#define MODULUS 278
+#define EQUAL 279
+#define NOTEQUAL 280
+#define INCREMENT 281
+#define DECREMENT 282
+#define GRETER_THAN 283
+#define LESS_THAN 284
+#define GRE_EQUAL 285
+#define LES_EQUAL 286
+#define INTEGER 287
+#define REAL 288
+#define STRING 289
+#define LEFT_CURLY_BRACKET 290
+#define RIGHT_CURLY_BRACKET 291
+#define LEFT_SQUARE_BRACKET 292
+#define RIGHT_SQUARE_BRACKET 293
+#define LEFT_PARENTHESIS 294
+#define RIGHT_PARENTHESIS 295
+#define SEMICOLON 296
+#define COMMA 297
+#define SCOPE_RESOLUTION 298
+#define COLON 299
+#define FULL_STOP 300
+#define DOUBLE_FULL_STOP 301
+#define ID 302
+#define EXTRA_CHARS 303
+#define LINE_COMMENT 304
+#define BLOCK_COMMENT 305
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 149 "parser.y"
+#line 159 "parser.y"
 
         char* stringValue;
         int intValue;
         double realValue;
         struct var *exprNode;
+        struct expr *exprValue;
 
-#line 166 "parser.h"
+#line 165 "parser.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

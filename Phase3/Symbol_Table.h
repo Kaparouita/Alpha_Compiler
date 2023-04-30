@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+
 #define TABLE_SIZE 100
 #define BUCKETS 512
 
@@ -196,8 +197,3 @@ void print_format();
  */
 void print_table(var_table *oSymTable);
 
-/**
- * @brief check if v is a fuction
- * error if not
- */
-void check_if_fuction(var *v);

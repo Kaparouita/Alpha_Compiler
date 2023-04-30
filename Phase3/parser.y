@@ -23,17 +23,19 @@
 
 
         /*function for check ids and insert to STable*/
-        var *insert_ID(char* name){
+        symbol *insert_ID(char* name){
                 //kanoume lookup apo mesa pros ta eksw
                 var *myvar = lookup_in_out(CURR_SCOPE,name);
                 var_id curr_id = local;
+                symbol* sym = NULL;     //gia na ftiaksoume to sym
                 //An den vrethei tpt kanthn insert sto Curr_scope
                 if(myvar == NULL){
                         if(CURR_SCOPE == 0) // an einai global
                                 curr_id = global;
                         myvar =new_var(varr,curr_id,name,CURR_SCOPE,1,yylineno); 
                         hash_insert(myvar,table);
-                        print_var(myvar);                    
+                        print_var(myvar);
+                        inccurrscopeoffset();              
                 } 
                 /*an yparxei hdh */
                 else{ 
@@ -42,9 +44,10 @@
                         //check if we have access
                         if(check_access(myvar) == 0 && myvar->scope != 0){
                                 yyerror("Cannot access var ");
-                        }
+                        }   
                 } // einai hdh sto table
-                return myvar;
+                sym = create_symbol(sym_var_type(myvar->id),myvar->name, currscopespace(),currscopeoffset()-1,myvar->scope,myvar->line);
+                return sym;
         }
 
         /*check if global variable exist p.x. ::x (global x)*/
@@ -110,19 +113,23 @@
         }
 
         /*Insert a local var with name = name */
-        void insert_local(char* name){
+        symbol* insert_local(char* name){
                 /*koita sto trexon scope*/
                 var* currVar = lookup_scope(CURR_SCOPE,name);
                 var_id curr_id= local;
+                symbol* sym = NULL;
                 /*an vrethei metavlhth sto table aneferomaste ekei*/
                 if(currVar != NULL){  
                         printf("Anafora sto %s : %s \n",enum_type(currVar->type) ,currVar->name);  //TESTING PRINT
-                        return;
+                        if(currVar->type == fuction)
+                                printf("Warning line 124 parser.y");
+                        sym = create_symbol(sym_var_type(currVar->id),currVar->name, currscopespace(),currscopeoffset()-1,currVar->scope,currVar->line);
+                        return sym;
                 }
                 /*tsekare an yparxoun collisions me lib fuction*/
                 if(check_collisions(name) == 1){
                         yyerror("This is a lib_fuct");
-                        return;
+                        return sym;
                 }
                 /*an eimaste sto scope 0 tote thn kanoume insert san global*/
                 if(CURR_SCOPE == 0)
@@ -130,7 +137,10 @@
                         //printf("GT %d\n",currVar->hide);
                 currVar = new_var(varr,curr_id,name,CURR_SCOPE,1,yylineno); 
                 hash_insert(currVar,table);
-                print_var(currVar);          
+                print_var(currVar);
+                //inccurrscopeoffset();
+                sym = create_symbol(sym_var_type(currVar->id),currVar->name, currscopespace(),currscopeoffset()-1,currVar->scope,currVar->line);
+                return sym;         
         }
 
         /*check if the curr string is '_' to create the next anonymous fuction*/
@@ -151,7 +161,7 @@
         int intValue;
         double realValue;
         struct var *exprNode;
-        struct expr *currExpr;
+        struct expr *exprValue;
 }
 
 /*KEYWORDS*/
@@ -202,7 +212,7 @@ RIGHT_PARENTHESIS SEMICOLON COMMA SCOPE_RESOLUTION COLON FULL_STOP DOUBLE_FULL_S
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS		
 
 %type <intValue> expr
-%type <currExpr> lvalue
+%type <exprValue> lvalue
 
 %start program  /*specify the start symbol of the grammar*/
 
@@ -251,16 +261,16 @@ expr:   assignexpr              {}
         ;
 
 term:   LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
-        |SUBTRACTION expr {check_if_fuction(yylval.exprNode);}
-        |NOT expr         {check_if_fuction(yylval.exprNode);}
-        |INCREMENT lvalue {check_if_fuction(yylval.exprNode);}
-        |lvalue INCREMENT {check_if_fuction(yylval.exprNode);}
-        |DECREMENT lvalue {check_if_fuction(yylval.exprNode);}
-        |lvalue DECREMENT {check_if_fuction(yylval.exprNode);}
+        |SUBTRACTION expr {check_if_fuction(yylval.exprValue);}
+        |NOT expr         {check_if_fuction(yylval.exprValue);}
+        |INCREMENT lvalue {check_if_fuction(yylval.exprValue);}
+        |lvalue INCREMENT {check_if_fuction(yylval.exprValue);}
+        |DECREMENT lvalue {check_if_fuction(yylval.exprValue);}
+        |lvalue DECREMENT {check_if_fuction(yylval.exprValue);}
         |primary
         ;        
 
-assignexpr: lvalue      {check_if_fuction(yylval.exprNode);}
+assignexpr: lvalue      {check_if_fuction(yylval.exprValue);}
         ASSIGNMENT      expr
         ;    
 
@@ -271,8 +281,8 @@ primary: lvalue
         |const
         ;
 
-lvalue:  ID                     { yylval.exprNode = insert_ID(yylval.stringValue);  }
-        |LOCAL ID               { insert_local(yylval.stringValue);}
+lvalue:  ID                     {  yylval.exprValue = lvalue_expr(insert_ID(yylval.stringValue));  }
+        |LOCAL ID               {  yylval.exprValue = lvalue_expr(insert_local(yylval.stringValue));   }
         |SCOPE_RESOLUTION ID    { check_global(yylval.stringValue);} //::
         |member                 {}
         ;             
@@ -307,7 +317,9 @@ moreElist: elist
         |  //?
         ;     
 
-objectdef: LEFT_SQUARE_BRACKET  {emit(tablecreate,newexpr(tableitem_e),NULL,NULL,1,yylineno);} moreElist RIGHT_SQUARE_BRACKET   
+objectdef: LEFT_SQUARE_BRACKET  {
+        //emit(tablecreate,newexpr(tableitem_e),NULL,NULL,1,yylineno);
+        } moreElist RIGHT_SQUARE_BRACKET   
         |LEFT_SQUARE_BRACKET   indexed  RIGHT_SQUARE_BRACKET
         ;     
 

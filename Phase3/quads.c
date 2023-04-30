@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <string.h>
 
+extern int yyerror (char* yaccProvidedMessage);
+
 unsigned total=0;
 unsigned int currQuad=0;
 unsigned programVarOffset=0;
@@ -35,6 +37,17 @@ void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned int label, 
     p->label=label;
     p->line=line;
     print_quad(p);
+}
+
+symbol* create_symbol(symbol_t type, char* name, scopespace_t space, unsigned offset, unsigned scope, unsigned line) {
+    symbol* sym = (symbol*) malloc(sizeof(symbol));
+    sym->type = type;
+    sym->name = strdup(name);
+    sym->space = space;
+    sym->offset = offset;
+    sym->scope = scope;
+    sym->line = line;
+    return sym;
 }
 
 scopespace_t currscopespace(){
@@ -276,4 +289,21 @@ const char* get_expr_t_name(expr_t type) {
         case nil_e: return "nil_e";
         default: return "unknown";
     }
+}
+
+void check_if_fuction(expr* e){
+    if(e == NULL)
+        return;
+    if(e->sym->type != var_s)
+        yyerror("Illegal operation with fuction");
+    return;
+}
+
+symbol_t sym_var_type(int type){
+    if (type < 3)
+        return var_s;
+    else if(type == 3)
+        return programfunc_s;
+    else 
+        return libraryfunc_s;
 }

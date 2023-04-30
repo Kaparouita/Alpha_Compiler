@@ -311,10 +311,6 @@ void print_format(){
     }
 }
 
-void check_if_fuction(var *v){
-    if(v == NULL)
-        return;
-    if(v->type == fuction)
-        yyerror("Illegal operation with fuction");
-    return;
-}
+
+
+
