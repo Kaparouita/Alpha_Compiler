@@ -1,6 +1,10 @@
+#ifndef Symbol_Table_H
+#define Symbol_Table_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "quads.h"
 
 
 #define TABLE_SIZE 100
@@ -8,6 +12,7 @@
 
 typedef enum var_type {varr,fuction} var_type;
 typedef enum var_id{global, formal, local,user_func, lib_func} var_id;
+typedef enum scopespace_t{programvar,functionlocal,formalarg}scopespace_t;
 
 /**
  * @brief 
@@ -17,6 +22,8 @@ typedef struct var{
     var_type type;
     var_id id;          
     char* name;
+    unsigned offset;
+	scopespace_t space;
     int scope;
     int hide;             // 0 gia hidden 1 gia visable
     int line;
@@ -37,7 +44,7 @@ typedef struct var{
  * @param next 
  * @return struct var* 
  */
-var* new_var(var_type type, var_id id, char* name, int scope, int hide, int line);
+var* new_var(var_type type, var_id id, char* name, int scope,scopespace_t space,unsigned offset, int hide, int line);
     
 /**
  * @brief hash table 
@@ -49,18 +56,6 @@ typedef struct var_table {
     int size;
     unsigned hs; /*hash multiplier*/
 } var_table;
-
-typedef struct SymbolTableEntry { 
-	int hide;
-	var *var;
-	unsigned offset;
-	scopespace_t space;
-	enum SymbolType type;
-	struct SymbolTableEntry *next_inScope;		
-    struct SymbolTableEntry *next_inFunc;       
-    struct SymbolTableEntry *next_inHash;     
-} SymbolTableEntry;
-
 
 
 typedef struct last_fuction_scope {
@@ -209,4 +204,15 @@ void print_format();
  * @param oSymTable 
  */
 void print_table(var_table *oSymTable);
+const char* enum_scospace_t_print(enum scopespace_t myenum) ;
 
+
+char *newtempname();
+var *newtemp();
+void resettemp();
+int check_if_in_fuction();
+
+
+
+
+#endif /*Symbol_talbe_H*/

@@ -3,6 +3,7 @@
         //#include "lex.yy.h" // alphayylex?
         #include "Symbol_Table.h"
         #include "quads.h"
+        #include "Stack.h"
 
         int yyerror (char* yaccProvidedMessage);
         int yylex (void);
@@ -11,10 +12,11 @@
         extern int yylineno;
         extern char* yytext;
         extern FILE* yyin;
-        int CURR_SCOPE=0;
-        int myfuctions[150];
+        extern int CURR_SCOPE;
+        extern unsigned functionLocalOffset;
         extern var_table* table ;
         var *curr = NULL;
+        struct Stack * save_fuctionlocals;
 
         int curr_anonymous = 0; //keep track for anonymous
         int if_flag = 0;
@@ -23,16 +25,15 @@
 
 
         /*function for check ids and insert to STable*/
-        symbol *insert_ID(char* name){
+        var *insert_ID(char* name){
                 //kanoume lookup apo mesa pros ta eksw
                 var *myvar = lookup_in_out(CURR_SCOPE,name);
                 var_id curr_id = local;
-                symbol* sym = NULL;     //gia na ftiaksoume to sym
                 //An den vrethei tpt kanthn insert sto Curr_scope
                 if(myvar == NULL){
                         if(CURR_SCOPE == 0) // an einai global
                                 curr_id = global;
-                        myvar =new_var(varr,curr_id,name,CURR_SCOPE,1,yylineno); 
+                        myvar =new_var(varr,curr_id,name,CURR_SCOPE,currscopespace(),currscopeoffset(),1,yylineno); 
                         hash_insert(myvar,table);
                         print_var(myvar);
                         inccurrscopeoffset();              
@@ -46,8 +47,7 @@
                                 yyerror("Cannot access var ");
                         }   
                 } // einai hdh sto table
-                sym = create_symbol(sym_var_type(myvar->id),myvar->name, currscopespace(),currscopeoffset()-1,myvar->scope,myvar->line);
-                return sym;
+                return myvar;
         }
 
         /*check if global variable exist p.x. ::x (global x)*/
@@ -77,7 +77,8 @@
                         return;
                 }
                 /*alliws insert sto syble table san formal */
-                myvar = new_var(varr,formal,name,CURR_SCOPE,1,yylineno); 
+                myvar = new_var(varr,formal,name,CURR_SCOPE,currscopespace(),currscopeoffset(),1,yylineno); 
+                inccurrscopeoffset();
                 hash_insert(myvar,table);
                 print_var(myvar);
         }
@@ -88,7 +89,7 @@
                 if(check_anonymous(name) != NULL){
                         curr_anonymous--;
                         name = check_anonymous(name);
-                        var *myfuction = new_var(fuction,user_func,name,CURR_SCOPE,1,yylineno); 
+                        var *myfuction = new_var(fuction,user_func,name,CURR_SCOPE,currscopespace(),currscopeoffset(),1,yylineno); 
                         hash_insert(myfuction,table);
                         print_var(myfuction); //na ftiaksw ta print
                         return;
@@ -107,40 +108,37 @@
                         return;
                 }
                 //alliws thn kanoume insert
-                myVar = new_var(fuction,user_func,name,CURR_SCOPE,1,yylineno); 
+                myVar = new_var(fuction,user_func,name,CURR_SCOPE,currscopespace(),currscopeoffset(),1,yylineno); 
                 hash_insert(myVar,table);
                 print_var(myVar);
         }
 
         /*Insert a local var with name = name */
-        symbol* insert_local(char* name){
+        var* insert_local(char* name){
                 /*koita sto trexon scope*/
                 var* currVar = lookup_scope(CURR_SCOPE,name);
                 var_id curr_id= local;
-                symbol* sym = NULL;
                 /*an vrethei metavlhth sto table aneferomaste ekei*/
                 if(currVar != NULL){  
                         printf("Anafora sto %s : %s \n",enum_type(currVar->type) ,currVar->name);  //TESTING PRINT
                         if(currVar->type == fuction)
                                 printf("Warning line 124 parser.y");
-                        sym = create_symbol(sym_var_type(currVar->id),currVar->name, currscopespace(),currscopeoffset()-1,currVar->scope,currVar->line);
-                        return sym;
+                        return currVar;
                 }
                 /*tsekare an yparxoun collisions me lib fuction*/
                 if(check_collisions(name) == 1){
                         yyerror("This is a lib_fuct");
-                        return sym;
+                        return currVar;
                 }
                 /*an eimaste sto scope 0 tote thn kanoume insert san global*/
                 if(CURR_SCOPE == 0)
                         curr_id = global;
                         //printf("GT %d\n",currVar->hide);
-                currVar = new_var(varr,curr_id,name,CURR_SCOPE,1,yylineno); 
+                currVar = new_var(varr,curr_id,name,CURR_SCOPE,currscopespace(),currscopeoffset(),1,yylineno); 
                 hash_insert(currVar,table);
                 print_var(currVar);
                 //inccurrscopeoffset();
-                sym = create_symbol(sym_var_type(currVar->id),currVar->name, currscopespace(),currscopeoffset()-1,currVar->scope,currVar->line);
-                return sym;         
+                return currVar;         
         }
 
         /*check if the curr string is '_' to create the next anonymous fuction*/
@@ -278,12 +276,12 @@ assignexpr: lvalue
 						emit(tablesetelem, $1, $1->index, $3, 0, yylineno);
 						$$ = emit_iftableitem($1);
 						$$->type = assignexpr_e;
-					} else {*/
+					} else {
 						emit(assign, $1, $3, NULL, 0, yylineno);
 						$$ = newexpr(assignexpr_e);
-						$$->sym = newTemp();
+						$$->sym = newtemp();
 						emit(assign, $$, $1, NULL, 0, yylineno);
-					
+					*/
 				}               
         }
         ;    
@@ -360,27 +358,29 @@ block:  LEFT_CURLY_BRACKET {
 
 funcdef:
         FUNCTION ID{
-                scopeSpaceCounter++;   // auksanoume to counter gia to ti var einai kata 1
+                push(save_fuctionlocals,functionLocalOffset);
+                enterscopespace();   // auksanoume to counter gia to ti var einai kata 1
                 function_insert(yylval.stringValue);  // insert to fuction
                 fuction_scope_insert(CURR_SCOPE++);   // gia na kratame to teleutaio scope
         }LEFT_PARENTHESIS 
-                moreidilist {
-                        scopeSpaceCounter++;
-                }
+                moreidilist {enterscopespace(); }
                 RIGHT_PARENTHESIS{
                         CURR_SCOPE--;
         } block {
                 delete_last_fuction_scope();
-                scopeSpaceCounter-=2;
+                exitscopespace();
+                functionLocalOffset = pop(save_fuctionlocals);
         }
-
         |FUNCTION {
                 //no name fuct
+                push(save_fuctionlocals,functionLocalOffset);
+                enterscopespace();   // auksanoume to counter gia to ti var einai kata 1
                 function_insert("_");  //regognize anonymous fuctions
                 fuction_scope_insert(CURR_SCOPE++);  
-        }LEFT_PARENTHESIS moreidilist  RIGHT_PARENTHESIS {
+        }LEFT_PARENTHESIS moreidilist{enterscopespace(); }  RIGHT_PARENTHESIS {
                 CURR_SCOPE--;
-        }block{ delete_last_fuction_scope();} /*anonymous functions here */
+        }block{ delete_last_fuction_scope(); exitscopespace();
+                functionLocalOffset = pop(save_fuctionlocals);} /*anonymous functions here */
         ;    
 
 const:  INTEGER
@@ -424,8 +424,6 @@ int yyerror(char* yaccProvidedMessage){
 
 
 
-
-
 /*-----------------------------MAIN-----------------------*/
 int main(int argc, char** argv){
         if(argc>1){
@@ -437,7 +435,7 @@ int main(int argc, char** argv){
 	else yyin=stdin;
 	 
     
-    
+    save_fuctionlocals = createStack(150);
     init_lib_func();
     //yyset_in(input_file); // set the input stream for the lexer
     yyparse(); // call the parser function

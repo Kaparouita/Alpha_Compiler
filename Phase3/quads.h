@@ -1,6 +1,11 @@
+#ifndef quads_H
+#define quads_H
+#include "Symbol_Table.h"
+
 #define EXPAND_SIZE 1024
 #define CURR_SIZE (total*sizeof(quad))
 #define NEW_SIZE (EXPAND_SIZE*sizeof(quad)+CURR_SIZE)
+
 
 
 typedef enum iopcode{
@@ -35,27 +40,10 @@ typedef enum expr_t{
 
 }expr_t;
 
-typedef enum scopespace_t{
-    programvar,
-    functionlocal,
-    formalarg
-}scopespace_t;
-
-typedef enum symbol_t{var_s,programfunc_s,libraryfunc_s} symbol_t;
-
-typedef struct symbol{
-    symbol_t        type;
-    char *          name;       //dynamic string
-    scopespace_t    space;      //originating scope space
-    unsigned        offset;     //offset in scope space
-    unsigned        scope;      //scope value
-    unsigned        line;       //source line of declaration
-}symbol;
-
 
 typedef struct expr{
     expr_t          type;
-    symbol *        sym; // check this 
+    struct var*        sym; // check this 
     struct expr *   index;  
     double          numConst;
     char *          strConst;
@@ -92,23 +80,11 @@ void expand(void);
 void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned int label, unsigned int  line);
 
 /**
- * @brief Create a symbol object
- * 
- * @param type to type tou sumbol(var,fuct,lib)
- * @param name to name
- * @param space an einai (programvar,functionlocal,formalarg)
- * @param offset poios einai o arithmos sto scope tou
- * @param scope to scope
- * @param line  to line
- * @return symbol* 
- */
-symbol* create_symbol(symbol_t type, char* name, scopespace_t space, unsigned offset, unsigned scope, unsigned line);
-/**
  * @brief 
  * @return to type ths metavlhths analoga to scope ths
  * @param none
 */
-scopespace_t currscopespace(void);
+enum scopespace_t currscopespace(void);
 
 /**
  * @brief to offset sto current scope space
@@ -177,10 +153,10 @@ void patchlabel(unsigned int quadNo, unsigned int label);
 
 /**
  * create a lvalue expr and return it
- * @param symbol* sym
+ * @param var* sym
  * @return expr*
 */
-expr* lvalue_expr(symbol* sym);
+expr* lvalue_expr(struct var* sym);
 
 /**
  * create a table member
@@ -216,8 +192,6 @@ expr* newexpr_constbool(char c);
 char* newtempvars(void);
 
 
-symrec_t* newtemp(void);
-
 /**
  * create a lvalue expr and return it
  * @param expr* e
@@ -244,7 +218,9 @@ const char* get_expr_t_name(expr_t type);
  */
 void check_if_fuction(expr* e);
 
-symbol_t sym_var_type(int type);
 
 expr* do_maths(expr* expr1,expr* expr2,iopcode op);
 expr* do_bool(expr* expr1,expr* expr2,iopcode op);
+
+
+#endif /*quads_H*/

@@ -3,7 +3,10 @@
 #include <string.h>
 #include "Symbol_Table.h"
 
+
 extern int yyerror (char* yaccProvidedMessage);
+extern int yylineno;
+int tempcounter = 0;//count tis kryfes metavlhtes 
 
 /**
  * @brief VARIABLES
@@ -13,13 +16,16 @@ extern int yyerror (char* yaccProvidedMessage);
 var* first; // first var for scope_list
 var_table* table ; //table
 last_fuction_scope *fuction_scope ;
+int CURR_SCOPE = 0;
 
-var* new_var(var_type type, var_id id, char* name, int scope, int hide, int line){
+var* new_var(var_type type, var_id id, char* name, int scope,scopespace_t space,unsigned offset, int hide, int line){
     var* v = (var*) malloc(sizeof(var));
     v->type = type;
     v->id = id;
     v->name = strdup(name);
     v->scope = scope;
+    v->offset = offset;
+    v->space = space;
     v->hide = hide;
     v->line = line;
     v->next = NULL;
@@ -208,9 +214,25 @@ void print_var(var *v) {
     printf("\"%s\" ", v->name);
     printf("[%s] ",   enum_id(v->id));
     printf("(line %d) ", v->line);
-    printf("(scope %d) \n", v->scope);
+    printf("(scope %d) ", v->scope);
+    printf("(%s)",enum_scospace_t_print(v->space));
+    printf("(Offset %d)\n",v->offset);
     
 }
+
+const char* enum_scospace_t_print(enum scopespace_t myenum) {
+    switch(myenum) {
+        case programvar:
+            return "programvar";
+        case functionlocal:
+            return "functionlocal";
+        case formalarg:
+            return "formalarg";
+        default:
+            return "unknown";
+    }
+}
+
 
 char *enum_type(var_type type){
     switch(type){
@@ -279,17 +301,17 @@ unsigned int hash(char *str) {
 void init_lib_func(){
     table = create_table(5381);
     
-    hash_insert(new_var(fuction,lib_func,"print",0,1,0),table);
-    hash_insert(new_var(fuction,lib_func,"input",0,1,0),table);
-    hash_insert(new_var(fuction,lib_func,"objectmemberkeys",0,1,0),table);
-    hash_insert(new_var(fuction,lib_func,"objecttotalmembers",0,1,0),table);
-    hash_insert(new_var(fuction,lib_func,"totalarguments",0,1,0),table);
-    hash_insert(new_var(fuction,lib_func,"argument",0,1,0),table);
-    hash_insert(new_var(fuction,lib_func,"typeof",0,1,0),table);
-    hash_insert(new_var(fuction,lib_func,"strtonum",0,1,0),table);
-    hash_insert(new_var(fuction,lib_func,"sqrt",0,1,0),table);
-    hash_insert(new_var(fuction,lib_func,"cos",0,1,0),table);
-    hash_insert(new_var(fuction,lib_func,"sin",0,1,0),table);
+    hash_insert(new_var(fuction,lib_func,"print",0,1,currscopeoffset() ,1,0),table);
+    hash_insert(new_var(fuction,lib_func,"input",0,1,currscopeoffset(),1,0),table);
+    hash_insert(new_var(fuction,lib_func,"objectmemberkeys",0,1,currscopeoffset(),1,0),table);
+    hash_insert(new_var(fuction,lib_func,"objecttotalmembers",0,1,currscopeoffset(),1,0),table);
+    hash_insert(new_var(fuction,lib_func,"totalarguments",0,1,currscopeoffset(),1,0),table);
+    hash_insert(new_var(fuction,lib_func,"argument",0,1,currscopeoffset(),1,0),table);
+    hash_insert(new_var(fuction,lib_func,"typeof",0,1,currscopeoffset(),1,0),table);
+    hash_insert(new_var(fuction,lib_func,"strtonum",0,1,currscopeoffset(),1,0),table);
+    hash_insert(new_var(fuction,lib_func,"sqrt",0,1,currscopeoffset(),1,0),table);
+    hash_insert(new_var(fuction,lib_func,"cos",0,1,currscopeoffset(),1,0),table);
+    hash_insert(new_var(fuction,lib_func,"sin",0,1,currscopeoffset(),1,0),table);
 }
 
 int check_collisions(char *str){
@@ -311,6 +333,30 @@ void print_format(){
     }
 }
 
+
+char *newtempname(){
+    char* str = malloc(sizeof(char) * 30);
+	sprintf(str,"_t%d",tempcounter++);
+	return str;
+}
+var *newtemp(){
+    char *name = newtempname();
+    var * sym = lookup_scope(CURR_SCOPE,name);
+    if(sym == NULL)
+        return new_var(varr,local,name,CURR_SCOPE,currscopespace(),currscopeoffset(),1,yylineno); //mprorei k oxi?
+    else
+        return sym;
+}
+
+void resettemp(){
+    tempcounter=0;
+}
+
+int check_if_in_fuction(){
+    if(fuction_scope == NULL)
+        return 0;
+    return 1;
+}
 
 
 

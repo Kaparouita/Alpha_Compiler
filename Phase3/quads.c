@@ -12,8 +12,8 @@ unsigned programVarOffset=0;
 unsigned functionLocalOffset=0;
 unsigned formalArgOffset=0;
 unsigned scopeSpaceCounter=1;
-int tempcounter=0;
 quad* quads=(quad*)0;  //nitializes the pointer to the memory address 0,
+extern int tempcounter;
 
 void expand(){
     assert(total==currQuad);
@@ -37,17 +37,6 @@ void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned int label, 
     p->label=label;
     p->line=line;
     print_quad(p);
-}
-
-symbol* create_symbol(symbol_t type, char* name, scopespace_t space, unsigned offset, unsigned scope, unsigned line) {
-    symbol* sym = (symbol*) malloc(sizeof(symbol));
-    sym->type = type;
-    sym->name = strdup(name);
-    sym->space = space;
-    sym->offset = offset;
-    sym->scope = scope;
-    sym->line = line;
-    return sym;
 }
 
 scopespace_t currscopespace(){
@@ -82,7 +71,9 @@ void enterscopespace(){ ++scopeSpaceCounter;}
 
 void exitscopespace(){ 
     assert(scopeSpaceCounter>1);
-    --scopeSpaceCounter;
+    scopeSpaceCounter -=2;
+    resetformalargsofset();
+    resetfunctionlocaloffset();
 }
 
 void resetformalargsofset(){ formalArgOffset=0;}
@@ -105,7 +96,8 @@ void patchlabel(unsigned int quadNo, unsigned int  label){
     quads[quadNo].label=label; //edw mporei na thelei alagh 
 }
 
-expr* lvalue_expr(symbol* sym){
+
+expr* lvalue_expr(var* sym){
     assert(sym);
     expr* e=(expr*)malloc(sizeof(expr));
     memset(e,0,sizeof(expr));
@@ -113,10 +105,12 @@ expr* lvalue_expr(symbol* sym){
     e->next=(expr*) 0;
     e->sym=sym;
 
-    switch (sym->type){
-        case var_s :  e->type=var_e; break;
-        case programfunc_s :e->type=programfunc_e; break;
-        case libraryfunc_s : e->type=libraryfunc_e; break;
+    switch (sym->id){
+        case global :  e->type=var_e; break;
+        case formal :  e->type=var_e; break;
+        case local :  e->type=var_e; break;
+        case user_func :e->type=programfunc_e; break;
+        case lib_func : e->type=libraryfunc_e; break;
         default: assert(0);
     }
     return e;
@@ -155,13 +149,7 @@ expr* newexpr_constbool(char c){
     e->boolConst= c;
     return e;    
 }
-
-char* newtempvars() {
-    char buffer[32];             // allocate a fixed-size buffer on the stack
-    sprintf(buffer, "_t%d", tempcounter++);
-    return strdup(buffer);      // use strdup to allocate a new string on the heap
-}
-
+ 
 /*
 //!!! SLIDE 45 LEC 9
 symrec_t* newtemp() {
@@ -311,15 +299,6 @@ void check_if_fuction(expr* e){
     return;
 }
 
-symbol_t sym_var_type(int type){
-    if (type < 3)
-        return var_s;
-    else if(type == 3)
-        return programfunc_s;
-    else 
-        return libraryfunc_s;
-}
-
 expr* do_maths(expr* expr1,expr* expr2,iopcode op){
     return NULL; // kapws prepei na anashrw ta expr apo ton parser prin auto
     check_if_fuction(expr1);
@@ -365,3 +344,5 @@ expr* do_bool(expr* expr1,expr* expr2,iopcode op){
         yyerror("wrong operation");
     }
 }
+
+
