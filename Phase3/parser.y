@@ -212,7 +212,7 @@ RIGHT_PARENTHESIS SEMICOLON COMMA SCOPE_RESOLUTION COLON FULL_STOP DOUBLE_FULL_S
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS		
 
 //%type <intValue>  expr
-%type <exprValue> lvalue expr member call elist
+%type <exprValue> lvalue expr member call elist assignexpr
 
 %start program  /*specify the start symbol of the grammar*/
 
@@ -270,8 +270,22 @@ term:   LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
         |primary
         ;        
 
-assignexpr: lvalue      {}
-        ASSIGNMENT      expr
+assignexpr: lvalue      
+        ASSIGNMENT   expr{
+				{
+					check_if_fuction($1); //check gia to table
+					/*if($1->type == tableitem_e) {
+						emit(tablesetelem, $1, $1->index, $3, 0, yylineno);
+						$$ = emit_iftableitem($1);
+						$$->type = assignexpr_e;
+					} else {*/
+						emit(assign, $1, $3, NULL, 0, yylineno);
+						$$ = newexpr(assignexpr_e);
+						$$->sym = newTemp();
+						emit(assign, $$, $1, NULL, 0, yylineno);
+					
+				}               
+        }
         ;    
 
 primary: lvalue
@@ -281,7 +295,7 @@ primary: lvalue
         |const
         ;
 
-lvalue: member                  {$$ = $1;} 
+lvalue: member                  {  $$ = $1;} 
         |ID                     {  $$ = lvalue_expr(insert_ID(yylval.stringValue)); }
         |LOCAL ID               {  $$ = lvalue_expr(insert_local(yylval.stringValue));   }
         |SCOPE_RESOLUTION ID    { check_global(yylval.stringValue);

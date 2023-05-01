@@ -306,7 +306,7 @@ const char* get_expr_t_name(expr_t type) {
 void check_if_fuction(expr* e){
     if(e == NULL)
         return;
-    if(e->type == tableitem_e || e->type == programfunc_e || e->type == libraryfunc_e || e->type == boolexpr_e || e->type == nil_e)
+    if(e->type == tableitem_e || e->type == programfunc_e || e->type == libraryfunc_e || e->type == nil_e)
         yyerror("Illegal operation with fuction");
     return;
 }

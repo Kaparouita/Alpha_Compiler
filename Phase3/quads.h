@@ -216,7 +216,7 @@ expr* newexpr_constbool(char c);
 char* newtempvars(void);
 
 
-//symrec_t* newtemp(void);
+symrec_t* newtemp(void);
 
 /**
  * create a lvalue expr and return it

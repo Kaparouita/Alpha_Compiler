@@ -50,6 +50,19 @@ typedef struct var_table {
     unsigned hs; /*hash multiplier*/
 } var_table;
 
+typedef struct SymbolTableEntry { 
+	int hide;
+	var *var;
+	unsigned offset;
+	scopespace_t space;
+	enum SymbolType type;
+	struct SymbolTableEntry *next_inScope;		
+    struct SymbolTableEntry *next_inFunc;       
+    struct SymbolTableEntry *next_inHash;     
+} SymbolTableEntry;
+
+
+
 typedef struct last_fuction_scope {
     int scope;
     struct last_fuction_scope *next;// keep track of the scope of the last fuction
