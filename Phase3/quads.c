@@ -225,7 +225,7 @@ void print_expr(expr* e) {
     } else {
         print_expr(e->index);
     }
-    if (!isnan(e->numConst)) {
+    if (e->numConst != 0) {
         printf("Num : %f", e->numConst);
     }
     if (e->strConst != NULL) {

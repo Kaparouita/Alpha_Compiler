@@ -1787,7 +1787,7 @@ yyreduce:
 
   case 84: /* const: REAL  */
 #line 387 "parser.y"
-               { (yyval.exprValue) = newexpr_constdouble((yyvsp[0].realValue)); printf("\n %f\n",(yyvsp[0].realValue));}
+               { (yyval.exprValue) = newexpr_constdouble((yyvsp[0].realValue));}
 #line 1792 "parser.c"
     break;
 
