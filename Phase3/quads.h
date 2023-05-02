@@ -166,65 +166,81 @@ expr* lvalue_expr(struct var* sym);
 */
 expr* member_item (expr* lv, char* name);
 
-//-------------------------------------------
-
 /**
- * create a lvalue expr and return it
+ * create a new expr with type expr_t
  * @param expr_t  t
  * @return expr*
 */
 expr* newexpr(expr_t t);
 
 /**
- * create a lvalue expr and return it
+ * create a new expr str/num/bool/double/nil
  * @param char* s
  * @return expr*
 */
 expr* newexpr_conststring(char* s);
-
 expr* newexpr_constnum(int n);
 expr* newexpr_constbool(char c);
 expr* newexpr_constdouble(double n);
 expr* newexpr_nil();
 
 /**
- * create a lvalue expr and return it
+ * den to xw kanei use akomh
  * @return char*
 */
 char* newtempvars(void);
 
 
 /**
- * create a lvalue expr and return it
+ * kanei emit an einai table item
  * @param expr* e
  * @return expr*
 */
 expr* emit_iftableitem(expr* e);
 
 /**
- * create a lvalue expr and return it
+ * kanei call to fuc
  * @param expr* lv
  * @param expr* reversed_elist
  * @return expr*
 */
 expr* make_call(expr* lv,expr* reversed_elist);
 
-
+/*printing ola*/
 void print_expr(expr* e);
 void print_quad(struct quad* q);
 const char* get_op_name(iopcode opcode);
 const char* get_expr_t_name(expr_t type);
+void print_all_quads();
 /**
  * @brief check if v is a fuction
  * error if not
  */
 void check_if_fuction(expr* e);
-
+/**
+ * @brief check if its a number expr
+ * 
+ * @param e 
+ */
 void check_arith(expr* e);
-
+/**
+ * @brief do numeric operation to e1 and e2
+ * 
+ * @param expr1 
+ * @param expr2 
+ * @param op 
+ * @return expr* 
+ */
 expr* do_maths(expr* expr1,expr* expr2,iopcode op);
+/**
+ * @brief do bool operation to e1 and e2
+ * 
+ * @param expr1 
+ * @param expr2 
+ * @param op 
+ * @return expr* 
+ */
 expr* do_bool(expr* expr1,expr* expr2,iopcode op);
 
-void print_all_quads();
 
 #endif /*quads_H*/

@@ -206,10 +206,28 @@ void print_format();
 void print_table(var_table *oSymTable);
 const char* enum_scospace_t_print(enum scopespace_t myenum) ;
 
-
+/**
+ * @brief create a name for my hidden tmp
+ * 
+ * @return char* 
+ */
 char *newtempname();
+/**
+ * @brief create a tmp
+ * 
+ * @return var* 
+ */
 var *newtemp();
+/**
+ * @brief resets tmp count
+ * 
+ */
 void resettemp();
+/**
+ * @brief checkarei an kati einai mesa se fuction
+ * 
+ * @return int 
+ */
 int check_if_in_fuction();
 
 
