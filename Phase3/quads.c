@@ -162,27 +162,18 @@ expr* newexpr_constbool(char c){
     return e;    
 }
  
-/*
-//!!! SLIDE 45 LEC 9
-symrec_t* newtemp() {
-    char *name = newtempvars();
-    symrec_t *sym = LOOKUP(scope,name); //!!!!PREPEI NA TO FTIAKSUME AFTO 
-    if (sym == NULL) 
-        sym = insert(scope, 0, SYM_LOCAL_VAR, name);  //!!!!PREPEI NA TO FTIAKSUME AFTO
-  
-    return sym;
-}
+
 
 expr* emit_iftableitem(expr* e){
     if(e->type!=tableitem_e) return e;
     else{
         expr* result=newexpr(var_e);
         result->sym=newtemp(); 
-        emit(tablegetelem,e,e->index,result);
+        //emit(tablegetelem,e,NULL,result,e->index,e->sym->line);  //ftiakse kainourgio
         return result;
     }
 }
-
+/*
 expr* make_call(expr* lv,expr* reversed_elist){
     expr*func=emit_iftableitem(lv);
     while ((reversed_elist)){
@@ -321,36 +312,37 @@ void check_if_fuction(expr* e){
     return;
 }
 
+void check_arith (expr* e) {
+    if ( e->type == constbool_e ||
+        e->type == conststring_e ||
+        e->type == nil_e ||
+        e->type == newtable_e ||
+        e->type == programfunc_e ||
+        e->type == libraryfunc_e ||
+        e->type == boolexpr_e )
+            yyerror("Illegal expr used in %s!");
+}
+
 expr* do_maths(expr* expr1,expr* expr2,iopcode op){
     return NULL; // kapws prepei na anashrw ta expr apo ton parser prin auto
-    check_if_fuction(expr1);
-    check_if_fuction(expr2);
+    check_arith(expr1);
+    check_arith(expr2);
     expr* r = newexpr(arithexpr_e);
     switch (op)
     {
-    case add:
-        return newexpr_constnum( expr1->numConst + expr2->numConst);
-    case sub:
-        return newexpr_constnum( expr1->numConst - expr2->numConst);
-    case mul:
-        return newexpr_constnum( expr1->numConst * expr2->numConst);
-    case n_div:
-        return newexpr_constnum( expr1->numConst / expr2->numConst);
-    case if_lesseq:
-        return newexpr_constnum( expr1->numConst <= expr2->numConst);
-    case if_geatereq:
-        return newexpr_constnum( expr1->numConst >= expr2->numConst);
-    case if_greater:
-        return newexpr_constnum( expr1->numConst > expr2->numConst);
-    case if_less:
-        return newexpr_constnum( expr1->numConst < expr2->numConst);
-    default:
-        yyerror("wrong operation");
+    case add:           return newexpr_constnum( expr1->numConst + expr2->numConst);
+    case sub:           return newexpr_constnum( expr1->numConst - expr2->numConst);
+    case mul:           return newexpr_constnum( expr1->numConst * expr2->numConst);
+    case n_div:         return newexpr_constnum( expr1->numConst / expr2->numConst);
+    case if_lesseq:     return newexpr_constnum( expr1->numConst <= expr2->numConst);
+    case if_geatereq:   return newexpr_constnum( expr1->numConst >= expr2->numConst);
+    case if_greater:    return newexpr_constnum( expr1->numConst > expr2->numConst);
+    case if_less:       return newexpr_constnum( expr1->numConst < expr2->numConst);
+    default:            yyerror("wrong operation");
     }
 }
 
 expr* do_bool(expr* expr1,expr* expr2,iopcode op){
-    return NULL; // kapws prepei na anashrw ta expr apo ton parser prin auto
     check_if_fuction(expr1);
     check_if_fuction(expr2);
     switch (op){
@@ -367,4 +359,10 @@ expr* do_bool(expr* expr1,expr* expr2,iopcode op){
     }
 }
 
-
+void print_all_quads(){
+    int i = 0;
+    while(i <= currQuad){
+        print_quad(quads++);
+        i++;
+    }
+}

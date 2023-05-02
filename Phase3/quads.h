@@ -220,9 +220,11 @@ const char* get_expr_t_name(expr_t type);
  */
 void check_if_fuction(expr* e);
 
+void check_arith(expr* e);
 
 expr* do_maths(expr* expr1,expr* expr2,iopcode op);
 expr* do_bool(expr* expr1,expr* expr2,iopcode op);
 
+void print_all_quads();
 
 #endif /*quads_H*/

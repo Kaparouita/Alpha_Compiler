@@ -15,6 +15,7 @@
         extern int CURR_SCOPE;
         extern unsigned functionLocalOffset;
         extern var_table* table ;
+        extern int currQuad;
         var *curr = NULL;
         struct Stack * save_fuctionlocals;
 
@@ -210,7 +211,7 @@ RIGHT_PARENTHESIS SEMICOLON COMMA SCOPE_RESOLUTION COLON FULL_STOP DOUBLE_FULL_S
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS		
 
 //%type <intValue>  expr
-%type <exprValue> lvalue expr member call elist assignexpr const
+%type <exprValue> lvalue expr member call elist assignexpr const term primary objectdef moreElist
 
 %start program  /*specify the start symbol of the grammar*/
 
@@ -228,9 +229,9 @@ stmt_list: stmt_list  stmt
 brk_stm:BREAK {if(for_flag == 0)yyerror("break w/o loop");} SEMICOLON ;
 cnt_stm:CONTINUE {if(for_flag == 0)yyerror("continue w/o loop");} SEMICOLON ;
 
-stmt:   expr SEMICOLON
+stmt: {resettemp();}  expr SEMICOLON
         |ifstmt         
-        |whilestmt
+        |whilestmt 
         |forstmt
         |returnstmt
         |brk_stm
@@ -258,45 +259,47 @@ expr:   assignexpr              {}
         |term                   {}
         ;
 
-term:   LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
-        |SUBTRACTION expr {check_if_fuction($2);}
-        |NOT expr         {check_if_fuction($2);}
-        |INCREMENT lvalue {check_if_fuction($2);}
-        |lvalue INCREMENT {check_if_fuction($1);}
-        |DECREMENT lvalue {check_if_fuction($2);}
-        |lvalue DECREMENT {check_if_fuction($1);}
-        |primary
+term:   LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
+        |SUBTRACTION expr {check_arith($2); $term = newexpr(arithexpr_e);$term->sym = newtemp(); emit(uminus,$expr,NULL,$term,currQuad,yylineno);} //-a
+        |NOT expr         {check_arith($2);} //not a
+        |INCREMENT lvalue {check_arith($2);} //++a
+        |lvalue INCREMENT {check_arith($1);} //a++
+        |DECREMENT lvalue {check_arith($2);} //--a
+        |lvalue DECREMENT {check_arith($1);} //a--
+        |primary          {$$ = $1;}
         ;        
 
 assignexpr: lvalue      
         ASSIGNMENT   expr{
 				{
 					check_if_fuction($1); //check gia to table
-					/*if($1->type == tableitem_e) {
+                                        //lvalue[i] = expr
+					if($1->type == tableitem_e) {
 						emit(tablesetelem, $1, $1->index, $3, 0, yylineno);
-						$$ = emit_iftableitem($1);
-						$$->type = assignexpr_e;
-					} else {
-                                        */
-						emit(assign, $1, $3, NULL, 0, yylineno);
-						$$ = newexpr(assignexpr_e);
-						$$->sym = newtemp();
-						emit(assign, $$, $1, NULL, 0, yylineno);
-					
+						$assignexpr = emit_iftableitem($1);
+						$assignexpr->type = assignexpr_e;
+					} 
+                                        // lvalue = expr
+                                        else {
+						emit(assign, $1, $3, NULL, currQuad, yylineno);
+						$assignexpr = newexpr(assignexpr_e);
+						$assignexpr->sym = newtemp();
+						emit(assign, $assignexpr, $1, NULL, currQuad, yylineno);
+                                        }
 				}               
         }
         ;    
 
-primary: lvalue
-        |call   
-        |objectdef
-        |LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS
-        |const
+primary: lvalue {$$ = $1;}
+        |call   {$$ = $1;}
+        |objectdef {$$ = $1;}
+        |LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS{}
+        |const {$$ = $1;}
         ;
 
-lvalue: member                  {  $$ = $1;} 
-        |ID                     {  $$ = lvalue_expr(insert_ID(yylval.stringValue)); }
-        |LOCAL ID               {  $$ = lvalue_expr(insert_local(yylval.stringValue));   }
+lvalue: member                  {  $lvalue = $1;} 
+        |ID                     {  $lvalue = lvalue_expr(insert_ID(yylval.stringValue)); }
+        |LOCAL ID               {  $lvalue = lvalue_expr(insert_local(yylval.stringValue));   }
         |SCOPE_RESOLUTION ID    { check_global(yylval.stringValue);
                                 } //::
         ;             
@@ -311,7 +314,6 @@ call:    call LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS
         |lvalue callsuffix
         |LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS{}
         ;
-
 
 callsuffix: normcall
         |methodcall
@@ -328,13 +330,13 @@ elist:  expr   //elist polla expr
 
 moreElist: elist        
         |moreElist COMMA elist
-        |  //?
+        |  {$$ = $$;}//?
         ;     
 
-objectdef: LEFT_SQUARE_BRACKET  {
-        //emit(tablecreate,newexpr(tableitem_e),NULL,NULL,1,yylineno);
-        } moreElist RIGHT_SQUARE_BRACKET   
-        |LEFT_SQUARE_BRACKET   indexed  RIGHT_SQUARE_BRACKET
+objectdef:  LEFT_SQUARE_BRACKET  {
+        //emit(tablecreate,newexpr(tableitem_e),NULL,NULL,currQuad,yylineno);
+        } moreElist RIGHT_SQUARE_BRACKET   {}
+        |LEFT_SQUARE_BRACKET   indexed  RIGHT_SQUARE_BRACKET {}
         ;     
 
 indexed: moreindexedelem
@@ -443,5 +445,6 @@ int main(int argc, char** argv){
     if(error_flag != 0)
         printf("/-------------   ERRORS     -------------------/\n");
    // print_format();
+   print_all_quads();
     return 0;
 }

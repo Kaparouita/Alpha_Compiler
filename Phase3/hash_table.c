@@ -339,6 +339,7 @@ char *newtempname(){
 	sprintf(str,"_t%d",tempcounter++);
 	return str;
 }
+
 var *newtemp(){
     char *name = newtempname();
     var * sym = lookup_scope(CURR_SCOPE,name);
