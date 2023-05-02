@@ -184,6 +184,8 @@ expr* newexpr_conststring(char* s);
 
 expr* newexpr_constnum(int n);
 expr* newexpr_constbool(char c);
+expr* newexpr_constdouble(double n);
+expr* newexpr_nil();
 
 /**
  * create a lvalue expr and return it

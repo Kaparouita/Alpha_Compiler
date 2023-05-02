@@ -210,7 +210,7 @@ RIGHT_PARENTHESIS SEMICOLON COMMA SCOPE_RESOLUTION COLON FULL_STOP DOUBLE_FULL_S
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS		
 
 //%type <intValue>  expr
-%type <exprValue> lvalue expr member call elist assignexpr
+%type <exprValue> lvalue expr member call elist assignexpr const
 
 %start program  /*specify the start symbol of the grammar*/
 
@@ -277,11 +277,12 @@ assignexpr: lvalue
 						$$ = emit_iftableitem($1);
 						$$->type = assignexpr_e;
 					} else {
+                                        */
 						emit(assign, $1, $3, NULL, 0, yylineno);
 						$$ = newexpr(assignexpr_e);
 						$$->sym = newtemp();
 						emit(assign, $$, $1, NULL, 0, yylineno);
-					*/
+					
 				}               
         }
         ;    
@@ -383,12 +384,12 @@ funcdef:
                 functionLocalOffset = pop(save_fuctionlocals);} /*anonymous functions here */
         ;    
 
-const:  INTEGER
-        |REAL
-        |STRING
-        |NILL
-        |TRUE
-        |FALSE
+const:  REAL   { $$ = newexpr_constdouble($REAL);}
+        |INTEGER { $$ = newexpr_constnum($INTEGER);}
+        |STRING { $$ = newexpr_conststring($STRING);}
+        |NILL   { $$ = newexpr_nil();}
+        |TRUE   { $$ = newexpr_constbool(1);}
+        |FALSE  { $$ = newexpr_constbool(0);}
         ;
 
 idlist: ID {insert_formal(yylval.stringValue);}

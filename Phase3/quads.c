@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 extern int yyerror (char* yaccProvidedMessage);
 
@@ -138,7 +139,18 @@ expr* newexpr_conststring(char* s){
     return e;
 } 
 
+expr* newexpr_nil(){
+    expr* e=newexpr(nil_e);
+    return e;
+}
+
 expr* newexpr_constnum(int n){
+    expr* e=newexpr(constnum_e);
+    e->numConst= n;
+    return e;
+} 
+
+expr* newexpr_constdouble(double n){
     expr* e=newexpr(constnum_e);
     e->numConst= n;
     return e;
@@ -189,31 +201,41 @@ expr* make_call(expr* lv,expr* reversed_elist){
 
 /*PAIZW ME PRINTS IGNORE*/
 void print_quad(struct quad *q) {
-    printf("op: %s, result: ", get_op_name(q->op));
+    printf("(op: %s, result: ", get_op_name(q->op));
     print_expr(q->result);
-    printf(", arg1: ");
+    printf("),{ arg1: ");
     print_expr(q->arg1);
-    printf(", arg2: ");
+    printf("},[ arg2: ");
     print_expr(q->arg2);
-    printf(", label: %d, line: %d\n", q->label, q->line);
+    printf("],( label: %d, line: %d)\n", q->label, q->line);
 }
 
 
-void print_expr(struct expr* e) {
+void print_expr(expr* e) {
     if (e == NULL) {
-        printf("expr is NULL\n");
+        printf("NULL");
         return;
     }
-    printf("expr_t: %s\n", get_expr_t_name(e->type));
-    //printf("sym: %s\n", e->sym->name);
-    if (e->index != NULL) {
-        printf("index:\n");
+    printf("Type: %s ,",get_expr_t_name(e->type));
+    if(e->sym != NULL)
+        printf("Sym : %s ,", e->sym->name);
+    printf("Index : ");
+    if (e->index == NULL) {
+        printf("None ,");
+    } else {
         print_expr(e->index);
     }
-    if (e->next != NULL) {
-        printf("next:\n");
-        print_expr(e->next);
+    if (!isnan(e->numConst)) {
+        printf("Num : %f", e->numConst);
     }
+    if (e->strConst != NULL) {
+        printf("Str : %s\n", e->strConst);
+    }
+        if (e->boolConst == 0) {
+            //printf("Boolean constant: False\n");
+        } else {
+            //printf("Boolean constant: True\n");
+        }
 }
 
 const char* get_op_name(iopcode opcode) {

@@ -60,11 +60,11 @@ LESS_THAN "<"
 GRE_EQUAL ">="
 LES_EQUAL "<="
 
-/*INTEGER NUMERIC*/
-INTEGER [0-9]+
 
 /*REAL NUMERIC*/
 REAL [0-9]+"."[0-9]+
+/*INTEGER NUMERIC*/
+INTEGER [0-9]+
 
 /*STRINGS*/
 STRINGS "\""
@@ -131,7 +131,7 @@ BLOCK_COMMENT "/*"
 
 
 {INTEGER} {yylval.intValue = atoi(yytext); return INTEGER; } //number
-{REAL} {yylval.realValue = atoi(yytext); return REAL;}
+{REAL} {yylval.realValue = strtod(yytext,NULL); return REAL;}
 
 {LEFT_CURLY_BRACKET} { return LEFT_CURLY_BRACKET;}
 {RIGHT_CURLY_BRACKET} { return RIGHT_CURLY_BRACKET;}

@@ -561,8 +561,8 @@ char *yytext;
 /*NOT DEFINED SYMBOLS*/
 /*KEYWORDS*/
 /*OPERATORS*/
-/*INTEGER NUMERIC*/
 /*REAL NUMERIC*/
+/*INTEGER NUMERIC*/
 /*STRINGS*/
 /*PUNCTUATIONS MARK*/
 /*IDENTIFICATION NAME*/
@@ -1022,7 +1022,7 @@ YY_RULE_SETUP
 case 34:
 YY_RULE_SETUP
 #line 134 "scanner.l"
-{yylval.realValue = atoi(yytext); return REAL;}
+{yylval.realValue = strtod(yytext,NULL); return REAL;}
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
