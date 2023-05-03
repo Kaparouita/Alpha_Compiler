@@ -269,8 +269,7 @@ term:   LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
         |primary          {$$ = $1;}
         ;        
 
-assignexpr: lvalue      
-        ASSIGNMENT   expr{
+assignexpr: lvalue ASSIGNMENT expr{
 				{
 					check_if_fuction($1); //check gia to table
                                         //lvalue[i] = expr
@@ -290,11 +289,11 @@ assignexpr: lvalue
         }
         ;    
 
-primary: lvalue {$$ = $1;}
-        |call   {$$ = $1;}
-        |objectdef {$$ = $1;}
+primary: lvalue         {$$ = $1;}
+        |call           {$$ = $1;}
+        |objectdef      {$$ = $1;}
         |LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS{}
-        |const {$$ = $1;}
+        |const          {$$ = $1;}
         ;
 
 lvalue: member                  {  $lvalue = $1;} 
@@ -333,9 +332,11 @@ moreElist: elist
         |  {$$ = $$;}//?
         ;     
 
-objectdef:  LEFT_SQUARE_BRACKET  {
+objectdef:  
+        LEFT_SQUARE_BRACKET RIGHT_SQUARE_BRACKET
+        LEFT_SQUARE_BRACKET  moreElist  {  // []
         //emit(tablecreate,newexpr(tableitem_e),NULL,NULL,currQuad,yylineno);
-        } moreElist RIGHT_SQUARE_BRACKET   {}
+        } RIGHT_SQUARE_BRACKET   {}
         |LEFT_SQUARE_BRACKET   indexed  RIGHT_SQUARE_BRACKET {}
         ;     
 
@@ -386,8 +387,8 @@ funcdef:
                 functionLocalOffset = pop(save_fuctionlocals);} /*anonymous functions here */
         ;    
 
-const:  REAL   { $$ = newexpr_constdouble($REAL);}
-        |INTEGER { $$ = newexpr_constnum($INTEGER);}
+const:  INTEGER { $$ = newexpr_constnum($INTEGER);}
+        |REAL   { $$ = newexpr_constdouble($REAL);}
         |STRING { $$ = newexpr_conststring($STRING);}
         |NILL   { $$ = newexpr_nil();}
         |TRUE   { $$ = newexpr_constbool(1);}
@@ -438,13 +439,13 @@ int main(int argc, char** argv){
 	else yyin=stdin;
 	 
     
-    save_fuctionlocals = createStack(150);
+    save_fuctionlocals = createStack(150); 
     init_lib_func();
     //yyset_in(input_file); // set the input stream for the lexer
     yyparse(); // call the parser function
     if(error_flag != 0)
         printf("/-------------   ERRORS     -------------------/\n");
-   // print_format();
-   print_all_quads();
+   // print_format(); //print scopes
+   print_all_quads(); //print quads
     return 0;
 }
