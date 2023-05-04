@@ -211,8 +211,8 @@ RIGHT_PARENTHESIS SEMICOLON COMMA SCOPE_RESOLUTION COLON FULL_STOP DOUBLE_FULL_S
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS		
 
 //%type <intValue>  expr
-%type <exprValue> lvalue expr member call elist assignexpr const term primary objectdef moreElist
-
+%type <exprValue> lvalue expr member call elist assignexpr const term primary objectdef moreElist indexed moreindexedelem indexedelem
+ 
 %start program  /*specify the start symbol of the grammar*/
 
 
@@ -280,10 +280,10 @@ assignexpr: lvalue ASSIGNMENT expr{
 					} 
                                         // lvalue = expr
                                         else {
-						emit(assign, $1, $3, NULL, currQuad, yylineno);
+						emit(assign, $1, $3, NULL, currQuad, yylineno); //paizei na thelei ta arg anapoda
 						$assignexpr = newexpr(assignexpr_e);
 						$assignexpr->sym = newtemp();
-						emit(assign, $assignexpr, $1, NULL, currQuad, yylineno);
+						emit(assign, $assignexpr, $1, NULL, currQuad, yylineno); //omoiws me to apo panw
                                         }
 				}               
         }
@@ -328,16 +328,31 @@ elist:  expr   //elist polla expr
         ;
 
 moreElist: elist        
-        |moreElist COMMA elist
-        |  {$$ = $$;}//?
+        |moreElist COMMA elist {
+                                                        $elist->next = $1;      //expr->next = me moreElist
+                                                        $$ = $3;                //moreElist = expr;        
+                                }
+        |  {}//?
         ;     
 
 objectdef:  
-        LEFT_SQUARE_BRACKET RIGHT_SQUARE_BRACKET
-        LEFT_SQUARE_BRACKET  moreElist  {  // []
-        //emit(tablecreate,newexpr(tableitem_e),NULL,NULL,currQuad,yylineno);
-        } RIGHT_SQUARE_BRACKET   {}
-        |LEFT_SQUARE_BRACKET   indexed  RIGHT_SQUARE_BRACKET {}
+        LEFT_SQUARE_BRACKET RIGHT_SQUARE_BRACKET {      //[]
+                                                        $$ = tablecreate_and_emit();
+                                                }
+        |LEFT_SQUARE_BRACKET  moreElist  RIGHT_SQUARE_BRACKET    {    // [20,30,"hello"]
+                                                        $$ = tablecreate_and_emit();
+                                                        int i = get_elist_length($moreElist);  //find the length of the items for the table
+                                                        //for each item check its type and insert it to the table
+                                                        for(i; i >= 0; i--){
+                                                                emit(tablesetelem,$$,newexpr_constnum(i),$moreElist,0,yylineno); // emit (op,temp,index,value)
+                                                                $moreElist = $moreElist->next; // go to next expr
+                                                        }                                                
+                                                }
+        |LEFT_SQUARE_BRACKET   indexed  RIGHT_SQUARE_BRACKET { //[{"x" : (fuction(s){print(s);})} ]
+                                                        $$ = tablecreate_and_emit();
+                                                        int i = get_elist_length($indexed);
+        
+        }
         ;     
 
 indexed: moreindexedelem
@@ -345,10 +360,15 @@ indexed: moreindexedelem
 
 /*1 or + times for indexedelems*/
 moreindexedelem:   indexedelem     
-        |moreindexedelem COMMA indexedelem
+        |moreindexedelem COMMA indexedelem {
+                                                        $indexedelem->next = $1;      //expr->next = me moreElist
+                                                        $$ = $3;                //moreElist = expr; 
+        }
         ;
 
-indexedelem: LEFT_CURLY_BRACKET expr COLON expr RIGHT_CURLY_BRACKET 
+indexedelem: LEFT_CURLY_BRACKET expr COLON expr RIGHT_CURLY_BRACKET {
+                $$ = $2;//prepei na ftiaksoume kati pou na einai index elem
+        }
         ;
 
 

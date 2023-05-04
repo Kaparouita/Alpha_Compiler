@@ -146,7 +146,7 @@ expr* newexpr_nil(){
 
 expr* newexpr_constnum(int n){
     expr* e=newexpr(constnum_e);
-    e->numConst= n;
+    e->numConst = n;
     return e;
 } 
 
@@ -192,12 +192,12 @@ expr* make_call(expr* lv,expr* reversed_elist){
 
 /*PAIZW ME PRINTS IGNORE*/
 void print_quad(struct quad *q) {
-    printf("(op: %s, result: ", get_op_name(q->op));
-    print_expr(q->result);
-    printf("),{ arg1: ");
+    printf("(op: %s, arg1: ", get_op_name(q->op));
     print_expr(q->arg1);
-    printf("},[ arg2: ");
+     printf("),{ arg2: ");
     print_expr(q->arg2);
+    printf("},[ result: ");
+    print_expr(q->result);
     printf("],( label: %d, line: %d)\n", q->label, q->line);
 }
 
@@ -216,11 +216,11 @@ void print_expr(expr* e) {
     } else {
         print_expr(e->index);
     }
-    if (e->numConst != 0) {
+    if (e->type == constnum_e) {
         printf("Num : %f", e->numConst);
     }
     if (e->strConst != NULL) {
-        printf("Str : %s\n", e->strConst);
+        printf("Str : %s", e->strConst);
     }
         if (e->boolConst == 0) {
             //printf("Boolean constant: False\n");
@@ -361,8 +361,23 @@ expr* do_bool(expr* expr1,expr* expr2,iopcode op){
 
 void print_all_quads(){
     int i = 0;
+    printf("------------ PRINTING ALL QUADS -----------\n");
     while(i <= currQuad){
+        printf("%d :",i);
         print_quad(quads++);
         i++;
     }
+}
+
+expr *tablecreate_and_emit(){
+    expr* e = newexpr(newtable_e);
+	e->sym = newtemp();
+	emit(tablecreate, e, NULL, NULL, 0, 0);
+    return e;
+}
+
+int get_elist_length(expr *e){
+    int i = 0;
+    while(e = e->next) i++;
+    return i;
 }

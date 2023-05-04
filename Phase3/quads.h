@@ -243,4 +243,7 @@ expr* do_maths(expr* expr1,expr* expr2,iopcode op);
 expr* do_bool(expr* expr1,expr* expr2,iopcode op);
 
 
+int get_elist_length(expr *e);
+expr *tablecreate_and_emit();
+
 #endif /*quads_H*/
