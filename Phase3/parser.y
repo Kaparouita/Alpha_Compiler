@@ -52,16 +52,17 @@
         }
 
         /*check if global variable exist p.x. ::x (global x)*/
-        void check_global(char *name){
+        var * check_global(char *name){
                 //kanoume lookup sto global scope 0
                 var *myvar = lookup_scope(0,name);
                 //an einai NULL den iparxei
                 if (myvar == NULL ) {
                         yyerror("Global var not found");
-                        return;
+                        return NULL;
                 }
                 //alliws anaferomaste ekei
                 printf("Anafora sto %s : %s \n",enum_type(myvar->type) ,myvar->name);  //TESTING PRINT
+                return myvar;
         }
 
         /*function to insert formal variables*/
@@ -161,6 +162,7 @@
         double realValue;
         struct var *exprNode;
         struct expr *exprValue;
+        struct indexed *indexedValue;
 }
 
 /*KEYWORDS*/
@@ -211,8 +213,10 @@ RIGHT_PARENTHESIS SEMICOLON COMMA SCOPE_RESOLUTION COLON FULL_STOP DOUBLE_FULL_S
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS		
 
 //%type <intValue>  expr
-%type <exprValue> lvalue expr member call elist assignexpr const term primary objectdef moreElist indexed moreindexedelem indexedelem
- 
+%type <exprValue> lvalue expr member call elist assignexpr const term primary objectdef moreElist 
+%type <indexedValue> indexed moreindexedelem indexedelem
+
+
 %start program  /*specify the start symbol of the grammar*/
 
 
@@ -242,7 +246,7 @@ stmt: {resettemp();}  expr SEMICOLON
         ;
 
 
-expr:   assignexpr              {}
+expr:   assignexpr              {$$ =  $assignexpr;}
         |expr ADDITION expr     {$$ =  do_maths($1,$3,add);}
         |expr SUBTRACTION expr  {$$ =  do_maths($1,$3,sub);}
         |expr MULTI expr        {$$ =  do_maths($1,$3,mul);}
@@ -289,18 +293,17 @@ assignexpr: lvalue ASSIGNMENT expr{
         }
         ;    
 
-primary: lvalue         {$$ = $1;}
+primary: lvalue         {$$ = $1;} 
         |call           {$$ = $1;}
         |objectdef      {$$ = $1;}
         |LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS{}
         |const          {$$ = $1;}
         ;
 
-lvalue: member                  {  $lvalue = $1;} 
-        |ID                     {  $lvalue = lvalue_expr(insert_ID(yylval.stringValue)); }
-        |LOCAL ID               {  $lvalue = lvalue_expr(insert_local(yylval.stringValue));   }
-        |SCOPE_RESOLUTION ID    { check_global(yylval.stringValue);
-                                } //::
+lvalue: member                  {  $lvalue = $member;} 
+        |ID                     {  $lvalue = lvalue_expr(insert_ID(yylval.stringValue));}
+        |LOCAL ID               {  $lvalue = lvalue_expr(insert_local(yylval.stringValue));}
+        |SCOPE_RESOLUTION ID    {  $lvalue = lvalue_expr(check_global(yylval.stringValue));} //::
         ;             
 
 member:  lvalue FULL_STOP ID
@@ -324,15 +327,15 @@ normcall:   LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS
 methodcall: DOUBLE_FULL_STOP ID LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS 
         ;    
 
-elist:  expr   //elist polla expr
+elist:  expr                    {                       $$ = $1;}//elist polla expr
         ;
 
-moreElist: elist        
-        |moreElist COMMA elist {
+moreElist: elist                {                       $$ = $1;}
+        |moreElist COMMA elist  {
                                                         $elist->next = $1;      //expr->next = me moreElist
                                                         $$ = $3;                //moreElist = expr;        
                                 }
-        |  {}//?
+        // | <--- !edw eixe kai to keno alla m petaei shift reduce
         ;     
 
 objectdef:  
@@ -350,24 +353,28 @@ objectdef:
                                                 }
         |LEFT_SQUARE_BRACKET   indexed  RIGHT_SQUARE_BRACKET { //[{"x" : (fuction(s){print(s);})} ]
                                                         $$ = tablecreate_and_emit();
-                                                        int i = get_elist_length($indexed);
+                                                        int i = get_indexed_length($indexed);
+                                                        for(i; i >= 0; i--){
+                                                                emit(tablesetelem,$$,$indexed->indexedelem,$indexed->value,0,yylineno); // emit (op,temp,index,value)
+                                                                $indexed = $indexed->next; // go to next index
+                                                        }   
         
         }
         ;     
 
-indexed: moreindexedelem
+indexed: moreindexedelem   {$$ = $1;}
         ; 
 
 /*1 or + times for indexedelems*/
-moreindexedelem:   indexedelem     
+moreindexedelem:   indexedelem             {$$ = $1;}
         |moreindexedelem COMMA indexedelem {
-                                                        $indexedelem->next = $1;      //expr->next = me moreElist
-                                                        $$ = $3;                //moreElist = expr; 
+                                                        $indexedelem->next = $1;        //expr->next = me moreIndex
+                                                        $$ = $3;                        //moreIndex = expr; 
         }
         ;
 
 indexedelem: LEFT_CURLY_BRACKET expr COLON expr RIGHT_CURLY_BRACKET {
-                $$ = $2;//prepei na ftiaksoume kati pou na einai index elem
+                $$ = indexed_constractor($2,$4,NULL);
         }
         ;
 

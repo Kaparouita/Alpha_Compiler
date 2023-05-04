@@ -60,7 +60,11 @@ typedef struct quad{
     unsigned    line;
 }quad;
 
-
+typedef struct indexed{
+    expr *indexedelem;
+    expr *value;
+    struct indexed *next;
+}indexed;
 /**
  * epektini ton pinaka twn quads
 */
@@ -79,6 +83,16 @@ void expand(void);
 */
 void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned int label, unsigned int  line);
 
+
+/**
+ * @brief ["x" : kati_x , "b" : kati_b]
+ * 
+ * @param indexedelem  "x"
+ * @param value "kati_x"
+ * @param next "b"
+ * @return indexed* 
+ */
+indexed *indexed_constractor(expr *indexedelem,expr *value,indexed *next);
 /**
  * @brief 
  * @return to type ths metavlhths analoga to scope ths
@@ -244,6 +258,7 @@ expr* do_bool(expr* expr1,expr* expr2,iopcode op);
 
 
 int get_elist_length(expr *e);
+int get_indexed_length(indexed *index);
 expr *tablecreate_and_emit();
 
 #endif /*quads_H*/

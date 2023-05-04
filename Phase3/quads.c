@@ -40,6 +40,14 @@ void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned int label, 
     print_quad(p);
 }
 
+indexed *indexed_constractor(expr *indexedelem,expr *value,indexed *next){
+    indexed *i = (indexed*)malloc(sizeof(indexed));
+    i->indexedelem = indexedelem;
+    i->value = value;
+    i->next = next;
+    return i;
+}
+
 scopespace_t currscopespace(){
     if(scopeSpaceCounter==1)
         return programvar;
@@ -379,5 +387,11 @@ expr *tablecreate_and_emit(){
 int get_elist_length(expr *e){
     int i = 0;
     while(e = e->next) i++;
+    return i;
+}
+
+int get_indexed_length(indexed *index){
+    int i = 0;
+    while(index = index->next) i++;
     return i;
 }
