@@ -14,8 +14,7 @@
 		char* str = malloc(sizeof(char) * 30);
 		sprintf(str,"%d - %d",a,b);
 		return str;
-	}
-	
+	}	
 	/*
 	 * return 0 if succed
 	 * return 1 if fails(not nested comment found)

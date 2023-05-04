@@ -126,46 +126,46 @@ expr* lvalue_expr(var* sym){
 }
 
 expr* member_item (expr* lv, char* name) {
-    //lv = emit_iftableitem(lv); // Emit code if r-value use of table item
-    expr* ti = newexpr(tableitem_e); // Make a new expression
+    lv = emit_iftableitem(lv);              // Emit code if r-value use of table item
+    expr* ti = newexpr(tableitem_e);        // Make a new expression
     ti->sym = lv->sym;
-    ti->index = newexpr_conststring(name); // Const string index
+    ti->index = newexpr_conststring(name);  // Const string index
     return ti;
 }
 
 
 expr* newexpr(expr_t t){
-    expr* e=(expr*)malloc(sizeof(expr));
+    expr* e = (expr*)malloc(sizeof(expr));
     memset(e,0,sizeof(expr));
     e->type=t;
     return e;
 }
 
 expr* newexpr_conststring(char* s){
-    expr* e=newexpr(conststring_e);
-    e->strConst=strdup(s);
+    expr* e = newexpr(conststring_e);
+    e->strConst = strdup(s);
     return e;
 } 
 
 expr* newexpr_nil(){
-    expr* e=newexpr(nil_e);
+    expr* e = newexpr(nil_e);
     return e;
 }
 
 expr* newexpr_constnum(int n){
-    expr* e=newexpr(constnum_e);
+    expr* e = newexpr(constnum_e);
     e->numConst = n;
     return e;
 } 
 
 expr* newexpr_constdouble(double n){
-    expr* e=newexpr(constnum_e);
+    expr* e = newexpr(constnum_e);
     e->numConst= n;
     return e;
 } 
 
 expr* newexpr_constbool(char c){
-    expr* e=newexpr(boolexpr_e);
+    expr* e = newexpr(constbool_e);
     e->boolConst= c;
     return e;    
 }
@@ -173,11 +173,11 @@ expr* newexpr_constbool(char c){
 
 
 expr* emit_iftableitem(expr* e){
-    if(e->type!=tableitem_e) return e;
-    else{
-        expr* result=newexpr(var_e);
-        result->sym=newtemp(); 
-        //emit(tablegetelem,e,NULL,result,e->index,e->sym->line);  //ftiakse kainourgio
+    if(e->type != tableitem_e) return e; // if not table
+    else {
+        expr* result = newexpr(var_e);
+        result->sym = newtemp(); 
+        emit(tablegetelem,result,e,e->index,0,0);  //!paizei na einai lathos
         return result;
     }
 }
@@ -225,16 +225,17 @@ void print_expr(expr* e) {
         print_expr(e->index);
     }
     if (e->type == constnum_e) {
-        printf("Num : %f", e->numConst);
+        printf("Num : %f ", e->numConst);
     }
-    if (e->strConst != NULL) {
-        printf("Str : %s", e->strConst);
+    if (e->type == conststring_e) {
+        printf("Str : %s ", e->strConst);
     }
-        if (e->boolConst == 0) {
-            //printf("Boolean constant: False\n");
-        } else {
-            //printf("Boolean constant: True\n");
-        }
+    if (e->type == constbool_e){ 
+        if(e->boolConst == '0')
+            printf("Bool : False");
+        else 
+            printf("Bool : True");
+    }
 }
 
 const char* get_op_name(iopcode opcode) {

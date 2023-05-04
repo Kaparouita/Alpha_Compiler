@@ -256,9 +256,25 @@ expr* do_maths(expr* expr1,expr* expr2,iopcode op);
  */
 expr* do_bool(expr* expr1,expr* expr2,iopcode op);
 
-
+/**
+ * @brief Get the elist length object
+ * 
+ * @param e to exp
+ * @return size
+ */
 int get_elist_length(expr *e);
+/**
+ * @brief Get the indexed length object
+ * 
+ * @param index 
+ * @return size
+ */
 int get_indexed_length(indexed *index);
+/**
+ * @brief create and emit in a new table
+ * 
+ * @return expr* 
+ */
 expr *tablecreate_and_emit();
 
 #endif /*quads_H*/

@@ -7,7 +7,7 @@
 
         int yyerror (char* yaccProvidedMessage);
         int yylex (void);
-
+        
         extern unsigned scopeSpaceCounter;
         extern int yylineno;
         extern char* yytext;
@@ -36,13 +36,13 @@
                                 curr_id = global;
                         myvar =new_var(varr,curr_id,name,CURR_SCOPE,currscopespace(),currscopeoffset(),1,yylineno); 
                         hash_insert(myvar,table);
-                        print_var(myvar);
+                        //print_var(myvar);
                         inccurrscopeoffset();              
                 } 
                 /*an yparxei hdh */
                 else{ 
                         //aneferomaste kai menei na doume an exoume prosvash
-                        printf("Anafora sto %s : %s \n",enum_type(myvar->type) ,myvar->name); //TESTING PRINT
+                        //printf("Anafora sto %s : %s \n",enum_type(myvar->type) ,myvar->name); //TESTING PRINT
                         //check if we have access
                         if(check_access(myvar) == 0 && myvar->scope != 0){
                                 yyerror("Cannot access var ");
@@ -61,7 +61,7 @@
                         return NULL;
                 }
                 //alliws anaferomaste ekei
-                printf("Anafora sto %s : %s \n",enum_type(myvar->type) ,myvar->name);  //TESTING PRINT
+                //printf("Anafora sto %s : %s \n",enum_type(myvar->type) ,myvar->name);  //TESTING PRINT
                 return myvar;
         }
 
@@ -82,7 +82,7 @@
                 myvar = new_var(varr,formal,name,CURR_SCOPE,currscopespace(),currscopeoffset(),1,yylineno); 
                 inccurrscopeoffset();
                 hash_insert(myvar,table);
-                print_var(myvar);
+                //print_var(myvar);
         }
 
         /*insert a new fuction to the table*/
@@ -93,7 +93,7 @@
                         name = check_anonymous(name);
                         var *myfuction = new_var(fuction,user_func,name,CURR_SCOPE,currscopespace(),currscopeoffset(),1,yylineno); 
                         hash_insert(myfuction,table);
-                        print_var(myfuction); //na ftiaksw ta print
+                        //print_var(myfuction); //na ftiaksw ta print
                         return;
                 }
                 //kanoume lookuop sto trexon scope
@@ -112,7 +112,7 @@
                 //alliws thn kanoume insert
                 myVar = new_var(fuction,user_func,name,CURR_SCOPE,currscopespace(),currscopeoffset(),1,yylineno); 
                 hash_insert(myVar,table);
-                print_var(myVar);
+                //print_var(myVar);
         }
 
         /*Insert a local var with name = name */
@@ -122,7 +122,7 @@
                 var_id curr_id= local;
                 /*an vrethei metavlhth sto table aneferomaste ekei*/
                 if(currVar != NULL){  
-                        printf("Anafora sto %s : %s \n",enum_type(currVar->type) ,currVar->name);  //TESTING PRINT
+                        //printf("Anafora sto %s : %s \n",enum_type(currVar->type) ,currVar->name);  //TESTING PRINT
                         if(currVar->type == fuction)
                                 printf("Warning line 124 parser.y");
                         return currVar;
@@ -138,7 +138,7 @@
                         //printf("GT %d\n",currVar->hide);
                 currVar = new_var(varr,curr_id,name,CURR_SCOPE,currscopespace(),currscopeoffset(),1,yylineno); 
                 hash_insert(currVar,table);
-                print_var(currVar);
+                //print_var(currVar);
                 //inccurrscopeoffset();
                 return currVar;         
         }
@@ -157,31 +157,32 @@
 
 /* Bison declarations and definitions */
 %union {
-        char* stringValue;
-        int intValue;
-        double realValue;
-        struct var *exprNode;
-        struct expr *exprValue;
-        struct indexed *indexedValue;
+        char*   stringValue;
+        int     intValue;
+        double  realValue;
+        char    boolValue;
+        struct  var *exprNode;
+        struct  expr *exprValue;
+        struct  indexed *indexedValue;
 }
 
 /*KEYWORDS*/
 %token IF ELSE WHILE FOR FUNCTION RETURN BREAK CONTINUE
-AND NOT OR LOCAL TRUE FALSE NILL
+AND NOT OR LOCAL NILL 
 
 /*OPERATORS*/   
 %token ASSIGNMENT ADDITION SUBTRACTION MULTI
 %token DIVISION  MODULUS EQUAL NOTEQUAL INCREMENT DECREMENT GRETER_THAN LESS_THAN   GRE_EQUAL   LES_EQUAL  
 
 
-/*INTEGER NUMERIC*/
-%token <intValue> INTEGER
-
+/*INTEGER NUMERIC && BOOL*/
+%token <intValue> INTEGER 
 /*REAL NUMERIC*/
 %token <realValue> REAL
-
 /*STRINGS*/
 %token <stringValue> STRING
+
+%token <boolValue> TRUE FALSE
 
 /*PUNCTUATIONS MARK*/
 %token LEFT_CURLY_BRACKET RIGHT_CURLY_BRACKET LEFT_SQUARE_BRACKET RIGHT_SQUARE_BRACKET LEFT_PARENTHESIS 
@@ -264,13 +265,13 @@ expr:   assignexpr              {$$ =  $assignexpr;}
         ;
 
 term:   LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
-        |SUBTRACTION expr {check_arith($2); $term = newexpr(arithexpr_e);$term->sym = newtemp(); emit(uminus,$expr,NULL,$term,currQuad,yylineno);} //-a
-        |NOT expr         {check_arith($2);} //not a
-        |INCREMENT lvalue {check_arith($2);} //++a
-        |lvalue INCREMENT {check_arith($1);} //a++
-        |DECREMENT lvalue {check_arith($2);} //--a
-        |lvalue DECREMENT {check_arith($1);} //a--
-        |primary          {$$ = $1;}
+        |SUBTRACTION expr       {check_arith($2); $term = newexpr(arithexpr_e);$term->sym = newtemp(); emit(uminus,$expr,NULL,$term,currQuad,yylineno);} //-a
+        |NOT expr               {check_arith($2);} //not a
+        |INCREMENT lvalue       {check_arith($2);} //++a
+        |lvalue INCREMENT       {check_arith($1);} //a++
+        |DECREMENT lvalue       {check_arith($2);} //--a
+        |lvalue DECREMENT       {check_arith($1);} //a--
+        |primary                {$$ = $1;}
         ;        
 
 assignexpr: lvalue ASSIGNMENT expr{
@@ -293,11 +294,11 @@ assignexpr: lvalue ASSIGNMENT expr{
         }
         ;    
 
-primary: lvalue         {$$ = $1;} 
-        |call           {$$ = $1;}
-        |objectdef      {$$ = $1;}
+primary: lvalue                 {$$ = emit_iftableitem($1);} 
+        |call                   {$$ = $1;}
+        |objectdef              {$$ = $1;}
         |LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS{}
-        |const          {$$ = $1;}
+        |const                  {$$ = $1;}
         ;
 
 lvalue: member                  {  $lvalue = $member;} 
@@ -306,9 +307,16 @@ lvalue: member                  {  $lvalue = $member;}
         |SCOPE_RESOLUTION ID    {  $lvalue = lvalue_expr(check_global(yylval.stringValue));} //::
         ;             
 
-member:  lvalue FULL_STOP ID
-        |lvalue LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET // []
-        |call   FULL_STOP ID
+member:  lvalue FULL_STOP ID    {// a.x;
+                                $member = member_item($lvalue,yylval.stringValue);}
+        |lvalue LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET { // a[3]
+                                $lvalue = emit_iftableitem($lvalue);
+                                $member = newexpr(tableitem_e);
+                                $member->sym = $lvalue->sym;
+                                $member->index = $expr; //index of expr
+        }
+        //FUCTIONS calls
+        |call   FULL_STOP ID  //a..fuction;
         |call   LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET
         ;
 
@@ -327,103 +335,108 @@ normcall:   LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS
 methodcall: DOUBLE_FULL_STOP ID LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS 
         ;    
 
-elist:  expr                    {                       $$ = $1;}//elist polla expr
+elist:  expr                    {$$ = $1;}//elist polla expr
         ;
 
-moreElist: elist                {                       $$ = $1;}
+moreElist: elist                {$$ = $1;}
         |moreElist COMMA elist  {
-                                                        $elist->next = $1;      //expr->next = me moreElist
-                                                        $$ = $3;                //moreElist = expr;        
+                                $elist->next = $1;      //expr->next = me moreElist
+                                $$ = $3;                //moreElist = expr;        
                                 }
         // | <--- !edw eixe kai to keno alla m petaei shift reduce
         ;     
 
 objectdef:  
-        LEFT_SQUARE_BRACKET RIGHT_SQUARE_BRACKET {      //[]
-                                                        $$ = tablecreate_and_emit();
+        LEFT_SQUARE_BRACKET 
+        RIGHT_SQUARE_BRACKET {      //[]
+                                $$ = tablecreate_and_emit();
                                                 }
-        |LEFT_SQUARE_BRACKET  moreElist  RIGHT_SQUARE_BRACKET    {    // [20,30,"hello"]
-                                                        $$ = tablecreate_and_emit();
-                                                        int i = get_elist_length($moreElist);  //find the length of the items for the table
-                                                        //for each item check its type and insert it to the table
-                                                        for(i; i >= 0; i--){
-                                                                emit(tablesetelem,$$,newexpr_constnum(i),$moreElist,0,yylineno); // emit (op,temp,index,value)
-                                                                $moreElist = $moreElist->next; // go to next expr
-                                                        }                                                
-                                                }
-        |LEFT_SQUARE_BRACKET   indexed  RIGHT_SQUARE_BRACKET { //[{"x" : (fuction(s){print(s);})} ]
-                                                        $$ = tablecreate_and_emit();
-                                                        int i = get_indexed_length($indexed);
-                                                        for(i; i >= 0; i--){
-                                                                emit(tablesetelem,$$,$indexed->indexedelem,$indexed->value,0,yylineno); // emit (op,temp,index,value)
-                                                                $indexed = $indexed->next; // go to next index
-                                                        }   
+        |LEFT_SQUARE_BRACKET  moreElist  
+        RIGHT_SQUARE_BRACKET    {    // [20,30,"hello"]
+                                $$ = tablecreate_and_emit();
+                                int i = get_elist_length($moreElist);  //find the length of the items for the table
+                                //for each item check its type and insert it to the table
+                                for(i; i >= 0; i--){
+                                        emit(tablesetelem,$$,newexpr_constnum(i),$moreElist,0,yylineno); // emit (op,temp,index,value)
+                                        $moreElist = $moreElist->next; // go to next expr
+                                }                                                
+                                }
+        |LEFT_SQUARE_BRACKET   indexed  
+        RIGHT_SQUARE_BRACKET { //[{"x" : (fuction(s){print(s);})} ]
+                                $$ = tablecreate_and_emit();
+                                int i = get_indexed_length($indexed);
+                                for(i; i >= 0; i--){
+                                        emit(tablesetelem,$$,$indexed->indexedelem,$indexed->value,0,yylineno); // emit (op,temp,index,value)
+                                        $indexed = $indexed->next; // go to next index
+                                }   
         
         }
         ;     
 
-indexed: moreindexedelem   {$$ = $1;}
+indexed: moreindexedelem        {$$ = $1;}
         ; 
 
 /*1 or + times for indexedelems*/
-moreindexedelem:   indexedelem             {$$ = $1;}
-        |moreindexedelem COMMA indexedelem {
-                                                        $indexedelem->next = $1;        //expr->next = me moreIndex
-                                                        $$ = $3;                        //moreIndex = expr; 
+moreindexedelem:   indexedelem  {$$ = $1;}
+        |moreindexedelem COMMA 
+        indexedelem {
+                                $indexedelem->next = $1;        //expr->next = me moreIndex
+                                $$ = $3;                        //moreIndex = expr; 
         }
         ;
 
-indexedelem: LEFT_CURLY_BRACKET expr COLON expr RIGHT_CURLY_BRACKET {
-                $$ = indexed_constractor($2,$4,NULL);
+indexedelem: LEFT_CURLY_BRACKET expr COLON 
+        expr RIGHT_CURLY_BRACKET {
+                                $$ = indexed_constractor($2,$4,NULL);
         }
         ;
 
 
 block:  LEFT_CURLY_BRACKET { 
-                CURR_SCOPE++;   
-                }stmt_list RIGHT_CURLY_BRACKET{
-                        if(CURR_SCOPE!=0)
+                                CURR_SCOPE++;   
+                        }stmt_list RIGHT_CURLY_BRACKET{
+                                if(CURR_SCOPE!=0)
                                 hide(CURR_SCOPE--);       
                 }
         ;
 
 funcdef:
         FUNCTION ID{
-                push(save_fuctionlocals,functionLocalOffset);
-                enterscopespace();   // auksanoume to counter gia to ti var einai kata 1
-                function_insert(yylval.stringValue);  // insert to fuction
-                fuction_scope_insert(CURR_SCOPE++);   // gia na kratame to teleutaio scope
+                                push(save_fuctionlocals,functionLocalOffset);
+                                enterscopespace();   // auksanoume to counter gia to ti var einai kata 1
+                                function_insert(yylval.stringValue);  // insert to fuction
+                                fuction_scope_insert(CURR_SCOPE++);   // gia na kratame to teleutaio scope
         }LEFT_PARENTHESIS 
-                moreidilist {enterscopespace(); }
+                moreidilist     {enterscopespace(); }
                 RIGHT_PARENTHESIS{
-                        CURR_SCOPE--;
+                                CURR_SCOPE--;
         } block {
-                delete_last_fuction_scope();
-                exitscopespace();
-                functionLocalOffset = pop(save_fuctionlocals);
+                                delete_last_fuction_scope();
+                                exitscopespace();
+                                functionLocalOffset = pop(save_fuctionlocals);
         }
         |FUNCTION {
-                //no name fuct
-                push(save_fuctionlocals,functionLocalOffset);
-                enterscopespace();   // auksanoume to counter gia to ti var einai kata 1
-                function_insert("_");  //regognize anonymous fuctions
-                fuction_scope_insert(CURR_SCOPE++);  
+                                //no name fuct
+                                push(save_fuctionlocals,functionLocalOffset);
+                                enterscopespace();   // auksanoume to counter gia to ti var einai kata 1
+                                function_insert("_");  //regognize anonymous fuctions
+                                fuction_scope_insert(CURR_SCOPE++);  
         }LEFT_PARENTHESIS moreidilist{enterscopespace(); }  RIGHT_PARENTHESIS {
-                CURR_SCOPE--;
-        }block{ delete_last_fuction_scope(); exitscopespace();
-                functionLocalOffset = pop(save_fuctionlocals);} /*anonymous functions here */
+                                CURR_SCOPE--;
+        }block{                 delete_last_fuction_scope(); exitscopespace();
+                                functionLocalOffset = pop(save_fuctionlocals);} /*anonymous functions here */
         ;    
 
-const:  INTEGER { $$ = newexpr_constnum($INTEGER);}
-        |REAL   { $$ = newexpr_constdouble($REAL);}
-        |STRING { $$ = newexpr_conststring($STRING);}
-        |NILL   { $$ = newexpr_nil();}
-        |TRUE   { $$ = newexpr_constbool(1);}
-        |FALSE  { $$ = newexpr_constbool(0);}
+const:  INTEGER                 { $$ = newexpr_constnum($INTEGER);}
+        |REAL                   { $$ = newexpr_constdouble($REAL);}
+        |STRING                 { $$ = newexpr_conststring($STRING);}
+        |NILL                   { $$ = newexpr_nil();}
+        |TRUE                   { $$ = newexpr_constbool('1');}
+        |FALSE                  { $$ = newexpr_constbool('0');}
         ;
 
-idlist: ID {insert_formal(yylval.stringValue);}
-        |COMMA ID{insert_formal(yylval.stringValue);}
+idlist: ID                      {insert_formal(yylval.stringValue);}
+        |COMMA ID               {insert_formal(yylval.stringValue);}
         ;
 
 moreidilist: moreidilist idlist

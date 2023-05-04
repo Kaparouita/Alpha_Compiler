@@ -61,26 +61,26 @@ extern int yydebug;
     NOT = 267,
     OR = 268,
     LOCAL = 269,
-    TRUE = 270,
-    FALSE = 271,
-    NILL = 272,
-    ASSIGNMENT = 273,
-    ADDITION = 274,
-    SUBTRACTION = 275,
-    MULTI = 276,
-    DIVISION = 277,
-    MODULUS = 278,
-    EQUAL = 279,
-    NOTEQUAL = 280,
-    INCREMENT = 281,
-    DECREMENT = 282,
-    GRETER_THAN = 283,
-    LESS_THAN = 284,
-    GRE_EQUAL = 285,
-    LES_EQUAL = 286,
-    INTEGER = 287,
-    REAL = 288,
-    STRING = 289,
+    NILL = 270,
+    ASSIGNMENT = 271,
+    ADDITION = 272,
+    SUBTRACTION = 273,
+    MULTI = 274,
+    DIVISION = 275,
+    MODULUS = 276,
+    EQUAL = 277,
+    NOTEQUAL = 278,
+    INCREMENT = 279,
+    DECREMENT = 280,
+    GRETER_THAN = 281,
+    LESS_THAN = 282,
+    GRE_EQUAL = 283,
+    LES_EQUAL = 284,
+    INTEGER = 285,
+    REAL = 286,
+    STRING = 287,
+    TRUE = 288,
+    FALSE = 289,
     LEFT_CURLY_BRACKET = 290,
     RIGHT_CURLY_BRACKET = 291,
     LEFT_SQUARE_BRACKET = 292,
@@ -112,26 +112,26 @@ extern int yydebug;
 #define NOT 267
 #define OR 268
 #define LOCAL 269
-#define TRUE 270
-#define FALSE 271
-#define NILL 272
-#define ASSIGNMENT 273
-#define ADDITION 274
-#define SUBTRACTION 275
-#define MULTI 276
-#define DIVISION 277
-#define MODULUS 278
-#define EQUAL 279
-#define NOTEQUAL 280
-#define INCREMENT 281
-#define DECREMENT 282
-#define GRETER_THAN 283
-#define LESS_THAN 284
-#define GRE_EQUAL 285
-#define LES_EQUAL 286
-#define INTEGER 287
-#define REAL 288
-#define STRING 289
+#define NILL 270
+#define ASSIGNMENT 271
+#define ADDITION 272
+#define SUBTRACTION 273
+#define MULTI 274
+#define DIVISION 275
+#define MODULUS 276
+#define EQUAL 277
+#define NOTEQUAL 278
+#define INCREMENT 279
+#define DECREMENT 280
+#define GRETER_THAN 281
+#define LESS_THAN 282
+#define GRE_EQUAL 283
+#define LES_EQUAL 284
+#define INTEGER 285
+#define REAL 286
+#define STRING 287
+#define TRUE 288
+#define FALSE 289
 #define LEFT_CURLY_BRACKET 290
 #define RIGHT_CURLY_BRACKET 291
 #define LEFT_SQUARE_BRACKET 292
@@ -155,14 +155,15 @@ union YYSTYPE
 {
 #line 159 "parser.y"
 
-        char* stringValue;
-        int intValue;
-        double realValue;
-        struct var *exprNode;
-        struct expr *exprValue;
-        struct indexed *indexedValue;
+        char*   stringValue;
+        int     intValue;
+        double  realValue;
+        char    boolValue;
+        struct  var *exprNode;
+        struct  expr *exprValue;
+        struct  indexed *indexedValue;
 
-#line 166 "parser.h"
+#line 167 "parser.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
