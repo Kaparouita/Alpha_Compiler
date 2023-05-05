@@ -448,7 +448,7 @@ ifstmt: IF LEFT_PARENTHESIS{if_flag = 1;} expr RIGHT_PARENTHESIS  stmt { if_flag
         |ELSE stmt
         ;
 
-whilestmt: WHILE LEFT_PARENTHESIS{for_flag = 1;} expr RIGHT_PARENTHESIS stmt {for_flag = 0;} 
+whilestmt: WHILE LEFT_PARENTHESIS{for_flag = 1;} expr RIGHT_PARENTHESIS stmt {for_flag = 0;} //!ta flags prepei na ginoun me stacks gt p.x mporei na einai if(kati) {if(kati2){}}
         ;
 
 /*note this for elist*/
