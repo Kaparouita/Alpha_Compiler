@@ -151,7 +151,7 @@ void resetfunctionlocaloffset(void);
 void restorecurrscopeoffset(unsigned int  n);
 
 /**
- * retern the label from the next quad
+ * return the label from the next quad
  * @param void
  * @return unsigned int
 */

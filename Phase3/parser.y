@@ -214,9 +214,10 @@ RIGHT_PARENTHESIS SEMICOLON COMMA SCOPE_RESOLUTION COLON FULL_STOP DOUBLE_FULL_S
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS		
 
 //%type <intValue>  expr
-%type <exprValue> lvalue expr member call elist assignexpr const term primary objectdef moreElist 
+%type <exprValue> lvalue expr member call elist assignexpr const term primary objectdef moreElist funcprefix
 %type <indexedValue> indexed moreindexedelem indexedelem
 
+%type <stringValue> funcname
 
 %start program  /*specify the start symbol of the grammar*/
 
@@ -400,6 +401,51 @@ block:  LEFT_CURLY_BRACKET {
                 }
         ;
 
+//apo dw einai oi malakies mou
+
+funcname:
+        ID      {$$ = $1}
+        |       {$$ = newemptyfuncname();} //ayth pou thn ylopoiw?
+        ;
+
+funcprefix:      //den eimai sure gia ola ayta
+        FUNCTION funcname { 
+                $$ = newsymbol($2,function_s)
+                $$.iaddress = nextquadlabel();
+                emit(funcstart,$$, NULL, NULL);
+                push(scopeoffsetStack,currscopeoffset());
+                enterscopespace();
+                resetformalargoffset();
+        }
+        ;
+
+funcargs:
+        LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS {
+                enterscopespace();
+                resetformalargoffset();
+        }
+        ;
+
+funcbody:
+        block {
+                $$ = currscopeoffset();
+                exitscopespace();
+        }
+        ;
+
+funcdef:
+        funcprefix funcargs funcbody {
+                exitscopespace();
+                $1.totalLocals = $3;
+                int offset = pop_and_top(scopeoffsetStack);
+                restorecurrscopeoffset(offset);
+                $$ = $1;
+                emit(funcend, $1, NULL, NULL);
+        }
+        ;    
+
+//mexri edw peiraksa
+/*
 funcdef:
         FUNCTION ID{
                                 push(save_fuctionlocals,functionLocalOffset);
@@ -425,7 +471,8 @@ funcdef:
                                 CURR_SCOPE--;
         }block{                 delete_last_fuction_scope(); exitscopespace();
                                 functionLocalOffset = pop(save_fuctionlocals);} /*anonymous functions here */
-        ;    
+        ;
+*/
 
 const:  INTEGER                 { $$ = newexpr_constnum($INTEGER);}
         |REAL                   { $$ = newexpr_constdouble($REAL);}
