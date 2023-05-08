@@ -105,7 +105,6 @@ void patchlabel(unsigned int quadNo, unsigned int  label){
     quads[quadNo].label=label; //edw mporei na thelei alagh 
 }
 
-
 expr* lvalue_expr(var* sym){
     assert(sym);
     expr* e=(expr*)malloc(sizeof(expr));
@@ -132,7 +131,6 @@ expr* member_item (expr* lv, char* name) {
     ti->index = newexpr_conststring(name);  // Const string index
     return ti;
 }
-
 
 expr* newexpr(expr_t t){
     expr* e = (expr*)malloc(sizeof(expr));
@@ -170,8 +168,6 @@ expr* newexpr_constbool(char c){
     return e;    
 }
  
-
-
 expr* emit_iftableitem(expr* e){
     if(e->type != tableitem_e) return e; // if not table
     else {
@@ -197,7 +193,6 @@ expr* make_call(expr* lv,expr* reversed_elist){
 */
 
 
-
 /*PAIZW ME PRINTS IGNORE*/
 void print_quad(struct quad *q) {
     printf("(op: %s, arg1: ", get_op_name(q->op));
@@ -208,7 +203,6 @@ void print_quad(struct quad *q) {
     print_expr(q->result);
     printf("],( label: %d, line: %d)\n", q->label, q->line);
 }
-
 
 void print_expr(expr* e) {
     if (e == NULL) {

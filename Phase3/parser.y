@@ -266,12 +266,72 @@ expr:   assignexpr              {$$ =  $assignexpr;}
         ;
 
 term:   LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
-        |SUBTRACTION expr       {check_arith($2); $term = newexpr(arithexpr_e);$term->sym = newtemp(); emit(uminus,$expr,NULL,$term,currQuad,yylineno);} //-a
-        |NOT expr               {check_arith($2);} //not a
-        |INCREMENT lvalue       {check_arith($2);} //++a
-        |lvalue INCREMENT       {check_arith($1);} //a++
-        |DECREMENT lvalue       {check_arith($2);} //--a
-        |lvalue DECREMENT       {check_arith($1);} //a--
+        |SUBTRACTION expr       { //-a
+                check_arith($2);
+                $$ = newexpr(arithexpr_e);
+                $$->sym = newtemp();
+                emit(uminus,$expr,NULL,$term,currQuad,yylineno);
+        }
+        |NOT expr               {//not a
+                check_arith($2);
+                $$ = newexpr(arithexpr_e);
+                $term->sym = newtemp();
+                emit(not, $expr, NULL, $term, currQuad, yylineno);
+        }
+        |INCREMENT lvalue       { //++a
+                check_arith($2);
+                if($lvalue->type == tableitem_e){
+                        $$ = emit_iftableitem($lvalue);
+                        emit(add, $$, newexpr_constnum(1), $$, currQuad, yylineno);
+                        emit(tablesetelem, $lvalue, $lvalue->index, $$, currQuad, yylineno);
+                }else{
+                        emit(add, $lvalue, newexpr_constnum(1), $lvalue, currQuad, yylineno);
+                        $$ = newexpr(arithexpr_e);
+                        $$->sym = newtemp();
+                        emit(assign, $lvalue, NULL, $$, currQuad, yylineno);
+                }                                     //edw exw balei ayta xwris na kserw an einai
+        }
+        |lvalue INCREMENT       { //a++
+                check_arith($1);
+                $$ = newexpr(var_e);
+                $$->sym = newtemp();
+                if($lvalue->type == tableitem_e){
+                        exper* val = emit_iftableitem($1);
+                        emit(assign, val, NULL, $$, currQuad, yylineno);
+                        emit(add, val, newexpr_constnum(1), val);
+                        emit(tablesetelem, $lvalue, $lvalue->index, val);
+                }else{
+                        emit(assign, $lvalue, NULL, $$);
+                        emit(add, $lvalue, newexpr_constnum(1), $lvalue);
+                }
+        }
+        |DECREMENT lvalue       { //--a
+                check_arith($2);
+                if($lvalue->type == tableitem_e){
+                        $$ = emit_iftableitem($lvalue);
+                        emit(sub, $$, newexpr_constnum(1), $$, currQuad, yylineno);
+                        emit(tablesetelem, $lvalue, $lvalue->index, $$, currQuad, yylineno);
+                }else{
+                        emit(sub, $lvalue, newexpr_constnum(1), $lvalue, currQuad, yylineno);
+                        $$ = newexpr(arithexpr_e);
+                        $$->sym = newtemp();
+                        emit(assign, $lvalue, NULL, $$, currQuad, yylineno);
+                } 
+        }
+        |lvalue DECREMENT       { //a--
+                check_arith($1);
+                $$ = newexpr(var_e);
+                $$->sym = newtemp();
+                if($lvalue->type == tableitem_e){
+                        exper* val = emit_iftableitem($1);
+                        emit(assign, val, NULL, $$, currQuad, yylineno);
+                        emit(sub, val, newexpr_constnum(1), val);
+                        emit(tablesetelem, $lvalue, $lvalue->index, val);
+                }else{
+                        emit(assign, $lvalue, NULL, $$);
+                        emit(sub, $lvalue, newexpr_constnum(1), $lvalue);
+                }
+        }
         |primary                {$$ = $1;}
         ;        
 
@@ -298,7 +358,10 @@ assignexpr: lvalue ASSIGNMENT expr{
 primary: lvalue                 {$$ = emit_iftableitem($1);} 
         |call                   {$$ = $1;}
         |objectdef              {$$ = $1;}
-        |LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS{}
+        |LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS{
+                $$ = newexpr(programfunc_e);
+                $$->sym = $2; 
+        }
         |const                  {$$ = $1;}
         ;
 
@@ -321,19 +384,45 @@ member:  lvalue FULL_STOP ID    {// a.x;
         |call   LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET
         ;
 
-call:    call LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS
-        |lvalue callsuffix
-        |LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS{}
+call:    call LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS {
+                $$ = make_call($$, $3);
+        }
+        |lvalue callsuffix{
+                $1 = emit_iftableitem($1);
+                if($3.method){
+                        expr* t = $1;
+                        $1 = emit_iftableitem(member_item(t, $2.name));
+                        $2.moreElist->next = t; // me .elist mou to bgraze kokkino
+                }
+                $$ = make_call($1, $2.moreElist);
+        }
+        |LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS{
+                expr* func = newexpr(programfunc_e);
+                func->sym = $2->sym;
+                $$ = make_call(func, $5);                
+        }
         ;
 
-callsuffix: normcall
-        |methodcall
+callsuffix: normcall{
+                $$ = $1;
+        }
+        |methodcall{
+                $$ = $1;
+        }
         ;
 
-normcall:   LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS 
+normcall:   LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS{
+                $$.elist = $2;
+                $$.method = 0;
+                $$.name = NULL;
+        }
         ;
 
-methodcall: DOUBLE_FULL_STOP ID LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS 
+methodcall: DOUBLE_FULL_STOP ID LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS{
+                $$.moreElist = $4; //mhpws thelei apla elist
+                $$.method = 1;
+                $$.name = $2.value;
+        }
         ;    
 
 elist:  expr                    {$$ = $1;}//elist polla expr
