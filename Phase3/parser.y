@@ -485,7 +485,6 @@ block:  LEFT_CURLY_BRACKET {
                 }
         ;
 
-//apo dw einai oi malakies mou
 
 funcname:
         ID      {$funcname = $ID;}
@@ -530,36 +529,6 @@ funcdef:
                 emit(funcend, lvalue_expr($funcprefix), NULL, NULL,0,yylineno);
         }
         ;    
-
-/*
-funcdef:
-        FUNCTION ID{
-                                push(save_fuctionlocals,functionLocalOffset);
-                                enterscopespace();   // auksanoume to counter gia to ti var einai kata 1
-                                function_insert(yylval.stringValue);  // insert to fuction
-                                fuction_scope_insert(CURR_SCOPE++);   // gia na kratame to teleutaio scope
-        }LEFT_PARENTHESIS 
-                moreidilist     {enterscopespace(); }
-                RIGHT_PARENTHESIS{
-                                CURR_SCOPE--;
-        } block {
-                                delete_last_fuction_scope();
-                                exitscopespace();
-                                functionLocalOffset = pop(save_fuctionlocals);
-        }
-        |FUNCTION {
-                                //no name fuct
-                                push(save_fuctionlocals,functionLocalOffset);
-                                enterscopespace();   // auksanoume to counter gia to ti var einai kata 1
-                                function_insert("_");  //regognize anonymous fuctions
-                                fuction_scope_insert(CURR_SCOPE++);  
-        }LEFT_PARENTHESIS moreidilist{enterscopespace(); }  RIGHT_PARENTHESIS {
-                                CURR_SCOPE--;
-        }block{                 delete_last_fuction_scope(); exitscopespace();
-                                functionLocalOffset = pop(save_fuctionlocals);} /*anonymous functions here 
-*/
-        
-
 
 const:  INTEGER                 { $$ = newexpr_constnum($INTEGER);}
         |REAL                   { $$ = newexpr_constdouble($REAL);}
