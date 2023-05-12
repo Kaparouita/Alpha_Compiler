@@ -269,13 +269,13 @@ term:   LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
                 check_arith($2);
                 $$ = newexpr(arithexpr_e);
                 $$->sym = newtemp();
-                emit(uminus,$expr,NULL,$term,currQuad,yylineno);
+                emit(uminus,$expr,NULL,$term,0,yylineno);
         }
         |NOT expr               {//not a
                 check_arith($2);
-                $$ = newexpr(arithexpr_e);
+                $$ = newexpr(boolexpr_e);
                 $term->sym = newtemp();
-                emit(not, $expr, NULL, $term, currQuad, yylineno);
+                emit(not, $expr, NULL, $term,0, yylineno);
         }
         |INCREMENT lvalue       { /*//++a
                 check_arith($2);
