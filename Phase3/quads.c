@@ -6,6 +6,7 @@
 #include <math.h>
 
 extern int yyerror (char* yaccProvidedMessage);
+extern int yylineno;
 
 unsigned total=0;
 unsigned int currQuad=0;
@@ -80,12 +81,12 @@ void enterscopespace(){ ++scopeSpaceCounter;}
 
 void exitscopespace(){ 
     assert(scopeSpaceCounter>1);
-    scopeSpaceCounter -=2;
-    resetformalargsofset();
+    scopeSpaceCounter--;
+    resetformalargsoffset();
     resetfunctionlocaloffset();
 }
 
-void resetformalargsofset(){ formalArgOffset=0;}
+void resetformalargsoffset(){ formalArgOffset=0;}
 
 void resetfunctionlocaloffset(){ functionLocalOffset=0;}
 
@@ -276,6 +277,8 @@ const char* get_op_name(iopcode opcode) {
             return "getretval";
         case funcstart:
             return "funcstart";
+        case funcend:
+            return "funend";
         case funcdef:
             return "funcdef";
         case tablecreate:
@@ -375,7 +378,7 @@ void print_all_quads(){
 expr *tablecreate_and_emit(){
     expr* e = newexpr(newtable_e);
 	e->sym = newtemp();
-	emit(tablecreate, e, NULL, NULL, 0, 0);
+	emit(tablecreate, e, NULL, NULL, 0, yylineno);
     return e;
 }
 

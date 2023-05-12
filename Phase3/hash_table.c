@@ -344,7 +344,10 @@ var *newtemp(){
     char *name = newtempname();
     var * sym = lookup_scope(CURR_SCOPE,name);
     if(sym == NULL)
-        return new_var(varr,local,name,CURR_SCOPE,currscopespace(),currscopeoffset(),1,yylineno); //mprorei k oxi?
+        {   sym =new_var(varr,local,name,CURR_SCOPE,currscopespace(),currscopeoffset(),1,yylineno);
+            hash_insert(sym,table);
+            inccurrscopeoffset();
+            return  sym;}//mprorei k oxi?
     else
         return sym;
 }

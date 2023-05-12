@@ -15,7 +15,7 @@ typedef enum iopcode{
     not,    if_eq,  if_noteq,
     if_lesseq,  if_geatereq, if_less,
     if_greater, call,   param,
-    ret,    getretval,  funcstart,
+    ret,    getretval,  funcstart,funcend,
     funcdef, tablecreate,   
     tablegetelem, tablesetelem        
 }iopcode;
@@ -134,7 +134,7 @@ void exitscopespace(void);
  * @param void
  * @return void
 */
-void resetformalargsofset(void);
+void resetformalargsoffset(void);
 
 /**
  * assign 0 to the offset of function locals

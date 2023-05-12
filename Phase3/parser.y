@@ -86,33 +86,34 @@
         }
 
         /*insert a new fuction to the table*/
-        void function_insert(char* name){
+        var* function_insert(char* name){
                 //check if anonymous and insert if true
-                if(check_anonymous(name) != NULL){
+                /*if(check_anonymous(name) != NULL){
                         curr_anonymous--;
                         name = check_anonymous(name);
                         var *myfuction = new_var(fuction,user_func,name,CURR_SCOPE,currscopespace(),currscopeoffset(),1,yylineno); 
                         hash_insert(myfuction,table);
                         //print_var(myfuction); //na ftiaksw ta print
-                        return;
-                }
+                        return myfuction;
+                }*/
                 //kanoume lookuop sto trexon scope
-                var* myVar = lookup_scope(CURR_SCOPE,name);
+                var* myfuction = lookup_scope(CURR_SCOPE,name);
                 
                 // an yparxei collision me lib_fuct einai error
                 if(check_collisions(name) == 1){
                         yyerror("This is a lib_fuct");
-                        return;
+                        return myfuction;
                 }
                 //an vrethei metavlhth h synarthsh einai error
-                if(myVar != NULL){ 
+                if(myfuction != NULL){ 
                         yyerror("Already defined");
-                        return;
+                        return myfuction;
                 }
                 //alliws thn kanoume insert
-                myVar = new_var(fuction,user_func,name,CURR_SCOPE,currscopespace(),currscopeoffset(),1,yylineno); 
-                hash_insert(myVar,table);
-                //print_var(myVar);
+                myfuction = new_var(fuction,user_func,name,CURR_SCOPE,currscopespace(),currscopeoffset(),1,yylineno); 
+                hash_insert(myfuction,table);
+                return myfuction;
+                //print_var(myfuction);
         }
 
         /*Insert a local var with name = name */
@@ -139,18 +140,15 @@
                 currVar = new_var(varr,curr_id,name,CURR_SCOPE,currscopespace(),currscopeoffset(),1,yylineno); 
                 hash_insert(currVar,table);
                 //print_var(currVar);
-                //inccurrscopeoffset();
+                inccurrscopeoffset();
                 return currVar;         
         }
 
         /*check if the curr string is '_' to create the next anonymous fuction*/
-        char *check_anonymous(char *name){
-                if(strcmp(name,"_") == 0){
-                        char* str = malloc(sizeof(char) * 30);
-		        sprintf(str,"_f%d",curr_anonymous++);
-		        return str;
-                }
-                return NULL;
+        char *newemptyfuncname(){
+                char* str = malloc(sizeof(char) * 30);
+		sprintf(str,"_f%d",curr_anonymous++);
+		return str;
         }
 %}
 
@@ -159,9 +157,10 @@
 %union {
         char*   stringValue;
         int     intValue;
+        unsigned int UintValue;
         double  realValue;
         char    boolValue;
-        struct  var *exprNode;
+        struct  var *symbolEntry;
         struct  expr *exprValue;
         struct  indexed *indexedValue;
 }
@@ -174,22 +173,20 @@ AND NOT OR LOCAL NILL
 %token ASSIGNMENT ADDITION SUBTRACTION MULTI
 %token DIVISION  MODULUS EQUAL NOTEQUAL INCREMENT DECREMENT GRETER_THAN LESS_THAN   GRE_EQUAL   LES_EQUAL  
 
-
 /*INTEGER NUMERIC && BOOL*/
 %token <intValue> INTEGER 
 /*REAL NUMERIC*/
 %token <realValue> REAL
 /*STRINGS*/
-%token <stringValue> STRING
+%token <stringValue> STRING ID
 
 %token <boolValue> TRUE FALSE
+
 
 /*PUNCTUATIONS MARK*/
 %token LEFT_CURLY_BRACKET RIGHT_CURLY_BRACKET LEFT_SQUARE_BRACKET RIGHT_SQUARE_BRACKET LEFT_PARENTHESIS 
 RIGHT_PARENTHESIS SEMICOLON COMMA SCOPE_RESOLUTION COLON FULL_STOP DOUBLE_FULL_STOP
 
-/*IDENTIFICATION NAME*/
-%token <stringValue> ID
 
 /*NOT DEFINED SYMBOLS*/
 %token EXTRA_CHARS
@@ -213,10 +210,12 @@ RIGHT_PARENTHESIS SEMICOLON COMMA SCOPE_RESOLUTION COLON FULL_STOP DOUBLE_FULL_S
 %left LEFT_SQUARE_BRACKET RIGHT_SQUARE_BRACKET       	
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS		
 
-//%type <intValue>  expr
-%type <exprValue> lvalue expr member call elist assignexpr const term primary objectdef moreElist funcprefix
+
+%type <exprValue> lvalue expr member  elist assignexpr const term primary objectdef moreElist call
 %type <indexedValue> indexed moreindexedelem indexedelem
 
+%type <symbolEntry> funcprefix funcdef
+%type <intValue> funcbody
 %type <stringValue> funcname
 
 %start program  /*specify the start symbol of the grammar*/
@@ -235,7 +234,7 @@ stmt_list: stmt_list  stmt
 brk_stm:BREAK {if(for_flag == 0)yyerror("break w/o loop");} SEMICOLON ;
 cnt_stm:CONTINUE {if(for_flag == 0)yyerror("continue w/o loop");} SEMICOLON ;
 
-stmt: {resettemp();}  expr SEMICOLON
+stmt:   expr SEMICOLON {resettemp();}
         |ifstmt         
         |whilestmt 
         |forstmt
@@ -244,7 +243,7 @@ stmt: {resettemp();}  expr SEMICOLON
         |cnt_stm
         |block
         |funcdef
-        |SEMICOLON
+        |SEMICOLON {resettemp();}
         ;
 
 
@@ -255,13 +254,13 @@ expr:   assignexpr              {$$ =  $assignexpr;}
         |expr DIVISION expr     {$$ =  do_maths($1,$3,n_div);}
         |expr MODULUS expr      {$$ =  do_maths($1,$3,mod);}
         |expr GRETER_THAN expr  {$$ =  do_maths($1,$3,if_greater);}
-        |expr GRE_EQUAL expr    {$$ =  do_maths($1,$3,if_greater);}
-        |expr LESS_THAN expr    {$$ =  do_maths($1,$3,if_greater);}
-        |expr LES_EQUAL expr    {$$ =  do_maths($1,$3,if_greater);}
-        |expr EQUAL expr        {$$ =  do_bool($1,$3,if_greater);}
-        |expr NOTEQUAL expr     {$$ =  do_bool($1,$3,if_greater);}
-        |expr AND expr          {$$ =  do_bool($1,$3,if_greater);}
-        |expr OR expr           {$$ =  do_bool($1,$3,if_greater);}
+        |expr GRE_EQUAL expr    {$$ =  do_maths($1,$3,if_geatereq);}
+        |expr LESS_THAN expr    {$$ =  do_maths($1,$3,if_less);}
+        |expr LES_EQUAL expr    {$$ =  do_maths($1,$3,if_lesseq);}
+        |expr EQUAL expr        {$$ =  do_bool($1,$3,if_eq);}
+        |expr NOTEQUAL expr     {$$ =  do_bool($1,$3,if_noteq);}
+        |expr AND expr          {$$ =  do_bool($1,$3,and);}
+        |expr OR expr           {$$ =  do_bool($1,$3,or);}
         |term                   {}
         ;
 
@@ -278,7 +277,7 @@ term:   LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
                 $term->sym = newtemp();
                 emit(not, $expr, NULL, $term, currQuad, yylineno);
         }
-        |INCREMENT lvalue       { //++a
+        |INCREMENT lvalue       { /*//++a
                 check_arith($2);
                 if($lvalue->type == tableitem_e){
                         $$ = emit_iftableitem($lvalue);
@@ -290,8 +289,8 @@ term:   LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
                         $$->sym = newtemp();
                         emit(assign, $lvalue, NULL, $$, currQuad, yylineno);
                 }                                     //edw exw balei ayta xwris na kserw an einai
-        }
-        |lvalue INCREMENT       { //a++
+        */}
+        |lvalue INCREMENT       { /*//a++
                 check_arith($1);
                 $$ = newexpr(var_e);
                 $$->sym = newtemp();
@@ -304,8 +303,8 @@ term:   LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
                         emit(assign, $lvalue, NULL, $$);
                         emit(add, $lvalue, newexpr_constnum(1), $lvalue);
                 }
-        }
-        |DECREMENT lvalue       { //--a
+        */}
+        |DECREMENT lvalue       { /*//--a
                 check_arith($2);
                 if($lvalue->type == tableitem_e){
                         $$ = emit_iftableitem($lvalue);
@@ -317,8 +316,8 @@ term:   LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
                         $$->sym = newtemp();
                         emit(assign, $lvalue, NULL, $$, currQuad, yylineno);
                 } 
-        }
-        |lvalue DECREMENT       { //a--
+        */}
+        |lvalue DECREMENT       { /*//a--
                 check_arith($1);
                 $$ = newexpr(var_e);
                 $$->sym = newtemp();
@@ -331,7 +330,7 @@ term:   LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
                         emit(assign, $lvalue, NULL, $$);
                         emit(sub, $lvalue, newexpr_constnum(1), $lvalue);
                 }
-        }
+        */}
         |primary                {$$ = $1;}
         ;        
 
@@ -356,7 +355,7 @@ assignexpr: lvalue ASSIGNMENT expr{
         ;    
 
 primary: lvalue                 {$$ = emit_iftableitem($1);} 
-        |call                   {$$ = $1;}
+        |call                   //{$$ = $1;}
         |objectdef              {$$ = $1;}
         |LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS{
                 $$ = newexpr(programfunc_e);
@@ -384,45 +383,41 @@ member:  lvalue FULL_STOP ID    {// a.x;
         |call   LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET
         ;
 
-call:    call LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS {
-                $$ = make_call($$, $3);
-        }
-        |lvalue callsuffix{
+call:    call LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS //{$$ = make_call($$, $3);}
+        |lvalue callsuffix{}
+        /*{
                 $1 = emit_iftableitem($1);
-                if($3.method){
+                if($3->method){
                         expr* t = $1;
-                        $1 = emit_iftableitem(member_item(t, $2.name));
-                        $2.moreElist->next = t; // me .elist mou to bgraze kokkino
+                        $1 = emit_iftableitem(member_item(t, $2->name));
+                        $2->moreElist->next = t; // me .elist mou to bgraze kokkino
                 }
-                $$ = make_call($1, $2.moreElist);
-        }
-        |LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS{
+                $$ = make_call($1, $2->moreElist);
+        }*/
+        |LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS {}/*{
                 expr* func = newexpr(programfunc_e);
                 func->sym = $2->sym;
                 $$ = make_call(func, $5);                
-        }
+        }*/
         ;
 
-callsuffix: normcall{
-                $$ = $1;
-        }
-        |methodcall{
-                $$ = $1;
-        }
+callsuffix: normcall  //{  $$ = $1; }
+        |methodcall     //{        $$ = $1;}
         ;
 
-normcall:   LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS{
+normcall:   LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS  /*{
                 $$.elist = $2;
                 $$.method = 0;
                 $$.name = NULL;
-        }
+        }*/
         ;
 
-methodcall: DOUBLE_FULL_STOP ID LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS{
+methodcall: DOUBLE_FULL_STOP ID LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS
+        /*{
                 $$.moreElist = $4; //mhpws thelei apla elist
                 $$.method = 1;
                 $$.name = $2.value;
-        }
+        }*/
         ;    
 
 elist:  expr                    {$$ = $1;}//elist polla expr
@@ -493,47 +488,49 @@ block:  LEFT_CURLY_BRACKET {
 //apo dw einai oi malakies mou
 
 funcname:
-        ID      {$$ = $1}
-        |       {$$ = newemptyfuncname();} //ayth pou thn ylopoiw?
+        ID      {$funcname = $ID;}
+        |       {$funcname = newemptyfuncname();}              //keep track if anonymous fuction
         ;
 
-funcprefix:      //den eimai sure gia ola ayta
+funcprefix:      
         FUNCTION funcname { 
-                $$ = newsymbol($2,function_s)
-                $$.iaddress = nextquadlabel();
-                emit(funcstart,$$, NULL, NULL);
-                push(scopeoffsetStack,currscopeoffset());
-                enterscopespace();
-                resetformalargoffset();
+                $funcprefix = function_insert($funcname);               //yylval.stringValue
+                $funcprefix->fuctionAddress = nextquadlabel();
+                emit(funcstart,lvalue_expr($funcprefix), NULL, NULL,0,yylineno);
+                push(save_fuctionlocals,currscopeoffset());
+                enterscopespace();                      // auksanoume to counter gia to ti var einai kata 1
+                resetformalargsoffset();
         }
         ;
 
 funcargs:
-        LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS {
-                enterscopespace();
-                resetformalargoffset();
+        LEFT_PARENTHESIS moreidilist RIGHT_PARENTHESIS {
+                CURR_SCOPE--;
+                enterscopespace();              // auksanoume to counter gia to ti var einai kata 1
+                resetformalargsoffset();
         }
         ;
 
 funcbody:
         block {
-                $$ = currscopeoffset();
+                delete_last_fuction_scope();
+                $funcbody = currscopeoffset();
                 exitscopespace();
         }
         ;
 
 funcdef:
-        funcprefix funcargs funcbody {
+        funcprefix { fuction_scope_insert(CURR_SCOPE++); }   // gia na kratame to teleutaio scope
+        funcargs funcbody {
                 exitscopespace();
-                $1.totalLocals = $3;
-                int offset = pop_and_top(scopeoffsetStack);
+                $funcprefix->totalLocals = $funcbody;
+                int offset = pop(save_fuctionlocals);
                 restorecurrscopeoffset(offset);
-                $$ = $1;
-                emit(funcend, $1, NULL, NULL);
+                $funcdef = $funcprefix;
+                emit(funcend, lvalue_expr($funcprefix), NULL, NULL,0,yylineno);
         }
         ;    
 
-//mexri edw peiraksa
 /*
 funcdef:
         FUNCTION ID{
@@ -559,9 +556,10 @@ funcdef:
         }LEFT_PARENTHESIS moreidilist{enterscopespace(); }  RIGHT_PARENTHESIS {
                                 CURR_SCOPE--;
         }block{                 delete_last_fuction_scope(); exitscopespace();
-                                functionLocalOffset = pop(save_fuctionlocals);} /*anonymous functions here */
-        ;
+                                functionLocalOffset = pop(save_fuctionlocals);} /*anonymous functions here 
 */
+        
+
 
 const:  INTEGER                 { $$ = newexpr_constnum($INTEGER);}
         |REAL                   { $$ = newexpr_constdouble($REAL);}
@@ -621,7 +619,7 @@ int main(int argc, char** argv){
     yyparse(); // call the parser function
     if(error_flag != 0)
         printf("/-------------   ERRORS     -------------------/\n");
-   // print_format(); //print scopes
-   print_all_quads(); //print quads
+   print_format(); //print scopes
+   //print_all_quads(); //print quads
     return 0;
 }

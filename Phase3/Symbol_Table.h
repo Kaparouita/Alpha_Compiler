@@ -25,6 +25,8 @@ typedef struct var{
     char* name;
     unsigned offset;
 	scopespace_t space;
+    int fuctionAddress ;    // 0 gia var alliws to adress tou fuction
+    int totalLocals;       // an einai fuction posa locals exei
     int scope;
     int hide;             // 0 gia hidden 1 gia visable
     int line;
