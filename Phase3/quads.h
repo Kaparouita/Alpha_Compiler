@@ -65,6 +65,16 @@ typedef struct indexed{
     expr *value;
     struct indexed *next;
 }indexed;
+
+
+typedef struct call_s
+{
+    expr* elist;
+    unsigned char method;
+    char* name;
+}call_s;
+
+
 /**
  * epektini ton pinaka twn quads
 */
@@ -84,6 +94,7 @@ void expand(void);
 void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned int label, unsigned int  line);
 
 
+call_s *call_constractor(expr* e,unsigned char method,char* name);
 /**
  * @brief ["x" : kati_x , "b" : kati_b]
  * 

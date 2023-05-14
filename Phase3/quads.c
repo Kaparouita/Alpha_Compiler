@@ -174,24 +174,24 @@ expr* emit_iftableitem(expr* e){
     else {
         expr* result = newexpr(var_e);
         result->sym = newtemp(); 
-        emit(tablegetelem,result,e,e->index,0,0);  //!paizei na einai lathos
+        emit(tablegetelem,result,e,e->index,0,yylineno);  //!paizei na einai lathos
         return result;
     }
 }
-/*
+
 expr* make_call(expr* lv,expr* reversed_elist){
-    expr*func=emit_iftableitem(lv);
-    while ((reversed_elist)){
-        emit(param,reversed_elist,NULL,NULL);
-        reversed_elist=reversed_elist->next;
+    expr* func = emit_iftableitem(lv);
+    while (reversed_elist){
+        emit(param,reversed_elist,NULL,NULL,0,yylineno);
+        reversed_elist = reversed_elist->next;
     }
-    emit(call,func,NULL,NULL);
-    expr* result=newexpr(var_e);
-    result->sym=newtemp();
-    emit(getretval,NULL,NULL,result);
+    emit(call,func,NULL,NULL,0,yylineno);
+    expr* result = newexpr(var_e);
+    result->sym = newtemp();
+    emit(getretval,NULL,NULL,result,0,yylineno);
     return result;
 }
-*/
+
 
 
 /*PAIZW ME PRINTS IGNORE*/

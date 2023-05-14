@@ -163,6 +163,7 @@
         struct  var *symbolEntry;
         struct  expr *exprValue;
         struct  indexed *indexedValue;
+        struct  call_s *callValue;
 }
 
 /*KEYWORDS*/
@@ -212,7 +213,8 @@ RIGHT_PARENTHESIS SEMICOLON COMMA SCOPE_RESOLUTION COLON FULL_STOP DOUBLE_FULL_S
 
 
 %type <exprValue> lvalue expr member  elist assignexpr const term primary objectdef moreElist call
-%type <indexedValue> indexed moreindexedelem indexedelem
+%type <indexedValue> indexed moreindexedelem indexedelem                                      
+%type <callValue> methodcall callsuffix normcall
 
 %type <symbolEntry> funcprefix funcdef
 %type <intValue> funcbody
@@ -355,11 +357,11 @@ assignexpr: lvalue ASSIGNMENT expr{
         ;    
 
 primary: lvalue                 {$$ = emit_iftableitem($1);} 
-        |call                   //{$$ = $1;}
+        |call                   {$$ = $1;}
         |objectdef              {$$ = $1;}
         |LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS{
-                $$ = newexpr(programfunc_e);
-                $$->sym = $2; 
+                $primary = newexpr(programfunc_e);
+                $primary->sym = $funcdef; 
         }
         |const                  {$$ = $1;}
         ;
@@ -383,44 +385,52 @@ member:  lvalue FULL_STOP ID    {// a.x;
         |call   LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET
         ;
 
-call:    call LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS //{$$ = make_call($$, $3);}
-        |lvalue callsuffix{}
-        /*{
-                $1 = emit_iftableitem($1);
-                if($3->method){
-                        expr* t = $1;
-                        $1 = emit_iftableitem(member_item(t, $2->name));
-                        $2->moreElist->next = t; // me .elist mou to bgraze kokkino
-                }
-                $$ = make_call($1, $2->moreElist);
-        }*/
-        |LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS {}/*{
-                expr* func = newexpr(programfunc_e);
-                func->sym = $2->sym;
-                $$ = make_call(func, $5);                
-        }*/
+call:   call LEFT_PARENTHESIS RIGHT_PARENTHESIS
+                                {$$ = make_call($1,NULL);}       /* !den kserw an xreiazete*/
+        |call LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS       //call (elist)
+                                {$$ = make_call($1, $moreElist);}
+        |lvalue callsuffix
+                                {
+                                $lvalue = emit_iftableitem($lvalue);            //se periptwsh p htan table item
+                                if($callsuffix->method){
+                                        expr* t = $lvalue;
+                                        $lvalue = emit_iftableitem(member_item(t, $callsuffix->name));
+                                        $callsuffix->elist->next = t;           // insert san prwto arg (reversed,so last)
+                                }
+                                $call = make_call($lvalue, $callsuffix->elist);
+        }
+        |LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS // (funcdef) (elist)
+                                {
+                                expr* func = newexpr(programfunc_e);
+                                func->sym = $funcdef;
+                                $call = make_call(func, $moreElist);                
+        }
         ;
 
-callsuffix: normcall  //{  $$ = $1; }
-        |methodcall     //{        $$ = $1;}
+callsuffix: normcall            {$callsuffix = $normcall; }
+         |methodcall            {$callsuffix = $methodcall;}
         ;
 
-normcall:   LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS  /*{
-                $$.elist = $2;
-                $$.method = 0;
-                $$.name = NULL;
-        }*/
+normcall:   LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS  {
+                                $normcall->elist = $moreElist;
+                                $normcall->method = 0;
+                                $normcall->name = NULL;
+        }
+        |  LEFT_PARENTHESIS RIGHT_PARENTHESIS{
+                                $normcall->elist =NULL;
+                                $normcall->method = 0;
+                                $normcall->name = NULL;
+        }
         ;
 
-methodcall: DOUBLE_FULL_STOP ID LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS
-        /*{
-                $$.moreElist = $4; //mhpws thelei apla elist
-                $$.method = 1;
-                $$.name = $2.value;
-        }*/
+methodcall: DOUBLE_FULL_STOP ID LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS{
+                                $$->elist = $moreElist; 
+                                $$->method = 1;
+                                $$->name = $ID;
+        }
         ;    
 
-elist:  expr                    {$$ = $1;}//elist polla expr
+elist:  expr                    {$$ = $1;}   //elist polla expr
         ;
 
 moreElist: elist                {$$ = $1;}
@@ -433,9 +443,9 @@ moreElist: elist                {$$ = $1;}
 
 objectdef:  
         LEFT_SQUARE_BRACKET 
-        RIGHT_SQUARE_BRACKET {      //[]
+        RIGHT_SQUARE_BRACKET    {     //[]
                                 $$ = tablecreate_and_emit();
-                                                }
+                                }
         |LEFT_SQUARE_BRACKET  moreElist  
         RIGHT_SQUARE_BRACKET    {    // [20,30,"hello"]
                                 $$ = tablecreate_and_emit();
@@ -487,46 +497,46 @@ block:  LEFT_CURLY_BRACKET {
 
 
 funcname:
-        ID      {$funcname = $ID;}
-        |       {$funcname = newemptyfuncname();}              //keep track if anonymous fuction
+        ID              {$funcname = $ID;}
+        |               {$funcname = newemptyfuncname();}              //keep track if anonymous fuction
         ;
 
 funcprefix:      
         FUNCTION funcname { 
-                $funcprefix = function_insert($funcname);               //yylval.stringValue
-                $funcprefix->fuctionAddress = nextquadlabel();
-                emit(funcstart,lvalue_expr($funcprefix), NULL, NULL,0,yylineno);
-                push(save_fuctionlocals,currscopeoffset());
-                enterscopespace();                      // auksanoume to counter gia to ti var einai kata 1
-                resetformalargsoffset();
+                        $funcprefix = function_insert($funcname);               //yylval.stringValue
+                        $funcprefix->fuctionAddress = nextquadlabel();
+                        emit(funcstart,lvalue_expr($funcprefix), NULL, NULL,0,yylineno);
+                        push(save_fuctionlocals,currscopeoffset());
+                        enterscopespace();                      // auksanoume to counter gia to ti var einai kata 1
+                        resetformalargsoffset();
         }
         ;
 
 funcargs:
         LEFT_PARENTHESIS moreidilist RIGHT_PARENTHESIS {
-                CURR_SCOPE--;
-                enterscopespace();              // auksanoume to counter gia to ti var einai kata 1
-                resetformalargsoffset();
+                        CURR_SCOPE--;
+                        enterscopespace();              // auksanoume to counter gia to ti var einai kata 1
+                        resetformalargsoffset();
         }
         ;
 
 funcbody:
-        block {
-                delete_last_fuction_scope();
-                $funcbody = currscopeoffset();
-                exitscopespace();
+        block           {
+                        delete_last_fuction_scope();
+                        $funcbody = currscopeoffset();
+                        exitscopespace();
         }
         ;
 
 funcdef:
-        funcprefix { fuction_scope_insert(CURR_SCOPE++); }   // gia na kratame to teleutaio scope
+        funcprefix      { fuction_scope_insert(CURR_SCOPE++); }   // gia na kratame to teleutaio scope
         funcargs funcbody {
-                exitscopespace();
-                $funcprefix->totalLocals = $funcbody;
-                int offset = pop(save_fuctionlocals);
-                restorecurrscopeoffset(offset);
-                $funcdef = $funcprefix;
-                emit(funcend, lvalue_expr($funcprefix), NULL, NULL,0,yylineno);
+                        exitscopespace();
+                        $funcprefix->totalLocals = $funcbody;
+                        int offset = pop(save_fuctionlocals);
+                        restorecurrscopeoffset(offset);
+                        $funcdef = $funcprefix;
+                        emit(funcend, lvalue_expr($funcprefix), NULL, NULL,0,yylineno);
         }
         ;    
 
@@ -588,7 +598,7 @@ int main(int argc, char** argv){
     yyparse(); // call the parser function
     if(error_flag != 0)
         printf("/-------------   ERRORS     -------------------/\n");
-   print_format(); //print scopes
+   //print_format(); //print scopes
    //print_all_quads(); //print quads
     return 0;
 }
