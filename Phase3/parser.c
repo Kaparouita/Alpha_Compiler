@@ -1552,79 +1552,79 @@ yyreduce:
 
   case 20: /* expr: expr ADDITION expr  */
 #line 253 "parser.y"
-                                {(yyval.exprValue) =  do_maths((yyvsp[-2].exprValue),(yyvsp[0].exprValue),add);}
+                                {(yyval.exprValue) =  arithop((yyvsp[-2].exprValue),(yyvsp[0].exprValue),add);}
 #line 1557 "parser.c"
     break;
 
   case 21: /* expr: expr SUBTRACTION expr  */
 #line 254 "parser.y"
-                                {(yyval.exprValue) =  do_maths((yyvsp[-2].exprValue),(yyvsp[0].exprValue),sub);}
+                                {(yyval.exprValue) =  arithop((yyvsp[-2].exprValue),(yyvsp[0].exprValue),sub);}
 #line 1563 "parser.c"
     break;
 
   case 22: /* expr: expr MULTI expr  */
 #line 255 "parser.y"
-                                {(yyval.exprValue) =  do_maths((yyvsp[-2].exprValue),(yyvsp[0].exprValue),mul);}
+                                {(yyval.exprValue) =  arithop((yyvsp[-2].exprValue),(yyvsp[0].exprValue),mul);}
 #line 1569 "parser.c"
     break;
 
   case 23: /* expr: expr DIVISION expr  */
 #line 256 "parser.y"
-                                {(yyval.exprValue) =  do_maths((yyvsp[-2].exprValue),(yyvsp[0].exprValue),n_div);}
+                                {(yyval.exprValue) =  arithop((yyvsp[-2].exprValue),(yyvsp[0].exprValue),n_div);}
 #line 1575 "parser.c"
     break;
 
   case 24: /* expr: expr MODULUS expr  */
 #line 257 "parser.y"
-                                {(yyval.exprValue) =  do_maths((yyvsp[-2].exprValue),(yyvsp[0].exprValue),mod);}
+                                {(yyval.exprValue) =  arithop((yyvsp[-2].exprValue),(yyvsp[0].exprValue),mod);}
 #line 1581 "parser.c"
     break;
 
   case 25: /* expr: expr GRETER_THAN expr  */
 #line 258 "parser.y"
-                                {(yyval.exprValue) =  do_maths((yyvsp[-2].exprValue),(yyvsp[0].exprValue),if_greater);}
+                                {(yyval.exprValue) =  relop((yyvsp[-2].exprValue),(yyvsp[0].exprValue),if_greater); emit_relop((yyval.exprValue),if_greater);}
 #line 1587 "parser.c"
     break;
 
   case 26: /* expr: expr GRE_EQUAL expr  */
 #line 259 "parser.y"
-                                {(yyval.exprValue) =  do_maths((yyvsp[-2].exprValue),(yyvsp[0].exprValue),if_geatereq);}
+                                {(yyval.exprValue) =  relop((yyvsp[-2].exprValue),(yyvsp[0].exprValue),if_geatereq); emit_relop((yyval.exprValue), if_geatereq);}
 #line 1593 "parser.c"
     break;
 
   case 27: /* expr: expr LESS_THAN expr  */
 #line 260 "parser.y"
-                                {(yyval.exprValue) =  do_maths((yyvsp[-2].exprValue),(yyvsp[0].exprValue),if_less);}
+                                {(yyval.exprValue) =  relop((yyvsp[-2].exprValue),(yyvsp[0].exprValue),if_less);    emit_relop((yyval.exprValue),if_less);}
 #line 1599 "parser.c"
     break;
 
   case 28: /* expr: expr LES_EQUAL expr  */
 #line 261 "parser.y"
-                                {(yyval.exprValue) =  do_maths((yyvsp[-2].exprValue),(yyvsp[0].exprValue),if_lesseq);}
+                                {(yyval.exprValue) =  relop((yyvsp[-2].exprValue),(yyvsp[0].exprValue),if_lesseq);  emit_relop((yyval.exprValue),if_lesseq);}
 #line 1605 "parser.c"
     break;
 
   case 29: /* expr: expr EQUAL expr  */
 #line 262 "parser.y"
-                                {(yyval.exprValue) =  do_bool((yyvsp[-2].exprValue),(yyvsp[0].exprValue),if_eq);}
+                                {(yyval.exprValue) =  relop((yyvsp[-2].exprValue),(yyvsp[0].exprValue),if_eq);      emit_relop((yyval.exprValue),if_eq);}
 #line 1611 "parser.c"
     break;
 
   case 30: /* expr: expr NOTEQUAL expr  */
 #line 263 "parser.y"
-                                {(yyval.exprValue) =  do_bool((yyvsp[-2].exprValue),(yyvsp[0].exprValue),if_noteq);}
+                                {(yyval.exprValue) =  relop((yyvsp[-2].exprValue),(yyvsp[0].exprValue),if_noteq);   emit_relop((yyval.exprValue),if_noteq);}
 #line 1617 "parser.c"
     break;
 
   case 31: /* expr: expr AND expr  */
 #line 264 "parser.y"
-                                {(yyval.exprValue) =  do_bool((yyvsp[-2].exprValue),(yyvsp[0].exprValue),and);}
+                                {(yyval.exprValue) =  boolo((yyvsp[-2].exprValue),(yyvsp[0].exprValue),and);}
 #line 1623 "parser.c"
     break;
 
   case 32: /* expr: expr OR expr  */
 #line 265 "parser.y"
-                                {(yyval.exprValue) =  do_bool((yyvsp[-2].exprValue),(yyvsp[0].exprValue),or);}
+                                {(yyval.exprValue) =  boolo((yyvsp[-2].exprValue),(yyvsp[0].exprValue),or);}
 #line 1629 "parser.c"
     break;
 
@@ -1645,7 +1645,7 @@ yyreduce:
                                 { //-a
                 check_arith((yyvsp[0].exprValue));
                 (yyval.exprValue) = newexpr(arithexpr_e);
-                (yyval.exprValue)->sym = newtemp();
+                (yyval.exprValue)->sym = istempexpr((yyvsp[0].exprValue)) ? (yyvsp[0].exprValue)->sym : newtemp();
                 emit(uminus,(yyvsp[0].exprValue),NULL,(yyval.exprValue),0,yylineno);
         }
 #line 1652 "parser.c"
@@ -1654,9 +1654,9 @@ yyreduce:
   case 36: /* term: NOT expr  */
 #line 276 "parser.y"
                                 {//not a
-                check_arith((yyvsp[0].exprValue));
                 (yyval.exprValue) = newexpr(boolexpr_e);
                 (yyval.exprValue)->sym = newtemp();
+                (yyval.exprValue)->boolConst = !(check_if_bool((yyvsp[0].exprValue)));
                 emit(not, (yyvsp[0].exprValue), NULL, (yyval.exprValue),0, yylineno);
         }
 #line 1663 "parser.c"
@@ -1664,75 +1664,75 @@ yyreduce:
 
   case 37: /* term: INCREMENT lvalue  */
 #line 282 "parser.y"
-                                { /*//++a
-                check_arith($2);
-                if($lvalue->type == tableitem_e){
-                        $$ = emit_iftableitem($lvalue);
-                        emit(add, $$, newexpr_constnum(1), $$, currQuad, yylineno);
-                        emit(tablesetelem, $lvalue, $lvalue->index, $$, currQuad, yylineno);
+                                { //++lvalue
+                check_arith((yyvsp[0].exprValue));
+                if((yyvsp[0].exprValue)->type == tableitem_e){
+                        (yyval.exprValue) = emit_iftableitem((yyvsp[0].exprValue));
+                        emit(add, (yyval.exprValue), newexpr_constnum(1), (yyval.exprValue), 0, yylineno);
+                        emit(tablesetelem, (yyvsp[0].exprValue), (yyvsp[0].exprValue)->index, (yyval.exprValue), 0, yylineno);
                 }else{
-                        emit(add, $lvalue, newexpr_constnum(1), $lvalue, currQuad, yylineno);
-                        $$ = newexpr(arithexpr_e);
-                        $$->sym = newtemp();
-                        emit(assign, $lvalue, NULL, $$, currQuad, yylineno);
+                        emit(add, (yyvsp[0].exprValue), newexpr_constnum(1), (yyvsp[0].exprValue), 0, yylineno);
+                        (yyval.exprValue) = newexpr(arithexpr_e);
+                        (yyval.exprValue)->sym = newtemp();
+                        emit(assign, (yyvsp[0].exprValue), NULL, (yyval.exprValue), 0, yylineno);
                 }                                     //edw exw balei ayta xwris na kserw an einai
-        */}
+        }
 #line 1681 "parser.c"
     break;
 
   case 38: /* term: lvalue INCREMENT  */
 #line 295 "parser.y"
-                                { /*//a++
-                check_arith($1);
-                $$ = newexpr(var_e);
-                $$->sym = newtemp();
-                if($lvalue->type == tableitem_e){
-                        exper* val = emit_iftableitem($1);
-                        emit(assign, val, NULL, $$, currQuad, yylineno);
-                        emit(add, val, newexpr_constnum(1), val);
-                        emit(tablesetelem, $lvalue, $lvalue->index, val);
+                                {    //lvalue++
+                check_arith((yyvsp[-1].exprValue));
+                (yyval.exprValue) = newexpr(var_e);
+                (yyval.exprValue)->sym = newtemp();
+                if((yyvsp[-1].exprValue)->type == tableitem_e){
+                        expr* val = emit_iftableitem((yyvsp[-1].exprValue));
+                        emit(assign, val, NULL, (yyval.exprValue), 0, yylineno);
+                        emit(add, val, newexpr_constnum(1), val,0,yylineno);
+                        emit(tablesetelem, (yyvsp[-1].exprValue), (yyvsp[-1].exprValue)->index, val,0,yylineno);
                 }else{
-                        emit(assign, $lvalue, NULL, $$);
-                        emit(add, $lvalue, newexpr_constnum(1), $lvalue);
+                        emit(assign, (yyvsp[-1].exprValue), NULL, (yyval.exprValue),0,yylineno);
+                        emit(add, (yyvsp[-1].exprValue), newexpr_constnum(1), (yyvsp[-1].exprValue),0,yylineno);
                 }
-        */}
+        }
 #line 1700 "parser.c"
     break;
 
   case 39: /* term: DECREMENT lvalue  */
 #line 309 "parser.y"
-                                { /*//--a
-                check_arith($2);
-                if($lvalue->type == tableitem_e){
-                        $$ = emit_iftableitem($lvalue);
-                        emit(sub, $$, newexpr_constnum(1), $$, currQuad, yylineno);
-                        emit(tablesetelem, $lvalue, $lvalue->index, $$, currQuad, yylineno);
+                                { //--lvalue
+                check_arith((yyvsp[0].exprValue));
+                if((yyvsp[0].exprValue)->type == tableitem_e){
+                        (yyval.exprValue) = emit_iftableitem((yyvsp[0].exprValue));
+                        emit(sub, (yyval.exprValue), newexpr_constnum(1), (yyval.exprValue), 0, yylineno);
+                        emit(tablesetelem, (yyvsp[0].exprValue), (yyvsp[0].exprValue)->index, (yyval.exprValue), 0, yylineno);
                 }else{
-                        emit(sub, $lvalue, newexpr_constnum(1), $lvalue, currQuad, yylineno);
-                        $$ = newexpr(arithexpr_e);
-                        $$->sym = newtemp();
-                        emit(assign, $lvalue, NULL, $$, currQuad, yylineno);
+                        emit(sub, (yyvsp[0].exprValue), newexpr_constnum(1), (yyvsp[0].exprValue), 0, yylineno);
+                        (yyval.exprValue) = newexpr(arithexpr_e);
+                        (yyval.exprValue)->sym = newtemp();
+                        emit(assign, (yyvsp[0].exprValue), NULL, (yyval.exprValue), 0, yylineno);
                 } 
-        */}
+        }
 #line 1718 "parser.c"
     break;
 
   case 40: /* term: lvalue DECREMENT  */
 #line 322 "parser.y"
-                                { /*//a--
-                check_arith($1);
-                $$ = newexpr(var_e);
-                $$->sym = newtemp();
-                if($lvalue->type == tableitem_e){
-                        exper* val = emit_iftableitem($1);
-                        emit(assign, val, NULL, $$, currQuad, yylineno);
-                        emit(sub, val, newexpr_constnum(1), val);
-                        emit(tablesetelem, $lvalue, $lvalue->index, val);
+                                { //lvalue--
+                check_arith((yyvsp[-1].exprValue));
+                (yyval.exprValue) = newexpr(var_e);
+                (yyval.exprValue)->sym = newtemp();
+                if((yyvsp[-1].exprValue)->type == tableitem_e){
+                        expr* val = emit_iftableitem((yyvsp[-1].exprValue));
+                        emit(assign, val, NULL, (yyval.exprValue), 0, yylineno);
+                        emit(sub, val, newexpr_constnum(1), val,0,yylineno);
+                        emit(tablesetelem, (yyvsp[-1].exprValue), (yyvsp[-1].exprValue)->index, val,0,yylineno);
                 }else{
-                        emit(assign, $lvalue, NULL, $$);
-                        emit(sub, $lvalue, newexpr_constnum(1), $lvalue);
+                        emit(assign, (yyvsp[-1].exprValue), NULL, (yyval.exprValue),0,yylineno);
+                        emit(sub, (yyvsp[-1].exprValue), newexpr_constnum(1), (yyvsp[-1].exprValue),0,yylineno);
                 }
-        */}
+        }
 #line 1737 "parser.c"
     break;
 

@@ -250,89 +250,89 @@ stmt:   expr SEMICOLON {resettemp();}
 
 
 expr:   assignexpr              {$$ =  $assignexpr;}
-        |expr ADDITION expr     {$$ =  do_maths($1,$3,add);}
-        |expr SUBTRACTION expr  {$$ =  do_maths($1,$3,sub);}
-        |expr MULTI expr        {$$ =  do_maths($1,$3,mul);}
-        |expr DIVISION expr     {$$ =  do_maths($1,$3,n_div);}
-        |expr MODULUS expr      {$$ =  do_maths($1,$3,mod);}
-        |expr GRETER_THAN expr  {$$ =  do_maths($1,$3,if_greater);}
-        |expr GRE_EQUAL expr    {$$ =  do_maths($1,$3,if_geatereq);}
-        |expr LESS_THAN expr    {$$ =  do_maths($1,$3,if_less);}
-        |expr LES_EQUAL expr    {$$ =  do_maths($1,$3,if_lesseq);}
-        |expr EQUAL expr        {$$ =  do_bool($1,$3,if_eq);}
-        |expr NOTEQUAL expr     {$$ =  do_bool($1,$3,if_noteq);}
-        |expr AND expr          {$$ =  do_bool($1,$3,and);}
-        |expr OR expr           {$$ =  do_bool($1,$3,or);}
+        |expr ADDITION expr     {$$ =  arithop($1,$3,add);}//arithop emits
+        |expr SUBTRACTION expr  {$$ =  arithop($1,$3,sub);}
+        |expr MULTI expr        {$$ =  arithop($1,$3,mul);}
+        |expr DIVISION expr     {$$ =  arithop($1,$3,n_div);}
+        |expr MODULUS expr      {$$ =  arithop($1,$3,mod);}
+        |expr GRETER_THAN expr  {$$ =  relop($1,$3,if_greater); emit_relop($$,if_greater);}
+        |expr GRE_EQUAL expr    {$$ =  relop($1,$3,if_geatereq); emit_relop($$, if_geatereq);}
+        |expr LESS_THAN expr    {$$ =  relop($1,$3,if_less);    emit_relop($$,if_less);}
+        |expr LES_EQUAL expr    {$$ =  relop($1,$3,if_lesseq);  emit_relop($$,if_lesseq);}
+        |expr EQUAL expr        {$$ =  relop($1,$3,if_eq);      emit_relop($$,if_eq);}
+        |expr NOTEQUAL expr     {$$ =  relop($1,$3,if_noteq);   emit_relop($$,if_noteq);}
+        |expr AND expr          {$$ =  boolo($1,$3,and);}
+        |expr OR expr           {$$ =  boolo($1,$3,or);}
         |term                   {}
         ;
 
 term:   LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
         |SUBTRACTION expr       { //-a
-                check_arith($2);
-                $$ = newexpr(arithexpr_e);
-                $$->sym = newtemp();
+                check_arith($expr);
+                $term = newexpr(arithexpr_e);
+                $term->sym = istempexpr($expr) ? $expr->sym : newtemp();
                 emit(uminus,$expr,NULL,$term,0,yylineno);
         }
         |NOT expr               {//not a
-                check_arith($2);
                 $$ = newexpr(boolexpr_e);
                 $term->sym = newtemp();
+                $term->boolConst = !(check_if_bool($2));
                 emit(not, $expr, NULL, $term,0, yylineno);
         }
-        |INCREMENT lvalue       { /*//++a
-                check_arith($2);
+        |INCREMENT lvalue       { //++lvalue
+                check_arith($lvalue);
                 if($lvalue->type == tableitem_e){
-                        $$ = emit_iftableitem($lvalue);
-                        emit(add, $$, newexpr_constnum(1), $$, currQuad, yylineno);
-                        emit(tablesetelem, $lvalue, $lvalue->index, $$, currQuad, yylineno);
+                        $term = emit_iftableitem($lvalue);
+                        emit(add, $$, newexpr_constnum(1), $$, 0, yylineno);
+                        emit(tablesetelem, $lvalue, $lvalue->index, $$, 0, yylineno);
                 }else{
-                        emit(add, $lvalue, newexpr_constnum(1), $lvalue, currQuad, yylineno);
-                        $$ = newexpr(arithexpr_e);
-                        $$->sym = newtemp();
-                        emit(assign, $lvalue, NULL, $$, currQuad, yylineno);
+                        emit(add, $lvalue, newexpr_constnum(1), $lvalue, 0, yylineno);
+                        $term = newexpr(arithexpr_e);
+                        $term->sym = newtemp();
+                        emit(assign, $lvalue, NULL, $$, 0, yylineno);
                 }                                     //edw exw balei ayta xwris na kserw an einai
-        */}
-        |lvalue INCREMENT       { /*//a++
-                check_arith($1);
-                $$ = newexpr(var_e);
-                $$->sym = newtemp();
+        }
+        |lvalue INCREMENT       {    //lvalue++
+                check_arith($lvalue);
+                $term = newexpr(var_e);
+                $term->sym = newtemp();
                 if($lvalue->type == tableitem_e){
-                        exper* val = emit_iftableitem($1);
-                        emit(assign, val, NULL, $$, currQuad, yylineno);
-                        emit(add, val, newexpr_constnum(1), val);
-                        emit(tablesetelem, $lvalue, $lvalue->index, val);
+                        expr* val = emit_iftableitem($1);
+                        emit(assign, val, NULL, $$, 0, yylineno);
+                        emit(add, val, newexpr_constnum(1), val,0,yylineno);
+                        emit(tablesetelem, $lvalue, $lvalue->index, val,0,yylineno);
                 }else{
-                        emit(assign, $lvalue, NULL, $$);
-                        emit(add, $lvalue, newexpr_constnum(1), $lvalue);
+                        emit(assign, $lvalue, NULL, $$,0,yylineno);
+                        emit(add, $lvalue, newexpr_constnum(1), $lvalue,0,yylineno);
                 }
-        */}
-        |DECREMENT lvalue       { /*//--a
-                check_arith($2);
+        }
+        |DECREMENT lvalue       { //--lvalue
+                check_arith($lvalue);
                 if($lvalue->type == tableitem_e){
                         $$ = emit_iftableitem($lvalue);
-                        emit(sub, $$, newexpr_constnum(1), $$, currQuad, yylineno);
-                        emit(tablesetelem, $lvalue, $lvalue->index, $$, currQuad, yylineno);
+                        emit(sub, $$, newexpr_constnum(1), $$, 0, yylineno);
+                        emit(tablesetelem, $lvalue, $lvalue->index, $$, 0, yylineno);
                 }else{
-                        emit(sub, $lvalue, newexpr_constnum(1), $lvalue, currQuad, yylineno);
-                        $$ = newexpr(arithexpr_e);
-                        $$->sym = newtemp();
-                        emit(assign, $lvalue, NULL, $$, currQuad, yylineno);
+                        emit(sub, $lvalue, newexpr_constnum(1), $lvalue, 0, yylineno);
+                        $term = newexpr(arithexpr_e);
+                        $term->sym = newtemp();
+                        emit(assign, $lvalue, NULL, $$, 0, yylineno);
                 } 
-        */}
-        |lvalue DECREMENT       { /*//a--
-                check_arith($1);
-                $$ = newexpr(var_e);
-                $$->sym = newtemp();
+        }
+        |lvalue DECREMENT       { //lvalue--
+                check_arith($lvalue);
+                $term = newexpr(var_e);
+                $term->sym = newtemp();
                 if($lvalue->type == tableitem_e){
-                        exper* val = emit_iftableitem($1);
-                        emit(assign, val, NULL, $$, currQuad, yylineno);
-                        emit(sub, val, newexpr_constnum(1), val);
-                        emit(tablesetelem, $lvalue, $lvalue->index, val);
+                        expr* val = emit_iftableitem($1);
+                        emit(assign, val, NULL, $$, 0, yylineno);
+                        emit(sub, val, newexpr_constnum(1), val,0,yylineno);
+                        emit(tablesetelem, $lvalue, $lvalue->index, val,0,yylineno);
                 }else{
-                        emit(assign, $lvalue, NULL, $$);
-                        emit(sub, $lvalue, newexpr_constnum(1), $lvalue);
+                        emit(assign, $lvalue, NULL, $$,0,yylineno);
+                        emit(sub, $lvalue, newexpr_constnum(1), $lvalue,0,yylineno);
                 }
-        */}
+        }
         |primary                {$$ = $1;}
         ;        
 

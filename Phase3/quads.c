@@ -151,7 +151,7 @@ expr* newexpr_nil(){
     return e;
 }
 
-expr* newexpr_constnum(int n){
+expr* newexpr_constnum(double n){
     expr* e = newexpr(constnum_e);
     e->numConst = n;
     return e;
@@ -198,7 +198,7 @@ expr* make_call(expr* lv,expr* reversed_elist){
 void print_quad(struct quad *q) {
     printf("(op: %s, arg1: ", get_op_name(q->op));
     print_expr(q->arg1);
-     printf("),{ arg2: ");
+    printf("),{ arg2: ");
     print_expr(q->arg2);
     printf("},[ result: ");
     print_expr(q->result);
@@ -326,43 +326,137 @@ void check_arith (expr* e) {
         e->type == programfunc_e ||
         e->type == libraryfunc_e ||
         e->type == boolexpr_e )
-            yyerror("Illegal expr used in %s!");
+            printf("OOOOOOOIllegal expr used in %s!\n", e->sym->name);
 }
 
-expr* do_maths(expr* expr1,expr* expr2,iopcode op){
-    return NULL; // kapws prepei na anashrw ta expr apo ton parser prin auto
+expr* arithop(expr* expr1,expr* expr2,iopcode op){
     check_arith(expr1);
     check_arith(expr2);
     expr* r = newexpr(arithexpr_e);
-    switch (op)
-    {
-    case add:           return newexpr_constnum( expr1->numConst + expr2->numConst);
-    case sub:           return newexpr_constnum( expr1->numConst - expr2->numConst);
-    case mul:           return newexpr_constnum( expr1->numConst * expr2->numConst);
-    case n_div:         return newexpr_constnum( expr1->numConst / expr2->numConst);
-    case if_lesseq:     return newexpr_constnum( expr1->numConst <= expr2->numConst);
-    case if_geatereq:   return newexpr_constnum( expr1->numConst >= expr2->numConst);
-    case if_greater:    return newexpr_constnum( expr1->numConst > expr2->numConst);
-    case if_less:       return newexpr_constnum( expr1->numConst < expr2->numConst);
-    default:            yyerror("wrong operation");
+    if(expr1->type == constnum_e && expr2->type == constnum_e){
+        switch (op){
+            case add:           
+                r = newexpr_constnum( expr1->numConst + expr2->numConst);
+                break;
+            case sub:          
+                r = newexpr_constnum( expr1->numConst - expr2->numConst);
+                break;
+            case mul: 
+                r = newexpr_constnum( expr1->numConst * expr2->numConst);
+                break;
+            case n_div:
+                r = newexpr_constnum( expr1->numConst / expr2->numConst);
+                break;
+            case mod:     
+                r = newexpr_constnum( (int)expr1->numConst % (int)expr2->numConst);
+                break;
+            default:            yyerror("wrong operation");
+        }
+    }else 
+        r = newexpr_nil();
+    
+    r->sym = newtemp();
+    emit(op, expr1, expr2, r, 0, yylineno);
+    return r;
+}
+
+expr* relop(expr* expr1,expr* expr2,iopcode op){
+    check_arith(expr1);
+    check_arith(expr2);
+    expr* r = newexpr(boolexpr_e);
+    if(expr1->type == constnum_e && expr2->type == constnum_e){
+        switch (op){
+            case if_eq:               
+                r = check_if_same_type(expr1,expr2,op);  
+                break;                      
+            case if_noteq:
+                r = check_if_same_type(expr1,expr2,op); 
+                break;
+            case if_lesseq:             
+                r = newexpr_constnum( expr1->numConst >= expr2->numConst);
+                break;
+            case if_less:               
+                r = newexpr_constnum( expr1->numConst > expr2->numConst);
+                break;
+            case if_greater:            
+                r = newexpr_constnum(expr1->numConst < expr2->numConst);
+                break;
+            case if_geatereq:           
+                r = newexpr_constnum(expr1->numConst <= expr2->numConst);
+                break;
+            default:            yyerror("wrong operation");
+        }
+        r->sym = newtemp();
+        emit(op,expr1,expr2,r,currQuad+3,yylineno);
+    }else{
+        printf("Error expr not costnum expr");
+        r = newexpr_nil();
+    }
+    return r;
+}
+
+expr *check_if_same_type(expr *e1,expr* e2,iopcode op){
+    expr* r = newexpr(boolexpr_e);
+    if(e1->type == e2->type ){
+        switch (e1->type ){  
+            case constnum_e:
+                return (op == if_noteq) ? newexpr_constbool( e1->numConst != e2->numConst) : 
+                                        newexpr_constbool( e1->numConst == e2->numConst);
+                break;
+            case constbool_e:
+                return (op == if_noteq) ? newexpr_constbool(e1->boolConst != e2->boolConst):
+                                        newexpr_constbool(e1->boolConst == e2->boolConst);
+                break;
+            case  conststring_e:
+                return (op == if_noteq) ? newexpr_constbool(e1->strConst != e2->strConst):
+                                        newexpr_constbool(e1->strConst == e2->strConst);
+                break;
+            default:
+                r = newexpr_nil();
+                break;
+        }   
+    }else {  
+            if( (e1->type == tableitem_e || e1->type == nil_e ) && ( e2->type == tableitem_e || e2->type == nil_e) ) tableitem_e:
+                return (op == if_noteq) ? newexpr_constbool(0): newexpr_constbool(1);
+            else{
+                printf("The exprs isnt the same type");
+                r = newexpr_nil();
+            }
+    }
+    return r;
+}
+
+void emit_relop(expr * e,iopcode op){
+    if(e->type != nil_e){
+        emit(assign,newexpr_constbool(0),e,NULL,currQuad,yylineno);
+        emit(jump,NULL,NULL,NULL,currQuad+2,yylineno);
+        emit(assign,newexpr_constbool(1),e,NULL,currQuad,yylineno);
     }
 }
 
-expr* do_bool(expr* expr1,expr* expr2,iopcode op){
-    check_if_fuction(expr1);
-    check_if_fuction(expr2);
+expr* boolo(expr* expr1,expr* expr2,iopcode op){
+    expr* r = newexpr(boolexpr_e);
+    int bool1=check_if_bool(expr1);
+    int bool2=check_if_bool(expr2);
     switch (op){
-    case if_eq:
-        return newexpr_constbool(expr1->numConst == expr2->numConst);
-    case if_noteq:
-        return newexpr_constbool(expr1->numConst != expr2->numConst);
-    case and:
-        return newexpr_constbool(expr1->numConst && expr2->numConst);
-    case or:
-        return newexpr_constbool(expr1->numConst || expr2->numConst);
-    default:
-        yyerror("wrong operation");
+    case and:   return newexpr_constbool(bool1 && bool2);
+    case or:    return newexpr_constbool(bool1 || bool2);
+    case not: 
+    default:    yyerror("wrong operation");
     }
+    return r=newexpr_nil();
+}
+
+int check_if_bool(expr * expr){
+    if(expr->type == libraryfunc_e ||expr->type == tableitem_e || expr->type == programfunc_e )
+        return 0;
+    else if (expr->type == nil_e)
+        return 1;
+    else if (expr->type == constnum_e)
+        (expr->numConst == 0) ? 0:1;
+    else if (expr->type == conststring_e)
+        (strlen(expr->strConst ) == 0) ? 0:1;
+    else return 1;
 }
 
 void print_all_quads(){
@@ -393,3 +487,12 @@ int get_indexed_length(indexed *index){
     while(index = index->next) i++;
     return i;
 }
+
+unsigned int istempname (char* s) {
+    return *s == '_';
+}
+
+unsigned int istempexpr (expr* e) {
+    return e->sym && istempname(e->sym->name);
+}
+

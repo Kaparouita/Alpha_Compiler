@@ -17,7 +17,7 @@ typedef enum iopcode{
     if_greater, call,   param,
     ret,    getretval,  funcstart,funcend,
     funcdef, tablecreate,   
-    tablegetelem, tablesetelem        
+    tablegetelem, tablesetelem ,jump     
 }iopcode;
 
 typedef enum expr_t{
@@ -204,7 +204,7 @@ expr* newexpr(expr_t t);
  * @return expr*
 */
 expr* newexpr_conststring(char* s);
-expr* newexpr_constnum(int n);
+expr* newexpr_constnum(double n);
 expr* newexpr_constbool(char c);
 expr* newexpr_constdouble(double n);
 expr* newexpr_nil();
@@ -288,4 +288,56 @@ int get_indexed_length(indexed *index);
  */
 expr *tablecreate_and_emit();
 
+/**
+ * @brief create temp name for vars
+ * 
+ * @return char* 
+ */
+unsigned int istempname (char* s); 
+/**
+ * @brief function to reused variables
+ * 
+ * @return expr* 
+ */
+unsigned int istempexpr (expr* e);
+/**
+ * @brief function for arithm operators
+ * 
+ * @return expr* 
+ */
+expr* arithop(expr* expr1,expr* expr2,iopcode op);
+/**
+ * @brief function for relop operators
+ * 
+ * @return expr* 
+ */
+expr* relop(expr* expr1,expr* expr2,iopcode op);
+/**
+ * @brief function for emit the relops
+ * 
+ * @return void 
+ */
+void emit_relop(expr * e,iopcode op);
+/**
+ * @brief function for emit the relops
+ * @param expr *e1
+ * @param expr* e2
+ * @param iopcode op
+ * @return expr* 
+ */
+expr *check_if_same_type(expr *e1,expr* e2,iopcode op);
+/**
+ * @brief function for emit the relops
+ * @param expr *e1
+ * @param expr* e2
+ * @param iopcode op
+ * @return expr* 
+ */
+expr* boolo(expr* expr1,expr* expr2,iopcode op);
+/**
+ * @brief function to check is boolean 
+ * @param expr *e
+ * @return 0 for true and 1 for false
+ */
+int check_if_bool(expr * expr);
 #endif /*quads_H*/
