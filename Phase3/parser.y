@@ -172,7 +172,7 @@ AND NOT OR LOCAL NILL
 
 /*OPERATORS*/   
 %token ASSIGNMENT ADDITION SUBTRACTION MULTI
-%token DIVISION  MODULUS EQUAL NOTEQUAL INCREMENT DECREMENT GRETER_THAN LESS_THAN   GRE_EQUAL   LES_EQUAL  
+%token DIVISION  MODULUS UMINUS EQUAL NOTEQUAL INCREMENT DECREMENT GRETER_THAN LESS_THAN   GRE_EQUAL   LES_EQUAL  
 
 /*INTEGER NUMERIC && BOOL*/
 %token <intValue> INTEGER 
@@ -206,13 +206,13 @@ RIGHT_PARENTHESIS SEMICOLON COMMA SCOPE_RESOLUTION COLON FULL_STOP DOUBLE_FULL_S
 %nonassoc GRETER_THAN GRE_EQUAL LESS_THAN LES_EQUAL 
 %left ADDITION SUBTRACTION								
 %left MULTI DIVISION MODULUS 							
-%right NOT INCREMENT DECREMENT  		
+%right UMINUS NOT INCREMENT DECREMENT  		
 %left FULL_STOP DOUBLE_FULL_STOP                       		
 %left LEFT_SQUARE_BRACKET RIGHT_SQUARE_BRACKET       	
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS		
 
 
-%type <exprValue> lvalue expr member  elist assignexpr const term primary objectdef moreElist call
+%type <exprValue> lvalue expr member  elist assignexpr const term primary objectdef moreElist call ifprefix elseprefix
 %type <indexedValue> indexed moreindexedelem indexedelem                                      
 %type <callValue> methodcall callsuffix normcall
 
@@ -267,7 +267,7 @@ expr:   assignexpr              {$$ =  $assignexpr;}
         ;
 
 term:   LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
-        |SUBTRACTION expr       { //-a
+        |SUBTRACTION expr %prec UMINUS       { //%prec: priority of uminus operator 
                 check_arith($expr);
                 $term = newexpr(arithexpr_e);
                 $term->sym = istempexpr($expr) ? $expr->sym : newtemp();
@@ -557,9 +557,26 @@ moreidilist: moreidilist idlist
         ;
 
 
-ifstmt: IF LEFT_PARENTHESIS{if_flag = 1;} expr RIGHT_PARENTHESIS  stmt { if_flag = 0;}
-        |ELSE stmt
+ifprefix: IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS    {
+                emit(if_eq, $expr, newexpr_constbool(1), 0, nextquadlabel()+2, yylineno);   // prin htan(warning):emit(if_eq, $expr, newexpr_constbool(1), nextquadlabel()+2, 0, yylineno);
+                $ifprefix->numConst = nextquadlabel(); 
+                emit(jump, NULL, NULL, 0, 0, yylineno);
+        }
         ;
+elseprefix: ELSE        {
+                $elseprefix->numConst = nextquadlabel();
+                emit(jump, NULL, NULL, 0, 0, yylineno);
+        }
+        ;
+ifstmt:     ifprefix{$1=$ifprefix;} stmt{
+        patchlabel((int)$ifprefix->numConst, nextquadlabel());
+        }
+        | elseprefix stmt{
+                patchlabel((int)$1->numConst, (int)$elseprefix->numConst + 1);
+                patchlabel((int)$elseprefix->numConst, nextquadlabel());
+        }
+        ;
+
 
 whilestmt: WHILE LEFT_PARENTHESIS{for_flag = 1;} expr RIGHT_PARENTHESIS stmt {for_flag = 0;} //!ta flags prepei na ginoun me stacks gt p.x mporei na einai if(kati) {if(kati2){}}
         ;

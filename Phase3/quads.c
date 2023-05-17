@@ -326,7 +326,7 @@ void check_arith (expr* e) {
         e->type == programfunc_e ||
         e->type == libraryfunc_e ||
         e->type == boolexpr_e )
-            printf("OOOOOOOIllegal expr used in %s!\n", e->sym->name);
+            printf("Illegal expr used in %s!\n", e->sym->name);
 }
 
 expr* arithop(expr* expr1,expr* expr2,iopcode op){
@@ -370,7 +370,7 @@ expr* relop(expr* expr1,expr* expr2,iopcode op){
     check_arith(expr1);
     check_arith(expr2);
     expr* r = newexpr(boolexpr_e);
-    if(expr1->type == constnum_e && expr2->type == constnum_e){
+    if( (expr1->type == constnum_e || expr1->type==var_e)  && (expr2->type == constnum_e || expr2->type==var_e)){
         switch (op){
             case if_eq:               
                 r = check_if_same_type(expr1,expr2,op);  

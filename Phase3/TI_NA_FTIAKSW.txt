@@ -5,3 +5,13 @@ lec 10 : 32 - telos
 
 plz auta  ^^^^^ prin to lec 11.
 +kante test gia na kserete oti douleuei kati an den douleuei den peirazei apla valte to comments
+
+-------------------
+UPDATED 18/5
+ta bool exun thema den ta pernaei 
+vrhka gt petaei shift reduse ifstmt:     ifprefix
+                                        | elseprefix stmt
+                                        ;
+                                AN EINE ETSI EINE OK ALLA EMENA M FNETE TIGKA lathos
+
+pernaei ta test expr1,2,3  maths1,2 

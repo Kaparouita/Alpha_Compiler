@@ -73,35 +73,36 @@ extern int yydebug;
     MULTI = 274,                   /* MULTI  */
     DIVISION = 275,                /* DIVISION  */
     MODULUS = 276,                 /* MODULUS  */
-    EQUAL = 277,                   /* EQUAL  */
-    NOTEQUAL = 278,                /* NOTEQUAL  */
-    INCREMENT = 279,               /* INCREMENT  */
-    DECREMENT = 280,               /* DECREMENT  */
-    GRETER_THAN = 281,             /* GRETER_THAN  */
-    LESS_THAN = 282,               /* LESS_THAN  */
-    GRE_EQUAL = 283,               /* GRE_EQUAL  */
-    LES_EQUAL = 284,               /* LES_EQUAL  */
-    INTEGER = 285,                 /* INTEGER  */
-    REAL = 286,                    /* REAL  */
-    STRING = 287,                  /* STRING  */
-    ID = 288,                      /* ID  */
-    TRUE = 289,                    /* TRUE  */
-    FALSE = 290,                   /* FALSE  */
-    LEFT_CURLY_BRACKET = 291,      /* LEFT_CURLY_BRACKET  */
-    RIGHT_CURLY_BRACKET = 292,     /* RIGHT_CURLY_BRACKET  */
-    LEFT_SQUARE_BRACKET = 293,     /* LEFT_SQUARE_BRACKET  */
-    RIGHT_SQUARE_BRACKET = 294,    /* RIGHT_SQUARE_BRACKET  */
-    LEFT_PARENTHESIS = 295,        /* LEFT_PARENTHESIS  */
-    RIGHT_PARENTHESIS = 296,       /* RIGHT_PARENTHESIS  */
-    SEMICOLON = 297,               /* SEMICOLON  */
-    COMMA = 298,                   /* COMMA  */
-    SCOPE_RESOLUTION = 299,        /* SCOPE_RESOLUTION  */
-    COLON = 300,                   /* COLON  */
-    FULL_STOP = 301,               /* FULL_STOP  */
-    DOUBLE_FULL_STOP = 302,        /* DOUBLE_FULL_STOP  */
-    EXTRA_CHARS = 303,             /* EXTRA_CHARS  */
-    LINE_COMMENT = 304,            /* LINE_COMMENT  */
-    BLOCK_COMMENT = 305            /* BLOCK_COMMENT  */
+    UMINUS = 277,                  /* UMINUS  */
+    EQUAL = 278,                   /* EQUAL  */
+    NOTEQUAL = 279,                /* NOTEQUAL  */
+    INCREMENT = 280,               /* INCREMENT  */
+    DECREMENT = 281,               /* DECREMENT  */
+    GRETER_THAN = 282,             /* GRETER_THAN  */
+    LESS_THAN = 283,               /* LESS_THAN  */
+    GRE_EQUAL = 284,               /* GRE_EQUAL  */
+    LES_EQUAL = 285,               /* LES_EQUAL  */
+    INTEGER = 286,                 /* INTEGER  */
+    REAL = 287,                    /* REAL  */
+    STRING = 288,                  /* STRING  */
+    ID = 289,                      /* ID  */
+    TRUE = 290,                    /* TRUE  */
+    FALSE = 291,                   /* FALSE  */
+    LEFT_CURLY_BRACKET = 292,      /* LEFT_CURLY_BRACKET  */
+    RIGHT_CURLY_BRACKET = 293,     /* RIGHT_CURLY_BRACKET  */
+    LEFT_SQUARE_BRACKET = 294,     /* LEFT_SQUARE_BRACKET  */
+    RIGHT_SQUARE_BRACKET = 295,    /* RIGHT_SQUARE_BRACKET  */
+    LEFT_PARENTHESIS = 296,        /* LEFT_PARENTHESIS  */
+    RIGHT_PARENTHESIS = 297,       /* RIGHT_PARENTHESIS  */
+    SEMICOLON = 298,               /* SEMICOLON  */
+    COMMA = 299,                   /* COMMA  */
+    SCOPE_RESOLUTION = 300,        /* SCOPE_RESOLUTION  */
+    COLON = 301,                   /* COLON  */
+    FULL_STOP = 302,               /* FULL_STOP  */
+    DOUBLE_FULL_STOP = 303,        /* DOUBLE_FULL_STOP  */
+    EXTRA_CHARS = 304,             /* EXTRA_CHARS  */
+    LINE_COMMENT = 305,            /* LINE_COMMENT  */
+    BLOCK_COMMENT = 306            /* BLOCK_COMMENT  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -129,35 +130,36 @@ extern int yydebug;
 #define MULTI 274
 #define DIVISION 275
 #define MODULUS 276
-#define EQUAL 277
-#define NOTEQUAL 278
-#define INCREMENT 279
-#define DECREMENT 280
-#define GRETER_THAN 281
-#define LESS_THAN 282
-#define GRE_EQUAL 283
-#define LES_EQUAL 284
-#define INTEGER 285
-#define REAL 286
-#define STRING 287
-#define ID 288
-#define TRUE 289
-#define FALSE 290
-#define LEFT_CURLY_BRACKET 291
-#define RIGHT_CURLY_BRACKET 292
-#define LEFT_SQUARE_BRACKET 293
-#define RIGHT_SQUARE_BRACKET 294
-#define LEFT_PARENTHESIS 295
-#define RIGHT_PARENTHESIS 296
-#define SEMICOLON 297
-#define COMMA 298
-#define SCOPE_RESOLUTION 299
-#define COLON 300
-#define FULL_STOP 301
-#define DOUBLE_FULL_STOP 302
-#define EXTRA_CHARS 303
-#define LINE_COMMENT 304
-#define BLOCK_COMMENT 305
+#define UMINUS 277
+#define EQUAL 278
+#define NOTEQUAL 279
+#define INCREMENT 280
+#define DECREMENT 281
+#define GRETER_THAN 282
+#define LESS_THAN 283
+#define GRE_EQUAL 284
+#define LES_EQUAL 285
+#define INTEGER 286
+#define REAL 287
+#define STRING 288
+#define ID 289
+#define TRUE 290
+#define FALSE 291
+#define LEFT_CURLY_BRACKET 292
+#define RIGHT_CURLY_BRACKET 293
+#define LEFT_SQUARE_BRACKET 294
+#define RIGHT_SQUARE_BRACKET 295
+#define LEFT_PARENTHESIS 296
+#define RIGHT_PARENTHESIS 297
+#define SEMICOLON 298
+#define COMMA 299
+#define SCOPE_RESOLUTION 300
+#define COLON 301
+#define FULL_STOP 302
+#define DOUBLE_FULL_STOP 303
+#define EXTRA_CHARS 304
+#define LINE_COMMENT 305
+#define BLOCK_COMMENT 306
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
@@ -175,7 +177,7 @@ union YYSTYPE
         struct  indexed *indexedValue;
         struct  call_s *callValue;
 
-#line 179 "parser.h"
+#line 181 "parser.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
