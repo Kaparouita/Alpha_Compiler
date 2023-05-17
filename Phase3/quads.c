@@ -352,11 +352,17 @@ expr* arithop(expr* expr1,expr* expr2,iopcode op){
                 break;
             default:            yyerror("wrong operation");
         }
-    }else 
-        r = newexpr_nil();
-    
-    r->sym = newtemp();
-    emit(op, expr1, expr2, r, 0, yylineno);
+    }else{
+        r = newexpr(arithexpr_e);
+		if(istempexpr(expr1))
+			r->sym = expr1->sym;
+		else if(istempexpr(expr2))
+			r->sym = expr2->sym;
+		else
+			r->sym = newtemp();
+		    emit(op, expr1, expr2, r, 0, yylineno);
+    } 
+   
     return r;
 }
 
