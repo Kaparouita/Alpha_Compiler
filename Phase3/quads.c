@@ -355,8 +355,6 @@ expr* arithop(expr* expr1,expr* expr2,iopcode op){
         switch (op){
             case add:           
                 r = newexpr_constnum( expr1->numConst + expr2->numConst);
-                printf("MAOU \n");
-                print_expr(r);
                 break;
             case sub:          
                 r = newexpr_constnum( expr1->numConst - expr2->numConst);
