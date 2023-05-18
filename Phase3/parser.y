@@ -201,7 +201,9 @@ RIGHT_PARENTHESIS SEMICOLON COMMA SCOPE_RESOLUTION COLON FULL_STOP DOUBLE_FULL_S
 /*proteraiothtes*/
 %right ASSIGNMENT         
 %left OR                
-%left AND               
+%left AND   
+%right IF   
+%left ELSE        
 %nonassoc EQUAL NOTEQUAL 
 %nonassoc GRETER_THAN GRE_EQUAL LESS_THAN LES_EQUAL 
 %left ADDITION SUBTRACTION								
@@ -212,12 +214,12 @@ RIGHT_PARENTHESIS SEMICOLON COMMA SCOPE_RESOLUTION COLON FULL_STOP DOUBLE_FULL_S
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS		
 
 
-%type <exprValue> lvalue expr member  elist assignexpr const term primary objectdef moreElist call ifprefix elseprefix
+%type <exprValue> lvalue expr member  elist assignexpr const term primary objectdef moreElist call 
 %type <indexedValue> indexed moreindexedelem indexedelem                                      
 %type <callValue> methodcall callsuffix normcall
 
 %type <symbolEntry> funcprefix funcdef
-%type <intValue> funcbody
+%type <intValue> funcbody ifprefix elseprefix
 %type <stringValue> funcname
 
 %start program  /*specify the start symbol of the grammar*/
@@ -261,8 +263,14 @@ expr:   assignexpr              {$$ =  $assignexpr;}
         |expr LES_EQUAL expr    {$$ =  relop($1,$3,if_lesseq);  emit_relop($$,if_lesseq);}
         |expr EQUAL expr        {$$ =  relop($1,$3,if_eq);      emit_relop($$,if_eq);}
         |expr NOTEQUAL expr     {$$ =  relop($1,$3,if_noteq);   emit_relop($$,if_noteq);}
-        |expr AND expr          {$$ =  boolo($1,$3,and);}
-        |expr OR expr           {$$ =  boolo($1,$3,or);}
+        |expr AND expr          { $$ =   newexpr_constbool(boolo($1,$3,and)) ; 
+                                $$->sym = newtemp();     
+                                emit(and,$1,$3,$$,0,yylineno);\
+                                }
+        |expr OR expr           { $$ = newexpr_constbool(boolo($1,$3,or)); 
+                                $$->sym = newtemp();       
+                                emit(and,$1,$3,$$,0,yylineno);
+                                }
         |term                   {}
         ;
 
@@ -347,13 +355,13 @@ assignexpr: lvalue ASSIGNMENT expr{
 					} 
                                         // lvalue = expr
                                         else {
-						emit(assign, $1, $3, NULL, currQuad, yylineno); //paizei na thelei ta arg anapoda
+						emit(assign, $1, $3, NULL, 0, yylineno); //paizei na thelei ta arg anapoda
 						$assignexpr = newexpr(assignexpr_e);
 						$assignexpr->sym = newtemp();
                                                 $1->type = $3->type;
-                                                copy_value($1,$3);
-						emit(assign, $assignexpr, $1, NULL, currQuad, yylineno); //omoiws me to apo panw
-                                                copy_value($assignexpr,$1);
+                                               // copy_value($1,$3);
+						emit(assign, $assignexpr, $1, NULL, 0, yylineno); //omoiws me to apo panw
+                                                //copy_value($assignexpr,$1);
                                         }
 				}               
         }
@@ -561,22 +569,23 @@ moreidilist: moreidilist idlist
 
 
 ifprefix: IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS    {
-                emit(if_eq, $expr, newexpr_constbool(1), 0, nextquadlabel()+2, yylineno);   // prin htan(warning):emit(if_eq, $expr, newexpr_constbool(1), nextquadlabel()+2, 0, yylineno);
-                $ifprefix->numConst = nextquadlabel(); 
-                emit(jump, NULL, NULL, 0, 0, yylineno);
+                emit(if_eq, $expr, newexpr_constbool(1), NULL, nextquadlabel()+2, yylineno);   
+                $ifprefix = nextquadlabel(); 
+                emit(jump, NULL, NULL, NULL, 0, yylineno);
         }
         ;
 elseprefix: ELSE        {
-                $elseprefix->numConst = nextquadlabel();
-                emit(jump, NULL, NULL, 0, 0, yylineno);
+                //emit(if_eq, $expr, newexpr_constbool(1), NULL, nextquadlabel()+2, yylineno);  
+                $elseprefix = nextquadlabel();
+                emit(jump, NULL, NULL, NULL, 0, yylineno);
         }
         ;
-ifstmt:     ifprefix{$1=$ifprefix;} stmt{
-        patchlabel((int)$ifprefix->numConst, nextquadlabel());
+ifstmt: ifprefix %prec IF stmt{
+                patchlabel($ifprefix, nextquadlabel());
         }
-        | elseprefix stmt{
-                patchlabel((int)$1->numConst, (int)$elseprefix->numConst + 1);
-                patchlabel((int)$elseprefix->numConst, nextquadlabel());
+        | ifprefix %prec IF stmt elseprefix stmt {
+                patchlabel($1, $3 + 1);
+                patchlabel($3, nextquadlabel());
         }
         ;
 
@@ -614,11 +623,12 @@ int main(int argc, char** argv){
     
     save_fuctionlocals = createStack(150); 
     init_lib_func();
+    emit(0,NULL,NULL,NULL,0,0);
     //yyset_in(input_file); // set the input stream for the lexer
     yyparse(); // call the parser function
     if(error_flag != 0)
         printf("/-------------   ERRORS     -------------------/\n");
    //print_format(); //print scopes
-   //print_all_quads(); //print quads
+   print_all_quads(); //print quads
     return 0;
 }

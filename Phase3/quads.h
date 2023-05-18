@@ -333,7 +333,7 @@ expr *check_if_same_type(expr *e1,expr* e2,iopcode op);
  * @param iopcode op
  * @return expr* 
  */
-expr* boolo(expr* expr1,expr* expr2,iopcode op);
+unsigned boolo(expr* expr1,expr* expr2,iopcode op);
 /**
  * @brief function to check is boolean 
  * @param expr *e
