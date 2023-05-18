@@ -329,6 +329,23 @@ void check_arith (expr* e) {
             printf("Illegal expr used in %s!\n", e->sym->name);
 }
 
+void copy_value(expr *e1,expr *e2){
+    assert(e1);
+    assert(e2);
+    e1->type = e2->type;
+    switch (e2->type){
+        case constnum_e : 
+            e1->numConst = e2->numConst;
+            break;
+        case constbool_e :
+            e1->boolConst = e2->boolConst;
+            break;
+        case conststring_e :
+            e1->strConst = e2->strConst;
+            break;
+    }
+}
+
 expr* arithop(expr* expr1,expr* expr2,iopcode op){
     check_arith(expr1);
     check_arith(expr2);
@@ -337,6 +354,8 @@ expr* arithop(expr* expr1,expr* expr2,iopcode op){
         switch (op){
             case add:           
                 r = newexpr_constnum( expr1->numConst + expr2->numConst);
+                printf("MAOU \n");
+                print_expr(r);
                 break;
             case sub:          
                 r = newexpr_constnum( expr1->numConst - expr2->numConst);

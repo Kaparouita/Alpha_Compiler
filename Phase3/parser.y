@@ -350,7 +350,10 @@ assignexpr: lvalue ASSIGNMENT expr{
 						emit(assign, $1, $3, NULL, currQuad, yylineno); //paizei na thelei ta arg anapoda
 						$assignexpr = newexpr(assignexpr_e);
 						$assignexpr->sym = newtemp();
+                                                $1->type = $3->type;
+                                                copy_value($1,$3);
 						emit(assign, $assignexpr, $1, NULL, currQuad, yylineno); //omoiws me to apo panw
+                                                copy_value($assignexpr,$1);
                                         }
 				}               
         }

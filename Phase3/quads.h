@@ -340,4 +340,7 @@ expr* boolo(expr* expr1,expr* expr2,iopcode op);
  * @return 0 for true and 1 for false
  */
 int check_if_bool(expr * expr);
+
+
+void copy_value(expr *e1,expr *e2);
 #endif /*quads_H*/
