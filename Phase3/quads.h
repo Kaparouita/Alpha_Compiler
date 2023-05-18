@@ -47,7 +47,7 @@ typedef struct expr{
     struct expr *   index;  
     double          numConst;
     char *          strConst;
-    unsigned char   boolConst;
+    unsigned        boolConst;
     struct expr *   next;
 }expr;
 
@@ -205,7 +205,7 @@ expr* newexpr(expr_t t);
 */
 expr* newexpr_conststring(char* s);
 expr* newexpr_constnum(double n);
-expr* newexpr_constbool(char c);
+expr* newexpr_constbool(unsigned  c);
 expr* newexpr_constdouble(double n);
 expr* newexpr_nil();
 
@@ -340,7 +340,7 @@ expr* boolo(expr* expr1,expr* expr2,iopcode op);
  * @return 0 for true and 1 for false
  */
 int check_if_bool(expr * expr);
-
+expr *is_temp_else_create(expr *e1,expr *e2,expr_t type);
 
 void copy_value(expr *e1,expr *e2);
 #endif /*quads_H*/

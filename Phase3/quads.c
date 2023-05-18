@@ -163,7 +163,7 @@ expr* newexpr_constdouble(double n){
     return e;
 } 
 
-expr* newexpr_constbool(char c){
+expr* newexpr_constbool(unsigned c){
     expr* e = newexpr(constbool_e);
     e->boolConst= c;
     return e;    
@@ -196,7 +196,7 @@ expr* make_call(expr* lv,expr* reversed_elist){
 
 /*PAIZW ME PRINTS IGNORE*/
 void print_quad(struct quad *q) {
-    printf("(op: %s, arg1: ", get_op_name(q->op));
+    printf("(%d : op: %s, arg1: ",currQuad, get_op_name(q->op));
     print_expr(q->arg1);
     printf("),{ arg2: ");
     print_expr(q->arg2);
@@ -226,7 +226,7 @@ void print_expr(expr* e) {
         printf("Str : %s ", e->strConst);
     }
     if (e->type == constbool_e){ 
-        if(e->boolConst == '0')
+        if(e->boolConst == 0)
             printf("Bool : False");
         else 
             printf("Bool : True");
@@ -235,6 +235,8 @@ void print_expr(expr* e) {
 
 const char* get_op_name(iopcode opcode) {
     switch(opcode) {
+        case jump:
+            return "jump";
         case assign:
             return "assign";
         case add:
@@ -371,17 +373,9 @@ expr* arithop(expr* expr1,expr* expr2,iopcode op){
                 break;
             default:            yyerror("wrong operation");
         }
-    }else{
-        r = newexpr(arithexpr_e);
-		if(istempexpr(expr1))
-			r->sym = expr1->sym;
-		else if(istempexpr(expr2))
-			r->sym = expr2->sym;
-		else
-			r->sym = newtemp();
-		    emit(op, expr1, expr2, r, 0, yylineno);
-    } 
-   
+    }else
+        r = is_temp_else_create(expr1,expr2,boolexpr_e);
+    
     return r;
 }
 
@@ -389,14 +383,8 @@ expr* relop(expr* expr1,expr* expr2,iopcode op){
     check_arith(expr1);
     check_arith(expr2);
     expr* r = newexpr(boolexpr_e);
-    if( (expr1->type == constnum_e || expr1->type==var_e)  && (expr2->type == constnum_e || expr2->type==var_e)){
+    if( (expr1->type == constnum_e )  && (expr2->type == constnum_e  )){
         switch (op){
-            case if_eq:               
-                r = check_if_same_type(expr1,expr2,op);  
-                break;                      
-            case if_noteq:
-                r = check_if_same_type(expr1,expr2,op); 
-                break;
             case if_lesseq:             
                 r = newexpr_constnum( expr1->numConst >= expr2->numConst);
                 break;
@@ -412,11 +400,22 @@ expr* relop(expr* expr1,expr* expr2,iopcode op){
             default:            yyerror("wrong operation");
         }
         r->sym = newtemp();
-        emit(op,expr1,expr2,r,currQuad+3,yylineno);
-    }else{
-        printf("Error expr not costnum expr");
-        r = newexpr_nil();
     }
+    else if(check_if_same_type(expr1,expr2,op)->type != nil_e){
+        switch(op){
+        case if_eq:               
+            r = check_if_same_type(expr1,expr2,op);  
+                break;                      
+        case if_noteq:
+            r = check_if_same_type(expr1,expr2,op); 
+                break;
+        }
+    }
+    else
+        r = is_temp_else_create(expr1,expr2,boolexpr_e);
+    
+    emit(op,expr1,expr2,r,currQuad+3,yylineno);
+    emit(jump,NULL,NULL,NULL,currQuad+4,yylineno);
     return r;
 }
 
@@ -441,10 +440,10 @@ expr *check_if_same_type(expr *e1,expr* e2,iopcode op){
                 break;
         }   
     }else {  
-            if( (e1->type == tableitem_e || e1->type == nil_e ) && ( e2->type == tableitem_e || e2->type == nil_e) ) tableitem_e:
+            if( (e1->type == tableitem_e || e1->type == nil_e ) && ( e2->type == tableitem_e || e2->type == nil_e) ) 
                 return (op == if_noteq) ? newexpr_constbool(0): newexpr_constbool(1);
             else{
-                printf("The exprs isnt the same type");
+                printf("The exprs isnt the same type\n");
                 r = newexpr_nil();
             }
     }
@@ -453,9 +452,9 @@ expr *check_if_same_type(expr *e1,expr* e2,iopcode op){
 
 void emit_relop(expr * e,iopcode op){
     if(e->type != nil_e){
-        emit(assign,newexpr_constbool(0),e,NULL,currQuad,yylineno);
-        emit(jump,NULL,NULL,NULL,currQuad+2,yylineno);
-        emit(assign,newexpr_constbool(1),e,NULL,currQuad,yylineno);
+        emit(assign,newexpr_constbool(1),NULL,e,0,yylineno);
+        emit(jump,NULL,NULL,NULL,currQuad+3,yylineno);
+        emit(assign,newexpr_constbool(0),NULL,e,0,yylineno);
     }
 }
 
@@ -466,7 +465,7 @@ expr* boolo(expr* expr1,expr* expr2,iopcode op){
     switch (op){
     case and:   return newexpr_constbool(bool1 && bool2);
     case or:    return newexpr_constbool(bool1 || bool2);
-    case not: 
+    case not:   
     default:    yyerror("wrong operation");
     }
     return r=newexpr_nil();
@@ -482,6 +481,17 @@ int check_if_bool(expr * expr){
     else if (expr->type == conststring_e)
         (strlen(expr->strConst ) == 0) ? 0:1;
     else return 1;
+}
+
+expr *is_temp_else_create(expr *e1,expr *e2,expr_t type){
+    expr *r = newexpr(type);
+	if(istempexpr(e1))
+		r->sym = e1->sym;
+	else if(istempexpr(e2))
+		r->sym = e2->sym;
+	else
+		r->sym = newtemp();
+    return r;
 }
 
 void print_all_quads(){

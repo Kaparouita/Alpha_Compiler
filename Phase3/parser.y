@@ -274,7 +274,7 @@ term:   LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
                 emit(uminus,$expr,NULL,$term,0,yylineno);
         }
         |NOT expr               {//not a
-                $$ = newexpr(boolexpr_e);
+                $$ = newexpr(constbool_e);
                 $term->sym = newtemp();
                 $term->boolConst = !(check_if_bool($2));
                 emit(not, $expr, NULL, $term,0, yylineno);
