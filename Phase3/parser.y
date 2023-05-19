@@ -371,6 +371,7 @@ assignexpr: lvalue ASSIGNMENT expr{
                                         else {
 						emit(assign, $1, $3, NULL, 0, yylineno); //paizei na thelei ta arg anapoda
 						$assignexpr = newexpr(assignexpr_e);
+                                                resettemp();
 						$assignexpr->sym = newtemp();
                                                 $1->type = $3->type;
                                                // copy_value($1,$3);
