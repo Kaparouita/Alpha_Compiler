@@ -277,13 +277,17 @@ expr:   assignexpr              {$$ =  $assignexpr;}
         |expr LES_EQUAL expr    {$$ =  relop($1,$3,if_lesseq);  emit_relop($$,if_lesseq);}
         |expr EQUAL expr        {$$ =  relop($1,$3,if_eq);      emit_relop($$,if_eq);}
         |expr NOTEQUAL expr     {$$ =  relop($1,$3,if_noteq);   emit_relop($$,if_noteq);}
-        |expr AND expr          { $$ =   newexpr_constbool(boolo($1,$3,and)) ; 
-                                $$->sym = newtemp();     
-                                emit(and,$1,$3,$$,0,yylineno);\
+        |expr AND expr          {       $$ =   newexpr_constbool(boolo($1,$3,and)) ; 
+                                        $$->sym = newtemp();     
+                                        emit(and,$1,$3,$$,nextquadlabel()+2,yylineno);
+                                        emit(jump,NULL,NULL,NULL,nextquadlabel()+3,yylineno);
+                                        emit_relop($$,and);
                                 }
-        |expr OR expr           { $$ = newexpr_constbool(boolo($1,$3,or)); 
-                                $$->sym = newtemp();       
-                                emit(and,$1,$3,$$,0,yylineno);
+        |expr OR expr           {       $$ = newexpr_constbool(boolo($1,$3,or)); 
+                                        $$->sym = newtemp();       
+                                        emit(or,$1,$3,$$,nextquadlabel()+2,yylineno);
+                                        emit(jump,NULL,NULL,NULL,nextquadlabel()+3,yylineno);
+                                        emit_relop($$,or);
                                 }
         |term                   {$$ = $1;}
         ;
@@ -299,7 +303,9 @@ term:   LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
                 $$ = newexpr(constbool_e);
                 $term->sym = newtemp();
                 $term->boolConst = !(check_if_bool($2));
-                emit(not, $expr, NULL, $term,0, yylineno);
+                emit(not,NULL,$2,$$,nextquadlabel()+2,yylineno);
+                emit(jump,NULL,NULL,NULL,nextquadlabel()+3,yylineno);
+                emit_relop($$,not);
         }
         |INCREMENT lvalue       { //++lvalue
                 check_arith($lvalue);
