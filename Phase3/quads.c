@@ -273,6 +273,35 @@ void print_expr(expr* e) {
     }
 }
 
+void print_quad_formal(struct quad *q) {
+    printf("%s ", get_op_name(q->op));
+    print_expr(q->result);
+    print_expr(q->arg1);
+    print_expr(q->arg2);
+    if(q->label!=0)
+        printf("[label: %d,]", q->label);
+    printf("[line %d]\n",q->line);
+}
+
+void print_expr_formal(expr *e) {
+    if (e == NULL) {
+        return;
+    }
+    if(e->sym != NULL)
+        printf("%s ", e->sym->name);
+    if (e->type == constnum_e && e->numConst!=0) {
+        printf(" %f ", e->numConst);
+    }else if (e->type == conststring_e) {
+        printf(" %s ", e->strConst);
+    }
+    if (e->type == constbool_e){ 
+        if(e->boolConst == 0)
+            printf("false");
+        else 
+            printf("true");
+    }
+}
+
 const char* get_op_name(iopcode opcode) {
     switch(opcode) {
         case jump:
@@ -392,7 +421,7 @@ expr* arithop(expr* expr1,expr* expr2,iopcode op){
     check_arith(expr1);
     check_arith(expr2);
     expr* r = newexpr(arithexpr_e);
-    if((expr1->type == constnum_e || expr1->type == var_e) && (expr2->type == constnum_e|| expr1->type == var_e)){
+    if((expr1->type == constnum_e ) && (expr2->type == constnum_e)){
         switch (op){
             case add:           
                 r = newexpr_constnum( expr1->numConst + expr2->numConst);

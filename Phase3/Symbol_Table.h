@@ -66,6 +66,8 @@ typedef struct last_fuction_scope {
     struct last_fuction_scope *next;// keep track of the scope of the last fuction
 } last_fuction_scope;
 
+
+void return_check();
 /**
  * @brief Create a table object
  * 

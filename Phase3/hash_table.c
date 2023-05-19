@@ -97,6 +97,9 @@ void fuction_scope_insert(int scope){
     //insert new
     curr->next = new;
 }
+void return_check(){
+    if(fuction_scope == NULL ) yyerror("return w/o function");
+}
 
 void delete_last_fuction_scope(){
     if(fuction_scope == NULL)
@@ -108,6 +111,8 @@ void delete_last_fuction_scope(){
         curr = curr->next;
     }
     prev->next = NULL;
+    if(curr->scope == 0)
+        prev = NULL;
    // free(curr);
 }
 

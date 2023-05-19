@@ -18,12 +18,12 @@
         extern int currQuad;
         var *curr = NULL;
         struct Stack * save_fuctionlocals;
+        struct Stack * loopcounterStack;
 
         int curr_anonymous = 0; //keep track for anonymous
-        int if_flag = 0;
-        int for_flag = 0;
+        int loopcounter =0;
         int error_flag = 0;     // check if there were errors
-
+        int fuctioncounter = 0;
 
         /*function for check ids and insert to STable*/
         var *insert_ID(char* name){
@@ -223,7 +223,7 @@ RIGHT_PARENTHESIS SEMICOLON COMMA SCOPE_RESOLUTION COLON FULL_STOP DOUBLE_FULL_S
 %type <symbolEntry> funcprefix funcdef
 %type <intValue> funcbody ifprefix elseprefix whilestart whilecond N M
 %type <stringValue> funcname
-%type <stmtValue> stmt ifstmt whilestmt forstmt returnstmt brk_stm cnt_stm block stmts
+%type <stmtValue> stmt ifstmt whilestmt forstmt returnstmt brk_stm cnt_stm block stmts loopstmt
 %type <forValue> forprefix
 %start program  /*specify the start symbol of the grammar*/
 
@@ -238,21 +238,21 @@ stmts: stmts  stmt {
                 $$->contlist = mergelist($1->contlist, $stmt->contlist);
                         }
         |stmt {
-                $1 = stmt_constractor(0,0);
-                $$ = $1;}
+                $$ = ($1) ? $1 : stmt_constractor(0,0);
+        }
         ;
 
 
 brk_stm:BREAK SEMICOLON {       $brk_stm = stmt_constractor(0,0);
                                 $brk_stm->breaklist = newlist(nextquadlabel()); 
-                                emit(jump,NULL,NULL,NULL,nextquadlabel(),yylineno); 
-                                $$ = stmt_constractor(0,0);};
+                                emit(jump,NULL,NULL,NULL,0,yylineno); 
+                        };
 cnt_stm:CONTINUE SEMICOLON {    $cnt_stm = stmt_constractor(0,0);
                                 $cnt_stm->contlist = newlist(nextquadlabel()); 
-                                emit(jump,NULL,NULL,NULL,nextquadlabel(),yylineno); 
-                                $$ = stmt_constractor(0,0);};
+                                emit(jump,NULL,NULL,NULL,0,yylineno); 
+                        };
 
-stmt:   expr SEMICOLON {$$ = stmt_constractor(0,0);}
+stmt:   expr SEMICOLON {$$ = stmt_constractor(0,0); resettemp();}
         |ifstmt      {$$ = $1;}   
         |whilestmt   {$$ = $1;} 
         |forstmt     {$$ = $1;} 
@@ -285,7 +285,7 @@ expr:   assignexpr              {$$ =  $assignexpr;}
                                 $$->sym = newtemp();       
                                 emit(and,$1,$3,$$,0,yylineno);
                                 }
-        |term                   {}
+        |term                   {$$ = $1;}
         ;
 
 term:   LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
@@ -555,9 +555,16 @@ funcbody:
         }
         ;
 
+funcblockstart : {      push(loopcounterStack,loopcounter);
+                        loopcounter = 0;
+                        fuctioncounter++;}
+
+funcblockend :  {       pop(loopcounterStack);
+                        fuctioncounter--;}
+
 funcdef:
         funcprefix      { fuction_scope_insert(CURR_SCOPE++); }   // gia na kratame to teleutaio scope
-        funcargs funcbody {
+        funcargs funcblockstart  funcbody funcblockend  {
                         exitscopespace();
                         $funcprefix->totalLocals = $funcbody;
                         int offset = pop(save_fuctionlocals);
@@ -606,14 +613,25 @@ ifstmt: ifprefix %prec IF stmt{
         | ifprefix %prec IF stmt elseprefix stmt {
                 patchlabel($1, $3 + 1);
                 patchlabel($3, nextquadlabel());
-                $$ = stmt_constractor(0,0); 
+                if($2 != NULL)
+                        $$ = $2;
+                else
+                        $$ = ($4) ? $4 : stmt_constractor(0,0); 
         }
         ;
+
+
+loopstart :     { ++loopcounter; }
+loopend :       { --loopcounter; }
+
+
+loopstmt : loopstart stmt loopend {$loopstmt = $stmt;}
+
+
 whilestart : WHILE { $whilestart = nextquadlabel();
 }
 
-whilecond : LEFT_PARENTHESIS{ //for_flag = 1;
-} expr RIGHT_PARENTHESIS{
+whilecond : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS{
         emit(if_eq,$expr,newexpr_constbool(1),NULL,nextquadlabel()+2,yylineno);
         $whilecond = nextquadlabel();
         emit(jump, NULL, NULL, NULL, 0, yylineno);
@@ -621,12 +639,12 @@ whilecond : LEFT_PARENTHESIS{ //for_flag = 1;
 
 
 
-whilestmt: whilestart whilecond stmt {
+whilestmt: whilestart whilecond loopstmt {
         emit(jump, NULL, NULL,NULL, $whilestart,yylineno);
         patchlabel($whilecond, nextquadlabel());
-        patchlist($stmt->breaklist, nextquadlabel());
-        patchlist($stmt->contlist, $whilestart);
-        $$ = ($stmt) ?  $stmt : stmt_constractor(0,0); 
+        patchlist($loopstmt->breaklist, nextquadlabel());
+        patchlist($loopstmt->contlist, $whilestart);
+        $$ = $loopstmt ; 
 }
         ;
 
@@ -639,18 +657,29 @@ forprefix : FOR LEFT_PARENTHESIS moreElist SEMICOLON  M expr SEMICOLON
 }
 
 /*note this for elist*/
-forstmt:   forprefix N elist RIGHT_PARENTHESIS N stmt N {
+forstmt:   forprefix N elist RIGHT_PARENTHESIS N loopstmt N {
         patchlabel($forprefix->enter, $5+1); 
         patchlabel($2, nextquadlabel()); 
         patchlabel($5, $forprefix->test); 
         patchlabel($7, $2+1); 
-        patchlist($stmt->breaklist, nextquadlabel());
-        patchlist($stmt->contlist, $2+1);
-        $$ = ($stmt) ?  $stmt : stmt_constractor(0,0); } 
+        patchlist($loopstmt->breaklist, nextquadlabel());
+        patchlist($loopstmt->contlist, $2+1);
+        $$ =   $loopstmt;} 
         ;
 
-returnstmt: RETURN {if(CURR_SCOPE == 0)yyerror("return w/o function");} expr SEMICOLON{
-        $$ = stmt_constractor(0,0);
+returnstmt: RETURN SEMICOLON {
+                if(fuctioncounter == 0)
+                        yyerror("return w/o function");
+                else
+                        emit(ret,NULL,NULL,NULL,0,yylineno);
+                $$ = stmt_constractor(0,0);
+        } 
+        |RETURN expr SEMICOLON{
+                if(fuctioncounter == 0)
+                        yyerror("return w/o function");
+                else
+                        emit(ret,NULL,NULL,$expr,0,yylineno);
+                $$ = stmt_constractor(0,0);
 }
         ;   
 %%
@@ -676,6 +705,7 @@ int main(int argc, char** argv){
 	 
     
     save_fuctionlocals = createStack(150); 
+    loopcounterStack = createStack(200);
     init_lib_func();
     emit(0,NULL,NULL,NULL,0,0);
     //yyset_in(input_file); // set the input stream for the lexer

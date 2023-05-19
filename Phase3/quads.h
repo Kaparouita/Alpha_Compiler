@@ -361,5 +361,9 @@ unsigned boolo(expr* expr1,expr* expr2,iopcode op);
 int check_if_bool(expr * expr);
 expr *is_temp_else_create(expr *e1,expr *e2,expr_t type);
 
+void print_quad_formal(struct quad *q);
+void print_expr_formal(expr *e) ;
+
+
 void copy_value(expr *e1,expr *e2);
 #endif /*quads_H*/
