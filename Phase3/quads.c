@@ -421,7 +421,13 @@ expr* arithop(expr* expr1,expr* expr2,iopcode op){
     check_arith(expr1);
     check_arith(expr2);
     expr* r = newexpr(arithexpr_e);
-    if((expr1->type == constnum_e ) && (expr2->type == constnum_e)){
+    if((expr1->type == constnum_e || expr1->type == var_e ) && (expr2->type == constnum_e || expr2->type == var_e)){
+        if(expr1 == var_e || expr2->type == var_e){
+            if(expr1->type == constnum_e)
+                r = newexpr_constnum(expr1->numConst);
+            r = (expr2->type == constnum_e) ? newexpr_constnum(expr2->numConst) : newexpr_constnum(0);
+        }
+        else
         switch (op){
             case add:           
                 r = newexpr_constnum( expr1->numConst + expr2->numConst);
@@ -440,6 +446,7 @@ expr* arithop(expr* expr1,expr* expr2,iopcode op){
                 break;
             default:            yyerror("wrong operation");
         }
+     if(!r->sym)  newtemp();
     }else
         r = is_temp_else_create(expr1,expr2,boolexpr_e);
     emit(op,expr1,expr2,r,0,yylineno);
@@ -450,7 +457,13 @@ expr* relop(expr* expr1,expr* expr2,iopcode op){
     check_arith(expr1);
     check_arith(expr2);
     expr* r = newexpr(boolexpr_e);
-    if( (expr1->type == constnum_e )  && (expr2->type == constnum_e  )){
+     if((expr1->type == constnum_e || expr1->type == var_e ) && (expr2->type == constnum_e || expr2->type == var_e)){
+        if(expr1 == var_e || expr2->type == var_e){
+            if(expr1->type == constnum_e)
+                r = newexpr_constnum(expr1->numConst);
+            r = (expr2->type == constnum_e) ? newexpr_constnum(expr2->numConst) : newexpr_constnum(0);
+        }
+        else
         switch (op){
             case if_lesseq:             
                 r = newexpr_constbool( expr1->numConst >= expr2->numConst);
@@ -466,7 +479,7 @@ expr* relop(expr* expr1,expr* expr2,iopcode op){
                 break;
             default:            yyerror("wrong operation");
         }
-        r->sym = newtemp();
+        if(!r->sym)  newtemp();
     }
     else if(check_if_same_type(expr1,expr2,op)->type != nil_e){
         switch(op){
