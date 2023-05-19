@@ -160,7 +160,9 @@
         unsigned int UintValue;
         double  realValue;
         char    boolValue;
+        struct  stmt_t *stmtValue;
         struct  var *symbolEntry;
+        struct  for_prefix *forValue;
         struct  expr *exprValue;
         struct  indexed *indexedValue;
         struct  call_s *callValue;
@@ -219,35 +221,47 @@ RIGHT_PARENTHESIS SEMICOLON COMMA SCOPE_RESOLUTION COLON FULL_STOP DOUBLE_FULL_S
 %type <callValue> methodcall callsuffix normcall
 
 %type <symbolEntry> funcprefix funcdef
-%type <intValue> funcbody ifprefix elseprefix
+%type <intValue> funcbody ifprefix elseprefix whilestart whilecond N M
 %type <stringValue> funcname
-
+%type <stmtValue> stmt ifstmt whilestmt forstmt returnstmt brk_stm cnt_stm block stmts
+%type <forValue> forprefix
 %start program  /*specify the start symbol of the grammar*/
 
 
 
 %%
-program:   stmt_list 
+program:   stmts
         ;
 
-stmt_list: stmt_list  stmt
-        |
+stmts: stmts  stmt {
+                $$->breaklist = mergelist($1->breaklist, $stmt->breaklist);
+                $$->contlist = mergelist($1->contlist, $stmt->contlist);
+                        }
+        |stmt {
+                $1 = stmt_constractor(0,0);
+                $$ = $1;}
         ;
 
 
-brk_stm:BREAK {if(for_flag == 0)yyerror("break w/o loop");} SEMICOLON ;
-cnt_stm:CONTINUE {if(for_flag == 0)yyerror("continue w/o loop");} SEMICOLON ;
+brk_stm:BREAK SEMICOLON {       $brk_stm = stmt_constractor(0,0);
+                                $brk_stm->breaklist = newlist(nextquadlabel()); 
+                                emit(jump,NULL,NULL,NULL,nextquadlabel(),yylineno); 
+                                $$ = stmt_constractor(0,0);};
+cnt_stm:CONTINUE SEMICOLON {    $cnt_stm = stmt_constractor(0,0);
+                                $cnt_stm->contlist = newlist(nextquadlabel()); 
+                                emit(jump,NULL,NULL,NULL,nextquadlabel(),yylineno); 
+                                $$ = stmt_constractor(0,0);};
 
-stmt:   expr SEMICOLON {resettemp();}
-        |ifstmt         
-        |whilestmt 
-        |forstmt
-        |returnstmt
-        |brk_stm
-        |cnt_stm
-        |block
-        |funcdef
-        |SEMICOLON {resettemp();}
+stmt:   expr SEMICOLON {$$ = stmt_constractor(0,0);}
+        |ifstmt      {$$ = $1;}   
+        |whilestmt   {$$ = $1;} 
+        |forstmt     {$$ = $1;} 
+        |returnstmt  {$$ = $1;} 
+        |brk_stm     {$$ = $1;} 
+        |cnt_stm     {$$ = $1;} 
+        |block       {$$ = $1;} 
+        |funcdef     {$$ = stmt_constractor(0,0);} 
+        |SEMICOLON {resettemp(); $$ = stmt_constractor(0,0);}
         ;
 
 
@@ -346,7 +360,7 @@ term:   LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
 
 assignexpr: lvalue ASSIGNMENT expr{
 				{
-					check_if_fuction($1); //check gia to table
+					//check_if_fuction($1); //check gia to table
                                         //lvalue[i] = expr
 					if($1->type == tableitem_e) {
 						emit(tablesetelem, $1, $1->index, $3, 0, yylineno);
@@ -500,9 +514,10 @@ indexedelem: LEFT_CURLY_BRACKET expr COLON
 
 block:  LEFT_CURLY_BRACKET { 
                                 CURR_SCOPE++;   
-                        }stmt_list RIGHT_CURLY_BRACKET{
+                        }stmts RIGHT_CURLY_BRACKET{
                                 if(CURR_SCOPE!=0)
-                                hide(CURR_SCOPE--);       
+                                        hide(CURR_SCOPE--);    
+                                $block = $stmts;
                 }
         ;
 
@@ -582,22 +597,60 @@ elseprefix: ELSE        {
         ;
 ifstmt: ifprefix %prec IF stmt{
                 patchlabel($ifprefix, nextquadlabel());
+                if($2 != NULL)
+                        $$ = $stmt;
+                else
+                        $$ = stmt_constractor(0,0); 
         }
         | ifprefix %prec IF stmt elseprefix stmt {
                 patchlabel($1, $3 + 1);
                 patchlabel($3, nextquadlabel());
+                $$ = stmt_constractor(0,0); 
         }
         ;
+whilestart : WHILE { $whilestart = nextquadlabel();
+}
+
+whilecond : LEFT_PARENTHESIS{ //for_flag = 1;
+} expr RIGHT_PARENTHESIS{
+        emit(if_eq,$expr,newexpr_constbool(1),NULL,nextquadlabel()+2,yylineno);
+        $whilecond = nextquadlabel();
+        emit(jump, NULL, NULL, NULL, 0, yylineno);
+}
 
 
-whilestmt: WHILE LEFT_PARENTHESIS{for_flag = 1;} expr RIGHT_PARENTHESIS stmt {for_flag = 0;} //!ta flags prepei na ginoun me stacks gt p.x mporei na einai if(kati) {if(kati2){}}
+
+whilestmt: whilestart whilecond stmt {
+        emit(jump, NULL, NULL,NULL, $whilestart,yylineno);
+        patchlabel($whilecond, nextquadlabel());
+        patchlist($stmt->breaklist, nextquadlabel());
+        patchlist($stmt->contlist, $whilestart);
+        $$ = ($stmt) ?  $stmt : stmt_constractor(0,0); 
+}
         ;
+
+N : { $N = nextquadlabel(); emit(jump,NULL,NULL,NULL,0,yylineno); }
+M : { $M = nextquadlabel(); }
+forprefix : FOR LEFT_PARENTHESIS moreElist SEMICOLON  M expr SEMICOLON
+{       
+        $forprefix = for_prefix_constractor($M,nextquadlabel());
+        emit(if_eq, $expr, newexpr_constbool(1), NULL,0,yylineno);
+}
 
 /*note this for elist*/
-forstmt:   FOR LEFT_PARENTHESIS{for_flag = 1;} moreElist SEMICOLON expr SEMICOLON moreElist RIGHT_PARENTHESIS stmt {for_flag = 0;} 
+forstmt:   forprefix N elist RIGHT_PARENTHESIS N stmt N {
+        patchlabel($forprefix->enter, $5+1); 
+        patchlabel($2, nextquadlabel()); 
+        patchlabel($5, $forprefix->test); 
+        patchlabel($7, $2+1); 
+        patchlist($stmt->breaklist, nextquadlabel());
+        patchlist($stmt->contlist, $2+1);
+        $$ = ($stmt) ?  $stmt : stmt_constractor(0,0); } 
         ;
 
-returnstmt: RETURN {if(CURR_SCOPE == 0)yyerror("return w/o function");} expr SEMICOLON{}
+returnstmt: RETURN {if(CURR_SCOPE == 0)yyerror("return w/o function");} expr SEMICOLON{
+        $$ = stmt_constractor(0,0);
+}
         ;   
 %%
 

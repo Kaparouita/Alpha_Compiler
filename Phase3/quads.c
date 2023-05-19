@@ -178,6 +178,47 @@ expr* emit_iftableitem(expr* e){
     }
 }
 
+stmt_t *stmt_constractor(int break_list,int cont_list){
+    stmt_t *s = malloc(sizeof(stmt_t));
+	s->breaklist = break_list;
+	s->contlist = cont_list; 
+	return s;
+}
+
+for_prefix *for_prefix_constractor(int test,int enter){
+    for_prefix *f = malloc(sizeof(for_prefix));
+    f->enter =  enter;
+    f->test  =  test;
+    return f;
+}
+
+void make_stmt (stmt_t* s)  { s->breaklist = s->contlist = 0; }
+
+int mergelist (int l1, int l2) {
+    if (!l1)
+        return l2;
+    else if (!l2)
+        return l1;
+    else {
+        int i = l1;
+        while (quads[i].label)
+            i = quads[i].label;
+        quads[i].label = l2;
+        return l1;
+    }
+}
+
+void patchlist (int list, int label) {
+    while (list) {
+        int next = quads[list].label;
+        quads[list].label = label;
+        list = next;
+    }
+}
+
+
+int newlist (int i)     { quads[i].label = 0; return i; }
+
 expr* make_call(expr* lv,expr* reversed_elist){
     expr* func = emit_iftableitem(lv);
     while (reversed_elist){

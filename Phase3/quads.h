@@ -74,6 +74,25 @@ typedef struct call_s
     char* name;
 }call_s;
 
+typedef struct stmt_t {
+    int breaklist;
+    int contlist;
+}stmt_t;
+
+typedef struct for_prefix {
+    int test;
+    int enter;
+}for_prefix;
+
+for_prefix *for_prefix_constractor(int test,int enter);
+
+void make_stmt (stmt_t* s);
+
+int newlist (int i);
+
+int mergelist (int l1, int l2);
+
+void patchlist (int list, int label);
 
 /**
  * epektini ton pinaka twn quads
@@ -93,7 +112,7 @@ void expand(void);
 */
 void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned int label, unsigned int  line);
 
-
+stmt_t *stmt_constractor(int break_list,int cont_list);
 call_s *call_constractor(expr* e,unsigned char method,char* name);
 /**
  * @brief ["x" : kati_x , "b" : kati_b]

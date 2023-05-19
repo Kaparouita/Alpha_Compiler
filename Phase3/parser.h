@@ -162,12 +162,14 @@ union YYSTYPE
         unsigned int UintValue;
         double  realValue;
         char    boolValue;
+        struct  stmt_t *stmtValue;
         struct  var *symbolEntry;
+        struct  for_prefix *forValue;
         struct  expr *exprValue;
         struct  indexed *indexedValue;
         struct  call_s *callValue;
 
-#line 171 "parser.h"
+#line 173 "parser.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
