@@ -101,8 +101,9 @@ void restorecurrscopeoffset(unsigned int  n){
 unsigned int nextquadlabel(){ return currQuad;}
 
 void patchlabel(unsigned int quadNo, unsigned int  label){
-    assert(quadNo<currQuad && !quads[quadNo].label);
-    quads[quadNo].label = label; //edw mporei na thelei alagh 
+    assert(quadNo<currQuad );
+    if(quads[quadNo].label ==0)
+        quads[quadNo].label = label; //edw mporei na thelei alagh 
 }
 
 expr* lvalue_expr(var* sym){
@@ -274,31 +275,39 @@ void print_expr(expr* e) {
 }
 
 void print_quad_formal(struct quad *q) {
-    printf("%s ", get_op_name(q->op));
-    print_expr(q->result);
-    print_expr(q->arg1);
-    print_expr(q->arg2);
-    if(q->label!=0)
-        printf("[label: %d,]", q->label);
-    printf("[line %d]\n",q->line);
+    printf("%-14s", get_op_name(q->op));
+    print_expr_formal(q->arg1);
+    print_expr_formal(q->arg2);
+    print_expr_formal(q->result);
+    if(q->label)
+        printf("%-14d", q->label);
+    else
+        printf("%-14s", "0");
+    printf("[%d]\n",q->line);
 }
 
 void print_expr_formal(expr *e) {
     if (e == NULL) {
-        return;
+         printf("%-14s", "NULL");
+         return;
     }
     if(e->sym != NULL)
-        printf("%s ", e->sym->name);
-    if (e->type == constnum_e && e->numConst!=0) {
-        printf(" %f ", e->numConst);
-    }else if (e->type == conststring_e) {
-        printf(" %s ", e->strConst);
-    }
-    if (e->type == constbool_e){ 
-        if(e->boolConst == 0)
-            printf("false");
-        else 
-            printf("true");
+        printf("%-14s", e->sym->name);
+    else{
+        switch(e->type){
+            case(constbool_e) :
+                if(e->boolConst == 0)
+                    printf("%-14s", "False");
+                else 
+                    printf("%-14s", "True");
+                break;
+            case(conststring_e) :
+                printf("s: %-11s", e->strConst);
+                break;
+            case(constnum_e) :
+                printf("%-14.2f", e->numConst);
+                break;
+        }
     }
 }
 
@@ -446,7 +455,7 @@ expr* arithop(expr* expr1,expr* expr2,iopcode op){
                 break;
             default:            yyerror("wrong operation");
         }
-     if(!r->sym)  newtemp();
+     r->sym = newtemp();
     }else
         r = is_temp_else_create(expr1,expr2,boolexpr_e);
     emit(op,expr1,expr2,r,0,yylineno);
@@ -479,7 +488,7 @@ expr* relop(expr* expr1,expr* expr2,iopcode op){
                 break;
             default:            yyerror("wrong operation");
         }
-        if(!r->sym)  newtemp();
+        r->sym = newtemp();
     }
     else if(check_if_same_type(expr1,expr2,op)->type != nil_e){
         switch(op){
@@ -532,9 +541,9 @@ expr *check_if_same_type(expr *e1,expr* e2,iopcode op){
 
 void emit_relop(expr * e,iopcode op){
     if(e->type != nil_e){
-        emit(assign,e,newexpr_constbool(1),NULL,0,yylineno);
+        emit(assign,e,NULL,newexpr_constbool(1),0,yylineno);
         emit(jump,NULL,NULL,NULL,currQuad+2,yylineno);
-        emit(assign,e,newexpr_constbool(0),NULL,0,yylineno);
+        emit(assign,e,NULL,newexpr_constbool(0),0,yylineno);
     }
 }
 
@@ -576,10 +585,11 @@ expr *is_temp_else_create(expr *e1,expr *e2,expr_t type){
 void print_all_quads(){
     int i = 1;
     quads++;
-    printf("------------ PRINTING ALL QUADS -----------\n");
+    printf("\n\n/---------------------------------   PRINTING ALL QUADS    ----------------------------------/\n\n");
+    printf("%-8s%-14s%-14s%-14s%-14s%-14s%-14s\n\n","NO","OP","ARG1","ARG2","RESULT","LABEL","LINE");
     while(i < currQuad){
-        printf("%d :",i);
-        print_quad(quads++);
+        printf("%-8d",i);
+        print_quad_formal(quads++);
         i++;
     }
 }

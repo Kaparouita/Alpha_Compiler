@@ -221,7 +221,7 @@ RIGHT_PARENTHESIS SEMICOLON COMMA SCOPE_RESOLUTION COLON FULL_STOP DOUBLE_FULL_S
 %type <callValue> methodcall callsuffix normcall
 
 %type <symbolEntry> funcprefix funcdef
-%type <intValue> funcbody ifprefix elseprefix whilestart whilecond N M
+%type <intValue> funcbody ifprefix elseprefix whilestart whilecond N M returnstart
 %type <stringValue> funcname
 %type <stmtValue> stmt ifstmt whilestmt forstmt returnstmt brk_stm cnt_stm block stmts loopstmt
 %type <forValue> forprefix
@@ -375,13 +375,12 @@ assignexpr: lvalue ASSIGNMENT expr{
 					} 
                                         // lvalue = expr
                                         else {
-						emit(assign, $1, $3, NULL, 0, yylineno); //paizei na thelei ta arg anapoda
+						emit(assign, $3, NULL,$1, 0, yylineno); //paizei na thelei ta arg anapoda
 						$assignexpr = newexpr(assignexpr_e);
-                                                resettemp();
 						$assignexpr->sym = newtemp();
                                                 $1->type = $3->type;
                                                // copy_value($1,$3);
-						emit(assign, $assignexpr, $1, NULL, 0, yylineno); //omoiws me to apo panw
+						emit(assign ,$1, NULL, $assignexpr,0, yylineno); //omoiws me to apo panw
                                                 //copy_value($assignexpr,$1);
                                         }
 				}               
@@ -584,8 +583,8 @@ const:  INTEGER                 { $$ = newexpr_constnum($INTEGER);}
         |REAL                   { $$ = newexpr_constdouble($REAL);}
         |STRING                 { $$ = newexpr_conststring($STRING);}
         |NILL                   { $$ = newexpr_nil();}
-        |TRUE                   { $$ = newexpr_constbool('1');}
-        |FALSE                  { $$ = newexpr_constbool('0');}
+        |TRUE                   { $$ = newexpr_constbool(1);}
+        |FALSE                  { $$ = newexpr_constbool(0);}
         ;
 
 idlist: ID                      {insert_formal(yylval.stringValue);}
@@ -673,18 +672,26 @@ forstmt:   forprefix N elist RIGHT_PARENTHESIS N loopstmt N {
         $$ =   $loopstmt;} 
         ;
 
-returnstmt: RETURN SEMICOLON {
+
+returnstart : RETURN {
+        $returnstart = nextquadlabel();
+}
+
+returnstmt: returnstart SEMICOLON {
                 if(fuctioncounter == 0)
                         yyerror("return w/o function");
                 else
+                       { 
                         emit(ret,NULL,NULL,NULL,0,yylineno);
+                        patchlabel($returnstart , nextquadlabel());
+                }
                 $$ = stmt_constractor(0,0);
         } 
-        |RETURN expr SEMICOLON{
+        |returnstart expr SEMICOLON{
                 if(fuctioncounter == 0)
                         yyerror("return w/o function");
                 else
-                        emit(ret,NULL,NULL,$expr,0,yylineno);
+                        {emit(ret,NULL,NULL,$expr,0,yylineno);}
                 $$ = stmt_constractor(0,0);
 }
         ;   
@@ -718,7 +725,7 @@ int main(int argc, char** argv){
     yyparse(); // call the parser function
     if(error_flag != 0)
         printf("/-------------   ERRORS     -------------------/\n");
-   //print_format(); //print scopes
+   print_format(); //print scopes
    print_all_quads(); //print quads
     return 0;
 }

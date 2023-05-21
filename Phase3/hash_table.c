@@ -216,13 +216,12 @@ int check_access(var *myVar){
 
 void print_var(var *v) {
     
-    printf("\"%s\" ", v->name);
-    printf("[%s] ",   enum_id(v->id));
-    printf("(line %d) ", v->line);
-    printf("(scope %d) ", v->scope);
-    printf("(%s)",enum_scospace_t_print(v->space));
-    printf("(Offset %d)\n",v->offset);
-    
+    printf("%-30s", v->name);
+    printf("%-30s ",   enum_id(v->id));
+    printf("%-8d", v->line);
+    printf("%-8d\n", v->scope);
+    //printf("(%s)",enum_scospace_t_print(v->space));
+    //printf("(Offset %d)\n",v->offset);   
 }
 
 const char* enum_scospace_t_print(enum scopespace_t myenum) {
@@ -259,7 +258,8 @@ char *enum_id(var_type id){
 }
 
 void print_scope(int scope){
-    printf("\n/-------------   SCOPE #%d   -------------------/\n",scope);
+    printf("\n\n/--------------------------------------   SCOPE #%d   ----------------------------------------/\n\n",scope);
+    printf("%-30s%-30s%-8s%-8s\n\n","NAME","NO","LINE","SCOPE");
     if(first == NULL)
         return;
     var *curr = get_scope_var(scope);
