@@ -423,7 +423,7 @@ call:   call LEFT_PARENTHESIS RIGHT_PARENTHESIS
                                 if($callsuffix->method){
                                         expr* t = $lvalue;
                                         $lvalue = emit_iftableitem(member_item(t, $callsuffix->name));
-                                        if($callsuffix)
+                                        if($callsuffix)//!EDW isws prepei na to treksw mexri to telos k meta na to kanw insert?
                                                 $callsuffix->elist->next = t;           // insert san prwto arg (reversed,so last)
                                         else
                                                 $callsuffix->elist = t;
@@ -537,9 +537,12 @@ funcname:
 
 funcprefix:      
         FUNCTION funcname { 
+                        emit(jump,NULL,NULL,NULL,0,yylineno);
                         $funcprefix = function_insert($funcname);               //yylval.stringValue
                         $funcprefix->fuctionAddress = nextquadlabel();
-                        emit(funcstart,lvalue_expr($funcprefix), NULL, NULL,0,yylineno);
+                        //gia kapoio logo to lvalue_expr() den douleuei
+                        expr* e = newexpr(programfunc_e);       e->sym = $$;
+                        emit(funcstart,e, NULL, NULL,0,yylineno);
                         push(save_fuctionlocals,currscopeoffset());
                         enterscopespace();                      // auksanoume to counter gia to ti var einai kata 1
                         resetformalargsoffset();
