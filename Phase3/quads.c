@@ -40,6 +40,14 @@ void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned int label, 
     p->line=line;
 }
 
+call_s *call_constractor(expr* e,unsigned char method,char* name){
+    call_s *c = (call_s*)malloc(sizeof(call_s));
+    c->elist = e;
+    c->method = method;
+    c->name = name;
+    return c;
+}
+
 indexed *indexed_constractor(expr *indexedelem,expr *value,indexed *next){
     indexed *i = (indexed*)malloc(sizeof(indexed));
     i->indexedelem = indexedelem;
@@ -170,13 +178,13 @@ expr* newexpr_constbool(unsigned c){
 }
  
 expr* emit_iftableitem(expr* e){
-    if(e->type != tableitem_e) return e; // if not table
-    else {
-        expr* result = newexpr(var_e);
-        result->sym = newtemp(); 
-        emit(tablegetelem,result,e,e->index,0,yylineno);  //!paizei na einai lathos
-        return result;
-    }
+    if(e->type != tableitem_e) 
+        return e; // if not table
+
+    expr* result = newexpr(var_e);
+    result->sym = newtemp(); 
+    emit(tablegetelem,result,e,e->index,0,yylineno);  //!paizei na einai lathos
+    return result;
 }
 
 stmt_t *stmt_constractor(int break_list,int cont_list){

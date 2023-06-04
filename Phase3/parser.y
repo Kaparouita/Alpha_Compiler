@@ -413,7 +413,8 @@ member:  lvalue FULL_STOP ID    {// a.x;
         ;
 
 call:   call LEFT_PARENTHESIS RIGHT_PARENTHESIS
-                                {$$ = make_call($1,NULL);}       /* !den kserw an xreiazete*/
+                                {$$ = make_call($1,NULL);
+                                }       /* !den kserw an xreiazete*/
         |call LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS       //call (elist)
                                 {$$ = make_call($1, $moreElist);}
         |lvalue callsuffix
@@ -422,9 +423,17 @@ call:   call LEFT_PARENTHESIS RIGHT_PARENTHESIS
                                 if($callsuffix->method){
                                         expr* t = $lvalue;
                                         $lvalue = emit_iftableitem(member_item(t, $callsuffix->name));
-                                        $callsuffix->elist->next = t;           // insert san prwto arg (reversed,so last)
+                                        if($callsuffix)
+                                                $callsuffix->elist->next = t;           // insert san prwto arg (reversed,so last)
+                                        else
+                                                $callsuffix->elist = t;
                                 }
                                 $call = make_call($lvalue, $callsuffix->elist);
+        }
+        |LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS  RIGHT_PARENTHESIS{
+                                expr* func = newexpr(programfunc_e);
+				func->sym = $2;
+				$$ = make_call(func, NULL);
         }
         |LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS // (funcdef) (elist)
                                 {
@@ -439,21 +448,18 @@ callsuffix: normcall            {$callsuffix = $normcall; }
         ;
 
 normcall:   LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS  {
-                                $normcall->elist = $moreElist;
-                                $normcall->method = 0;
-                                $normcall->name = NULL;
+                                $$ = call_constractor($moreElist,0,NULL);
         }
         |  LEFT_PARENTHESIS RIGHT_PARENTHESIS{
-                                $normcall->elist =NULL;
-                                $normcall->method = 0;
-                                $normcall->name = NULL;
+                                $$ = call_constractor(NULL,0,NULL);
         }
         ;
 
 methodcall: DOUBLE_FULL_STOP ID LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS{
-                                $$->elist = $moreElist; 
-                                $$->method = 1;
-                                $$->name = $ID;
+                                $$ = call_constractor($moreElist,1,$ID);
+        }
+        | DOUBLE_FULL_STOP ID LEFT_PARENTHESIS RIGHT_PARENTHESIS{
+                                $$ = call_constractor(NULL,1,$ID);
         }
         ;    
 

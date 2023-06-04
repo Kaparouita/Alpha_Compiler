@@ -113,6 +113,7 @@ void expand(void);
 void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned int label, unsigned int  line);
 
 stmt_t *stmt_constractor(int break_list,int cont_list);
+
 call_s *call_constractor(expr* e,unsigned char method,char* name);
 /**
  * @brief ["x" : kati_x , "b" : kati_b]
