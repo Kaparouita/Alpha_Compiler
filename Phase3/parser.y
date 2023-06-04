@@ -430,6 +430,7 @@ call:   call LEFT_PARENTHESIS RIGHT_PARENTHESIS
                                 }
                                 $call = make_call($lvalue, $callsuffix->elist);
         }
+                /*AN TO ELIST = NULL */
         |LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS  RIGHT_PARENTHESIS{
                                 expr* func = newexpr(programfunc_e);
 				func->sym = $2;
@@ -448,18 +449,20 @@ callsuffix: normcall            {$callsuffix = $normcall; }
         ;
 
 normcall:   LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS  {
-                                $$ = call_constractor($moreElist,0,NULL);
+                                $normcall = call_constractor($moreElist,0,NULL);
         }
+        /*AN TO ELIST = NULL */
         |  LEFT_PARENTHESIS RIGHT_PARENTHESIS{
-                                $$ = call_constractor(NULL,0,NULL);
+                                $normcall = call_constractor(NULL,0,NULL);
         }
         ;
 
 methodcall: DOUBLE_FULL_STOP ID LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS{
-                                $$ = call_constractor($moreElist,1,$ID);
+                                $methodcall = call_constractor($moreElist,1,$ID);
         }
+        /*AN TO ELIST = NULL */
         | DOUBLE_FULL_STOP ID LEFT_PARENTHESIS RIGHT_PARENTHESIS{
-                                $$ = call_constractor(NULL,1,$ID);
+                                $methodcall = call_constractor(NULL,1,$ID);
         }
         ;    
 
@@ -537,11 +540,11 @@ funcname:
 
 funcprefix:      
         FUNCTION funcname { 
-                        emit(jump,NULL,NULL,NULL,0,yylineno);
                         $funcprefix = function_insert($funcname);               //yylval.stringValue
                         $funcprefix->fuctionAddress = nextquadlabel();
                         //gia kapoio logo to lvalue_expr() den douleuei
                         expr* e = newexpr(programfunc_e);       e->sym = $$;
+                        emit(jump,NULL,NULL,NULL,0,yylineno); //pou teliwnei to fuct
                         emit(funcstart,e, NULL, NULL,0,yylineno);
                         push(save_fuctionlocals,currscopeoffset());
                         enterscopespace();                      // auksanoume to counter gia to ti var einai kata 1
@@ -581,6 +584,7 @@ funcdef:
                         restorecurrscopeoffset(offset);
                         $funcdef = $funcprefix;
                         emit(funcend, lvalue_expr($funcprefix), NULL, NULL,0,yylineno);
+                        patchlabel($funcprefix->fuctionAddress,nextquadlabel());
         }
         ;    
 
@@ -679,7 +683,7 @@ forstmt:   forprefix N elist RIGHT_PARENTHESIS N loopstmt N {
 
 
 returnstart : RETURN {
-        $returnstart = nextquadlabel();
+        $returnstart = nextquadlabel()+1;
 }
 
 returnstmt: returnstart SEMICOLON {
@@ -688,6 +692,7 @@ returnstmt: returnstart SEMICOLON {
                 else
                        { 
                         emit(ret,NULL,NULL,NULL,0,yylineno);
+                        emit(jump,NULL,NULL,NULL,0,yylineno);
                         patchlabel($returnstart , nextquadlabel());
                 }
                 $$ = stmt_constractor(0,0);
@@ -696,7 +701,11 @@ returnstmt: returnstart SEMICOLON {
                 if(fuctioncounter == 0)
                         yyerror("return w/o function");
                 else
-                        {emit(ret,NULL,NULL,$expr,0,yylineno);}
+                        {
+                emit(ret,NULL,NULL,$expr,0,yylineno);
+                emit(jump,NULL,NULL,NULL,0,yylineno);
+                patchlabel($returnstart , nextquadlabel());
+                }
                 $$ = stmt_constractor(0,0);
 }
         ;   
