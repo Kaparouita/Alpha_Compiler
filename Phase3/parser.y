@@ -279,15 +279,13 @@ expr:   assignexpr              {$$ =  $assignexpr;}
         |expr NOTEQUAL expr     {$$ =  relop($1,$3,if_noteq);   emit_relop($$,if_noteq);}
         |expr AND expr          {       $$ =   newexpr_constbool(boolo($1,$3,and)) ; 
                                         $$->sym = newtemp();     
-                                        emit(and,$1,$3,$$,nextquadlabel()+2,yylineno);
-                                        emit(jump,NULL,NULL,NULL,nextquadlabel()+3,yylineno);
-                                        emit_relop($$,and);
+                                        emit(and,$1,$3,$$,0,yylineno);
                                 }
         |expr OR expr           {       $$ = newexpr_constbool(boolo($1,$3,or)); 
                                         $$->sym = newtemp();       
-                                        emit(or,$1,$3,$$,nextquadlabel()+2,yylineno);
-                                        emit(jump,NULL,NULL,NULL,nextquadlabel()+3,yylineno);
-                                        emit_relop($$,or);
+                                        emit(or,$1,$3,$$,0,yylineno); // epishs auto htan nextquad +2
+                                        /*emit(jump,NULL,NULL,NULL,nextquadlabel()+3,yylineno);
+                                        emit_relop($$,or); //htan to idio kai sthn and/not nmzw apla ta vgazoume k gg */
                                 }
         |term                   {$$ = $1;}
         ;
@@ -303,9 +301,7 @@ term:   LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
                 $$ = newexpr(constbool_e);
                 $term->sym = newtemp();
                 $term->boolConst = !(check_if_bool($2));
-                emit(not,NULL,$2,$$,nextquadlabel()+2,yylineno);
-                emit(jump,NULL,NULL,NULL,nextquadlabel()+3,yylineno);
-                emit_relop($$,not);
+                emit(not,NULL,$2,$$,0,yylineno);
         }
         |INCREMENT lvalue       { //++lvalue
                 check_arith($lvalue);
