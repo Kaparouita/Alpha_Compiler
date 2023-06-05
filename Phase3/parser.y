@@ -527,9 +527,17 @@ block:  LEFT_CURLY_BRACKET {
                                 CURR_SCOPE++;   
                         }stmts RIGHT_CURLY_BRACKET{
                                 if(CURR_SCOPE!=0)
-                                        hide(CURR_SCOPE--);    
-                                $block = $stmts;
+                                        hide(CURR_SCOPE--);
+                                if(!$stmts)   
+                                        $$ = stmt_constractor(0,0);
+                                else 
+                                        $block = $stmts;
                 }
+        |LEFT_CURLY_BRACKET RIGHT_CURLY_BRACKET{
+                if(CURR_SCOPE!=0)
+                        hide(CURR_SCOPE--); 
+                $$ = stmt_constractor(0,0); 
+        }
         ;
 
 
@@ -554,6 +562,11 @@ funcprefix:
 
 funcargs:
         LEFT_PARENTHESIS moreidilist RIGHT_PARENTHESIS {
+                        CURR_SCOPE--;
+                        enterscopespace();              // auksanoume to counter gia to ti var einai kata 1
+                        resetformalargsoffset();
+        }
+        |LEFT_PARENTHESIS RIGHT_PARENTHESIS{
                         CURR_SCOPE--;
                         enterscopespace();              // auksanoume to counter gia to ti var einai kata 1
                         resetformalargsoffset();
