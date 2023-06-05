@@ -360,11 +360,29 @@ unsigned boolo(expr* expr1,expr* expr2,iopcode op);
  * @return 0 for true and 1 for false
  */
 int check_if_bool(expr * expr);
+/**
+ * @brief check if e1/e2 is temp else return a tmp
+ * 
+ * @param e1 
+ * @param e2 
+ * @param type 
+ * @return expr* 
+ */
 expr *is_temp_else_create(expr *e1,expr *e2,expr_t type);
 
+/**
+ * @brief printing
+ * 
+ * @param q 
+ */
 void print_quad_formal(struct quad *q);
 void print_expr_formal(expr *e) ;
 
-
+/**
+ * @brief if e1 bool/string/int copy its value to e2
+ * 
+ * @param e1 
+ * @param e2 
+ */
 void copy_value(expr *e1,expr *e2);
 #endif /*quads_H*/

@@ -528,10 +528,7 @@ block:  LEFT_CURLY_BRACKET {
                         }stmts RIGHT_CURLY_BRACKET{
                                 if(CURR_SCOPE!=0)
                                         hide(CURR_SCOPE--);
-                                if(!$stmts)   
-                                        $$ = stmt_constractor(0,0);
-                                else 
-                                        $block = $stmts;
+                                $$ = ($stmts)  ?  $stmts : stmt_constractor(0,0);
                 }
         |LEFT_CURLY_BRACKET RIGHT_CURLY_BRACKET{
                 if(CURR_SCOPE!=0)
@@ -632,18 +629,21 @@ elseprefix: ELSE        {
         ;
 ifstmt: ifprefix %prec IF stmt{
                 patchlabel($ifprefix, nextquadlabel());
-                if($2 != NULL)
-                        $$ = $stmt;
-                else
-                        $$ = stmt_constractor(0,0); 
+                 $ifstmt = ($stmt)  ?  $stmt : stmt_constractor(0,0);
         }
         | ifprefix %prec IF stmt elseprefix stmt {
                 patchlabel($1, $3 + 1);
                 patchlabel($3, nextquadlabel());
-                if($2 != NULL)
+                $ifstmt = stmt_constractor(0,0);
+                /*an exoun kai ta 2 value ftiakse ta break/cont list (oustiaka an exoun stmt k to if k to else)*/
+                if($2 && $4){
+                        $ifstmt->breaklist = mergelist($2->breaklist, $4->breaklist);
+                        $ifstmt->contlist = mergelist($4->contlist, $4->contlist);
+                }
+                else if($2)
                         $$ = $2;
-                else
-                        $$ = ($4) ? $4 : stmt_constractor(0,0); 
+                else if($4)
+                        $$ = $4; 
         }
         ;
 
@@ -671,7 +671,7 @@ whilestmt: whilestart whilecond loopstmt {
         patchlabel($whilecond, nextquadlabel());
         patchlist($loopstmt->breaklist, nextquadlabel());
         patchlist($loopstmt->contlist, $whilestart);
-        $$ = $loopstmt ; 
+        $$ = stmt_constractor(0,0) ; 
 }
         ;
 
@@ -691,7 +691,7 @@ forstmt:   forprefix N elist RIGHT_PARENTHESIS N loopstmt N {
         patchlabel($7, $2+1); 
         patchlist($loopstmt->breaklist, nextquadlabel());
         patchlist($loopstmt->contlist, $2+1);
-        $$ =   $loopstmt;} 
+        $$ =   stmt_constractor(0,0);} 
         ;
 
 
