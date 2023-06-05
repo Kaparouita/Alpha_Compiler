@@ -566,11 +566,11 @@ funcargs:
                         enterscopespace();              // auksanoume to counter gia to ti var einai kata 1
                         resetformalargsoffset();
         }
-        |LEFT_PARENTHESIS RIGHT_PARENTHESIS{
+        /*|LEFT_PARENTHESIS RIGHT_PARENTHESIS{
                         CURR_SCOPE--;
                         enterscopespace();              // auksanoume to counter gia to ti var einai kata 1
                         resetformalargsoffset();
-        }
+        }*/
         ;
 
 funcbody:

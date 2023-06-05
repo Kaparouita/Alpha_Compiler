@@ -363,8 +363,8 @@ void resettemp(){
 
 int check_if_in_fuction(){
     if(fuction_scope == NULL)
-        return 0;
-    return 1;
+        return 1;
+    return 0;
 }
 
 

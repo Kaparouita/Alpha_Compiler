@@ -201,7 +201,8 @@ for_prefix *for_prefix_constractor(int test,int enter){
     return f;
 }
 
-void make_stmt (stmt_t* s)  { s->breaklist = s->contlist = 0; }
+void make_stmt (stmt_t* s)  
+    { s->breaklist = s->contlist = 0; }
 
 int mergelist (int l1, int l2) {
     if (!l1)
