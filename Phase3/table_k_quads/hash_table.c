@@ -219,7 +219,9 @@ void print_var(var *v) {
     printf("%-30s", v->name);
     printf("%-30s ",   enum_id(v->id));
     printf("%-8d", v->line);
-    printf("%-8d\n", v->scope);
+    printf("%-8d", v->scope);
+    printf("%-8d", v->offset);
+    printf("%-8s\n", enum_scospace_t_print(v->space));
     //printf("(%s)",enum_scospace_t_print(v->space));
     //printf("(Offset %d)\n",v->offset);   
 }
@@ -259,7 +261,7 @@ char *enum_id(var_type id){
 
 void print_scope(int scope){
     printf("\n\n/--------------------------------------   SCOPE #%d   ----------------------------------------/\n\n",scope);
-    printf("%-30s%-30s%-8s%-8s\n\n","NAME","NO","LINE","SCOPE");
+    printf("%-30s%-30s%-8s%-8s%-8s%-8s\n\n","NAME","NO","LINE","SCOPE","OFFSET","SCOPESPACE");
     if(first == NULL)
         return;
     var *curr = get_scope_var(scope);

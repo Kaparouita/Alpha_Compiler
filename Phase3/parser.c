@@ -70,9 +70,9 @@
 
         #include <stdio.h>
         //#include "lex.yy.h" // alphayylex?
-        #include "Symbol_Table.h"
-        #include "quads.h"
-        #include "Stack.h"
+        #include "table_k_quads/Symbol_Table.h"
+        #include "table_k_quads/quads.h"
+        #include "vm.h"
 
         int yyerror (char* yaccProvidedMessage);
         int yylex (void);
@@ -2591,7 +2591,7 @@ yyreduce:
                 patchlabel((yyvsp[-3].intValue), (yyvsp[-1].intValue) + 1);
                 patchlabel((yyvsp[-1].intValue), nextquadlabel());
                 (yyval.stmtValue) = stmt_constractor(0,0);
-                /*an exoun kai ta 2 value ftiakse ta break/cont list*/
+                /*an exoun kai ta 2 value ftiakse ta break/cont list (oustiaka an exoun stmt k to if k to else)*/
                 if((yyvsp[-2].stmtValue) && (yyvsp[0].stmtValue)){
                         (yyval.stmtValue)->breaklist = mergelist((yyvsp[-2].stmtValue)->breaklist, (yyvsp[0].stmtValue)->breaklist);
                         (yyval.stmtValue)->contlist = mergelist((yyvsp[0].stmtValue)->contlist, (yyvsp[0].stmtValue)->contlist);

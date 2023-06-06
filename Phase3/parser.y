@@ -1,9 +1,9 @@
 %{
         #include <stdio.h>
         //#include "lex.yy.h" // alphayylex?
-        #include "Symbol_Table.h"
-        #include "quads.h"
-        #include "Stack.h"
+        #include "table_k_quads/Symbol_Table.h"
+        #include "table_k_quads/quads.h"
+        #include "vm.h"
 
         int yyerror (char* yaccProvidedMessage);
         int yylex (void);
