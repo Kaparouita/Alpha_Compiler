@@ -87,15 +87,6 @@
 
         /*insert a new fuction to the table*/
         var* function_insert(char* name){
-                //check if anonymous and insert if true
-                /*if(check_anonymous(name) != NULL){
-                        curr_anonymous--;
-                        name = check_anonymous(name);
-                        var *myfuction = new_var(fuction,user_func,name,CURR_SCOPE,currscopespace(),currscopeoffset(),1,yylineno); 
-                        hash_insert(myfuction,table);
-                        //print_var(myfuction); //na ftiaksw ta print
-                        return myfuction;
-                }*/
                 //kanoume lookuop sto trexon scope
                 var* myfuction = lookup_scope(CURR_SCOPE,name);
                 
@@ -111,6 +102,8 @@
                 }
                 //alliws thn kanoume insert
                 myfuction = new_var(fuction,user_func,name,CURR_SCOPE,currscopespace(),currscopeoffset(),1,yylineno); 
+                myfuction->fuctionAddress = 0; //kati
+                myfuction->totalLocals = 0;pali kati
                 hash_insert(myfuction,table);
                 return myfuction;
                 //print_var(myfuction);

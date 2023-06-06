@@ -2,7 +2,17 @@
 #define vm_H
 
 #include "Stack.h"
+#include "table_k_quads/Symbol_Table.h"
+#include "table_k_quads/quads.h"
+#include <assert.h>
 
+#define AVM_STACKSIZE       4096
+#define AVM_WIPEOUT(m)      memset (&(m),  0,  sizeof(m))
+
+#define AVM_TABLE_HASHSIZE 211
+
+typedef struct  avm_table avm_table;
+typedef struct avm_table_bucket  avm_table_bucket;
 
 typedef enum vmopcode{
     assign_v,   add_v ,   sub_v,
@@ -50,7 +60,6 @@ typedef struct userfunc {
 
 
 //TO STACK THS MHXANHS
-
 typedef enum avm_memcell_t{
     number_m   = 0,
     string_m   = 1,
@@ -62,46 +71,46 @@ typedef enum avm_memcell_t{
     undef_m    = 7,
 }avm_memcell_t;
 
-
-typedef sturct avm_memcell{
-    avm_memcell_t type;
-    union {
+typedef union {
         double          numVal;
         char*           strVal;
         unsigned char   boolVal;
         avm_table*      tableVal;
         unsigned        funcVal;
         char*           libfuncVal;
-    } data;
+} data_union;
+
+
+typedef struct avm_memcell{
+    avm_memcell_t type;
+    data_union data;
 }avm_memcell;
 
-#define AVM_STACKSIZE       4096
-#define AVM_WIPEOUT(m)      memeset (&(m),  0,  sizeof(m))
+
+ struct avm_table_bucket{
+    avm_memcell         key;
+    avm_memcell         value;
+    avm_table_bucket*   next;
+};
+
+ struct  avm_table{
+    unsigned            refCounter;
+    avm_table_bucket *  strIndexed[AVM_TABLE_HASHSIZE];
+    avm_table_bucket *  numIndexed[AVM_TABLE_HASHSIZE];
+    unsigned            totalStr;
+    unsigned            totanNum;
+};
+
 
 static void avm_initstack (void);
 
 //TABLES
-
-#define AVM_TABLE_HASHSIZE 211
 
 avm_table* avm_table_new(void);
 void       avm_table_destroy(avm_table* t);
 avm_table* avm_table_getelem(avm_memcell* key);
 void       avm_table_setelem(avm_memcell* key,avm_memcell value);
 
-typedef struct avm_table_bucket{
-    avm_memcell         key;
-    avm_memcell         value;
-    avm_table_bucket*   next;
-}avm_table_bucket;
-
-typedef struct  avm_table{
-    unsigned            refCounter;
-    avm_table_bucket    strIndexed[AVM_TABLE_HASHSIZE];
-    avm_table_bucket    numIndexed[AVM_TABLE_HASHSIZE];
-    unsigned            totalStr;
-    unsigned            totanNum;
-}avm_table;
 
 /**
  * @brief increase the refcounter by 1
@@ -122,14 +131,13 @@ void avm_table_decrefcounter (avm_table* t);
  * 
  * @param p 
  */
-*/
-
-void avm_table_buckets_init (avm_table_bucket** p)
+void avm_table_buckets_init (avm_table_bucket** p);
 /**
  * @brief create a new avm table
  * 
  * @return avm_table* 
  */
+
 avm_table* avm_tablenew(void );
 
 /**
@@ -146,7 +154,7 @@ void avm_memcellclear (avm_memcell* m);
  */
 void avm_tablebucketsdestroy (avm_table_bucket** p);
 
-void avm_tabledestroy (avm_table* t);
+void avm_table_destroy (avm_table* t);
 
 
 #endif /*vm_H*/
