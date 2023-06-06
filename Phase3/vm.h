@@ -25,12 +25,13 @@ typedef enum vmopcode{
     tablegetelem_v, tablesetelem_v ,nop_v,    
 }vmopcode;
 
-typedef enum vmarg_t{
-    label_a  = 0,
-    global_a = 1,
-    formal_a = 2,
-    local_a  = 3,
-    number_a = 4,
+typedef enum vmarg_t{       //TO VAL STO VMARG EINAI
+
+    label_a  = 0,           //jump instr
+    global_a = 1,           //thesh sto stack
+    formal_a = 2,           // ^
+    local_a  = 3,           // ^
+    number_a = 4,           // ola ta ypoloipa einai -> value
     string_a = 5,
     bool_a   = 6,
     nil_a    = 7,

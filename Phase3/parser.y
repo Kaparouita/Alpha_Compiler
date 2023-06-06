@@ -103,7 +103,7 @@
                 //alliws thn kanoume insert
                 myfuction = new_var(fuction,user_func,name,CURR_SCOPE,currscopespace(),currscopeoffset(),1,yylineno); 
                 myfuction->fuctionAddress = 0; //kati
-                myfuction->totalLocals = 0;pali kati
+                myfuction->totalLocals = 0;//pali kati
                 hash_insert(myfuction,table);
                 return myfuction;
                 //print_var(myfuction);
