@@ -743,6 +743,7 @@ int main(int argc, char** argv){
     emit(0,NULL,NULL,NULL,0,0);
     //yyset_in(input_file); // set the input stream for the lexer
     yyparse(); // call the parser function
+    //generateInstructions();
     if(error_flag != 0)
         printf("/-------------   ERRORS     -------------------/\n");
    print_format(); //print scopes
