@@ -33,6 +33,16 @@ avm_memcell * avm_memcell_constractor(avm_memcell_t type,data_union data){
 }
 
 
+instruction * instruction_constractor(vmopcode op,vmarg r,  vmarg arg1 , vmarg arg2, unsigned scrLine){
+     instruction* i = (instruction*) malloc (sizeof(instruction*));
+     i->result = r;
+     i->arg1 = arg1;
+     i->arg2 = arg2;
+     i->scrLine = scrLine;
+     i->opcode = op;
+}
+
+
 static void avm_initstack (void){
     for (unsigned i = 0; i<AVM_STACKSIZE;i++){
         AVM_WIPEOUT(stack[i]);
@@ -88,6 +98,55 @@ void avm_table_destroy (avm_table* t){
     avm_tablebucketsdestroy (t->strIndexed);
     avm_tablebucketsdestroy (t->numIndexed);
     free(t);
+}
+
+
+//gia to genarate
+unsigned consts_newstring(char*);
+unsigned consts_newnumber(double n);
+unsigned libfuncs_newused(char*);
+
+void make_operand(expr* e,vmarg* arg){
+       switch(e->type){
+            case var_e:
+            case tableitem_e:
+            case arithexpr_e:
+            case boolexpr_e:
+            case newtable_e:{
+                arg->val    =   e->sym->offset;
+                switch (e->sym->space){
+                    case programvar: arg->type = global_a ; break;
+                    case functionlocal : arg->type = local_a; break;
+                    case formalarg : arg->type = formal_a; break; 
+                    default : assert (0);
+                }
+            }
+            case constbool_e: {
+                arg->val = e->boolConst;
+                arg->type = bool_a ; 
+                break;
+            }
+            case conststring_e : {
+                arg->val = consts_newstring(e->strConst);
+                arg->type = string_a; break; 
+            }
+            case constnum_e : {
+                arg->val = consts_newnumber(e->numConst);
+                arg->type = number_a; break ;
+            } 
+            case nil_e : arg->type = nil_a; break;
+            case programfunc_e: {
+                arg->type = userfunc_a;
+                arg->val = e->sym->fuctionAddress;
+                break;
+            }
+            case libraryfunc_e : {
+                arg->type = libfunc_a; 
+                arg->val = libfuncs_newused(e->sym->name);
+            break;
+            }
+            default : assert (0);
+        }
 }
 
 //try

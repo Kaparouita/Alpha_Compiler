@@ -103,6 +103,10 @@ typedef struct avm_memcell{
 };
 
 
+instruction * instruction_constractor(vmopcode op,vmarg r,  vmarg arg1 , vmarg arg2, unsigned scrLine);
+
+avm_memcell * avm_memcell_constractor(avm_memcell_t type,data_union data);
+
 static void avm_initstack (void);
 
 //TABLES
@@ -157,5 +161,16 @@ void avm_tablebucketsdestroy (avm_table_bucket** p);
 
 void avm_table_destroy (avm_table* t);
 
+int nextinstructionlabel();
+
+void make_operand();
+
+void generateInstructions (void);
+
+void make_numberoperand( vmarg * arg ,double val);
+
+void make_boloperand( vmarg * arg ,unsigned val);
+
+void make_retvaloperand( vmarg * arg );
 
 #endif /*vm_H*/
