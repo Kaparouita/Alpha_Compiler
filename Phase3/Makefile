@@ -1,6 +1,6 @@
 
 calc: parser.c scanner.c
-	gcc -o calc scanner.c parser.c table_k_quads/hash_table.c table_k_quads/quads.c Stack.c vm.c
+	gcc -o calc scanner.c parser.c table_k_quads/hash_table.c table_k_quads/quads.c Stack.c vm.c generate.c generate2.c
 
 scanner.c: scanner.l
 	flex --outfile=scanner.c scanner.l

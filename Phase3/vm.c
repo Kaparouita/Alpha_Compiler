@@ -1,14 +1,66 @@
 #include "vm.h"
+#include <assert.h>
 
-double*     numConsts           = 0;
+double*     numConsts           = (double*)0;
 unsigned    totalNumConsts      = 0;
-char**      stringConsts;       
-unsigned    totalStringConsts;
-char*       namedLibfuncs;
-unsigned    totalNamedLibfuncs;
-userfunc*   userFuncs;
-unsigned    totalUserFuncs;
+char**      stringConsts        = (char**) 0;       
+unsigned    totalStringConsts   = 0;
+char**       namedLibfuncs       = (char **)0;
+unsigned    totalNamedLibfuncs  = 0;
+userfunc*   userFuncs           = (userfunc*)0;
+unsigned    totalUserFuncs      = 0;
 
+//THE LISTS
+//gia to genarate
+void malloc_all_lists(){
+    stringConsts = (char**)malloc(sizeof(char**));
+    numConsts = (double*)malloc(sizeof(double));
+    namedLibfuncs = (char**)malloc(sizeof(char**));
+    userFuncs = (userfunc*)malloc(sizeof(userfunc*));
+}
+int check_if_string_exists(char* str) {
+    for(int i=0; i<totalStringConsts; ++i) 
+        if(!strcmp(stringConsts[i], str))
+            return i;
+    else 
+        return -1;
+}
+
+unsigned consts_newstring(char* str){
+    //check an yparxei idi
+    int i = check_if_string_exists(str);
+    if(i != -1)
+        return i;
+    stringConsts= realloc(stringConsts, sizeof(char*)*(totalStringConsts+1));
+    stringConsts[totalStringConsts++] = strdup(str);
+    return totalStringConsts;
+}
+unsigned consts_newnumber(double n){
+    for(int i=0; i<totalNumConsts; ++i) 
+        if(numConsts[i] == n)
+            return i;
+    numConsts = realloc(numConsts, sizeof(double)*(totalNumConsts+1));
+    numConsts[totalNumConsts++] = n;
+    return totalNumConsts;
+}
+
+unsigned libfuncs_newused(char* str){
+    for(int i=0; i<totalNamedLibfuncs; ++i) 
+        if(!strcmp(namedLibfuncs[i],str))
+            return i;
+    namedLibfuncs = realloc(namedLibfuncs, sizeof(char*)*(totalNamedLibfuncs+1));
+    namedLibfuncs[totalNamedLibfuncs++] = strdup(str);
+    return totalNamedLibfuncs;
+}
+
+unsigned userfunc_newfunc(userfunc *func){
+    for(int i = 0 ; i < totalUserFuncs;i++)
+        if(!strcmp(userFuncs[i].id,func->id))
+            return i;
+    userFuncs = realloc(userFuncs, sizeof(userfunc)*(totalUserFuncs+1));
+    userfunc_constractor(&userFuncs[totalUserFuncs],func->address,func->localSize,func->id);
+    return totalUserFuncs++;
+}
 
 extern var_table* table ;
 
@@ -21,8 +73,9 @@ unsigned  datamem;
 
 //contractors
 
-vmarg * vmarg_constractor(vmarg_t type,unsigned val){
-    
+vmarg  vmarg_constractor(vmarg* v,vmarg_t type,unsigned val){
+    v->type = type;
+    v->val = val;
 }
 
 avm_memcell * avm_memcell_constractor(avm_memcell_t type,data_union data){
@@ -32,14 +85,18 @@ avm_memcell * avm_memcell_constractor(avm_memcell_t type,data_union data){
     return cell;
 }
 
+userfunc userfunc_constractor(userfunc* func,unsigned ad,unsigned ls,char* id){
+    func->address = ad;
+    func->id = strdup(id);
+    func->localSize = ls;
+}
 
-instruction * instruction_constractor(vmopcode op,vmarg r,  vmarg arg1 , vmarg arg2, unsigned scrLine){
-     instruction* i = (instruction*) malloc (sizeof(instruction*));
-     i->result = r;
-     i->arg1 = arg1;
-     i->arg2 = arg2;
-     i->scrLine = scrLine;
+instruction  instruction_constractor(instruction *i,vmopcode op, unsigned scrLine){ 
+     vmarg_constractor(&i->arg1,-1,-1);
+     vmarg_constractor(&i->arg2,-1,-1);
+     vmarg_constractor(&i->result,-1,-1);
      i->opcode = op;
+     i->scrLine = scrLine;
 }
 
 
@@ -101,13 +158,11 @@ void avm_table_destroy (avm_table* t){
 }
 
 
-//gia to genarate
-unsigned consts_newstring(char*);
-unsigned consts_newnumber(double n);
-unsigned libfuncs_newused(char*);
+//generate staf
 
 void make_operand(expr* e,vmarg* arg){
-       switch(e->type){
+        if(e == NULL || e->type == NULL)    { arg->type = nil_a; return;}
+        switch(e->type){
             case var_e:
             case tableitem_e:
             case arithexpr_e:
@@ -147,6 +202,27 @@ void make_operand(expr* e,vmarg* arg){
             }
             default : assert (0);
         }
+}
+
+extern instruction* instructions ; 
+extern int total_i;
+extern int curr_i;
+
+void expand_i(){
+    assert(total_i==curr_i );
+    instruction* i=(instruction*)malloc(NEW_SIZE_I);
+    if(instructions==0){
+        memcpy(i,instructions,CURR_SIZE_I);
+        free(instructions);
+    }
+    instructions = i;
+    curr_i +=EXPAND_SIZE_I;
+}
+
+int nextinstructionlabel(){return curr_i;}
+
+void reset_operand(vmarg * arg){
+    vmarg_constractor(arg,-1,-1);
 }
 
 //try

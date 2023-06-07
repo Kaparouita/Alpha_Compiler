@@ -6,6 +6,12 @@
 #include "table_k_quads/quads.h"
 #include <assert.h>
 
+
+#define EXPAND_SIZE_I 1024
+#define CURR_SIZE_I (total_i * sizeof(instruction))
+#define NEW_SIZE_I (EXPAND_SIZE_I* sizeof(instruction)+CURR_SIZE_I)
+
+
 #define AVM_STACKSIZE       4096
 #define AVM_WIPEOUT(m)      memset (&(m),  0,  sizeof(m))
 
@@ -102,12 +108,30 @@ typedef struct avm_memcell{
     unsigned            totanNum;
 };
 
+//incomplete_jumps to generate
+typedef struct incomplete_jump{
+    unsigned instrNo;
+    unsigned iaddress;
+    struct incomplete_jump * next;
+}incomplete_jump;
 
-instruction * instruction_constractor(vmopcode op,vmarg r,  vmarg arg1 , vmarg arg2, unsigned scrLine);
+/**
+ * @brief given and instruction i init its vmargs with -1
+ * 
+ * @param i  = instruction
+ * @param op  = op
+ * @param scrLine  = scrLine
+ * @return instruction 
+ */
+instruction  instruction_constractor(instruction *i,vmopcode op, unsigned scrLine);
 
 avm_memcell * avm_memcell_constractor(avm_memcell_t type,data_union data);
 
+userfunc userfunc_constractor(userfunc* func,unsigned ad,unsigned ls,char* id);
+
 static void avm_initstack (void);
+
+void malloc_all_lists();
 
 //TABLES
 
@@ -165,12 +189,23 @@ int nextinstructionlabel();
 
 void make_operand();
 
+int nextinstructionlabel();
+
 void generateInstructions (void);
 
 void make_numberoperand( vmarg * arg ,double val);
 
-void make_boloperand( vmarg * arg ,unsigned val);
+void make_booloperand( vmarg * arg ,unsigned val);
 
 void make_retvaloperand( vmarg * arg );
+
+void reset_operand(vmarg * arg);
+
+unsigned consts_newnumber(double n);
+unsigned libfuncs_newused(char* str);
+unsigned userfunc_newfunc(userfunc *func);
+unsigned consts_newstring(char* str);
+
+void expand_i();
 
 #endif /*vm_H*/

@@ -2,13 +2,6 @@
 
 extern quad* quads;
 
-typedef struct incomplete_jump{
-    unsigned instrNo;
-    unsigned iaddress;
-    incomplete_jump * next;
-
-}incomplete_jump;
-
 incomplete_jump * ij_head = (incomplete_jump * ) 0 ;
 unsigned ij_total = 0;
 
@@ -17,7 +10,7 @@ void make_numberoperand( vmarg * arg ,double val){
     arg->type = number_a;
 }
 
-void make_boloperand( vmarg * arg ,unsigned val){
+void make_booloperand( vmarg * arg ,unsigned val){
     arg->val = val;
     arg->type = bool_a;
 }
@@ -36,6 +29,7 @@ extern void generate_DIV (quad * );
 extern void generate_MOD (quad * );
 extern void generate_NEWTABLE (quad * );
 extern void generate_TABLEGETELEM (quad * );
+extern void generate_TABLESETELEM (quad * );
 extern void generate_ASSIGN (quad * );
 extern void generate_NOP (quad * );
 extern void generate_JUMP (quad * );
@@ -56,37 +50,38 @@ extern void generate_FUNCEND (quad * );
 
 typedef void (* generator_func_t) (quad * ) ;
 
-generator_func_t generators [] = {
+generator_func_t generators [25] = {
+    generate_ASSIGN ,
     generate_ADD, 
     generate_SUB ,
     generate_MUL, 
     generate_DIV,
     generate_MOD ,
-    generate_NEWTABLE ,
-    generate_TABLEGETELEM ,
-    generate_ASSIGN ,
-    generate_NOP ,
-    generate_JUMP ,
     generate_IF_EQ ,
     generate_IF_NOTEQ ,
-    generate_IF_GREATER ,
+    generate_IF_LESSEQ ,
     generate_IF_GREATEREQ ,
     generate_IF_LESS ,
-    generate_IF_LESSEQ ,
-    generate_NOT ,
-    generate_OR ,
-    generate_PARAM ,
+    generate_IF_GREATER ,
     generate_CALL ,
+    generate_PARAM ,
+    generate_RETURN ,
     generate_GETRETVAL ,
     generate_FUNCSTART ,
-    generate_RETURN ,
     generate_FUNCEND ,
+    generate_NEWTABLE ,
+    generate_TABLEGETELEM ,
+    generate_TABLESETELEM ,
+    generate_JUMP ,
+    generate_OR ,
+    generate_NOT ,
+    generate_NOP ,
 };
 
 extern int currQuad;
 
 void generateInstructions (void){
-    for (unsigned i=0 ; i< currQuad ;  ++i)
+    for (unsigned i=1 ; i< currQuad ;  ++i)
         (*generators[quads[i].op]) (quads+i);
         
 }

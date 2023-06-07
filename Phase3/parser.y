@@ -725,7 +725,7 @@ int yyerror(char* yaccProvidedMessage){
 }
 
 
-
+extern int curr_i;
 /*-----------------------------MAIN-----------------------*/
 int main(int argc, char** argv){
         if(argc>1){
@@ -740,10 +740,11 @@ int main(int argc, char** argv){
     save_fuctionlocals = createStack(150); 
     loopcounterStack = createStack(200);
     init_lib_func();
+    malloc_all_lists();
     emit(0,NULL,NULL,NULL,0,0);
     //yyset_in(input_file); // set the input stream for the lexer
     yyparse(); // call the parser function
-    //generateInstructions();
+    generateInstructions();
     if(error_flag != 0)
         printf("/-------------   ERRORS     -------------------/\n");
    print_format(); //print scopes

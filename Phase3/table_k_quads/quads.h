@@ -9,15 +9,16 @@
 
 
 typedef enum iopcode{
-    assign, add , sub,
-    mul,    n_div,    mod,
-    uminus, and,    or,
-    not,    if_eq,  if_noteq,
-    if_lesseq,  if_geatereq, if_less,
-    if_greater, call,   param,
-    ret,    getretval,  funcstart,funcend,
-    funcdef, tablecreate,   
-    tablegetelem, tablesetelem ,jump     
+    assign,         add ,           sub,
+    mul,            n_div,          mod,            
+    if_eq,          if_noteq,
+    if_lesseq,      if_geatereq,    if_less,
+    if_greater,     call,           param,
+    ret,            getretval,      funcstart,
+    funcend,        tablecreate,   
+    tablegetelem,   tablesetelem ,  jump  ,
+    and,            or,             not, 
+    uminus,         funcdef,
 }iopcode;
 
 typedef enum expr_t{
