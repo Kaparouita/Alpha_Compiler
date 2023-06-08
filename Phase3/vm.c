@@ -161,23 +161,29 @@ void avm_table_destroy (avm_table* t){
 //generate staf
 
 void make_operand(expr* e,vmarg* arg){
-        if(e == NULL || e->type == NULL)    { arg->type = nil_a; return;}
+        if(!e)  { 
+            arg->type = nil_a; 
+            arg->val = -1; 
+            return;
+        }
         switch(e->type){
             case var_e:
             case tableitem_e:
             case arithexpr_e:
+            case assignexpr_e:
             case boolexpr_e:
-            case newtable_e:{
-                arg->val    =   e->sym->offset;
+            case newtable_e:
+                arg->val = e->sym->offset;
                 switch (e->sym->space){
-                    case programvar: arg->type = global_a ; break;
-                    case functionlocal : arg->type = local_a; break;
-                    case formalarg : arg->type = formal_a; break; 
+                    case programvar:        arg->type = global_a ; break;
+                    case functionlocal :    arg->type = local_a; break;
+                    case formalarg :        arg->type = formal_a; break; 
                     default : assert (0);
                 }
-            }
+                break;
+            
             case constbool_e: {
-                arg->val = e->boolConst;
+                arg->val = (unsigned)e->boolConst;
                 arg->type = bool_a ; 
                 break;
             }
@@ -189,7 +195,7 @@ void make_operand(expr* e,vmarg* arg){
                 arg->val = consts_newnumber(e->numConst);
                 arg->type = number_a; break ;
             } 
-            case nil_e : arg->type = nil_a; break;
+            case nil_e : {arg->type = nil_a;arg->val = -1; break;}
             case programfunc_e: {
                 arg->type = userfunc_a;
                 arg->val = e->sym->fuctionAddress;
@@ -200,7 +206,7 @@ void make_operand(expr* e,vmarg* arg){
                 arg->val = libfuncs_newused(e->sym->name);
             break;
             }
-            default : assert (0);
+            default : assert(0);
         }
 }
 
@@ -209,14 +215,13 @@ extern int total_i;
 extern int curr_i;
 
 void expand_i(){
-    assert(total_i==curr_i );
     instruction* i=(instruction*)malloc(NEW_SIZE_I);
-    if(instructions==0){
+    if(instructions){
         memcpy(i,instructions,CURR_SIZE_I);
         free(instructions);
     }
     instructions = i;
-    curr_i +=EXPAND_SIZE_I;
+    total_i +=EXPAND_SIZE_I;
 }
 
 int nextinstructionlabel(){return curr_i;}
@@ -243,5 +248,65 @@ void init_globals(){
     data_union u;
     while(v){
         v = v->next;
+    }
+}
+
+
+const char* get_varg_t_name(vmarg_t type) {
+    switch(type) {
+        case 0 : return "label_a";
+        case 1: return "global_a";
+        case 2: return "formal_a";
+        case 3: return "local_a";
+        case 4: return "number_a";
+        case 5: return "string_a";
+        case 6: return "bool_a";
+        case 7: return "nil_a";
+        case 8: return "userfunc_a";
+        case 9: return "libfunc_a";
+        case 10: return "retval_a";
+        default: return "unknown";
+    }
+}
+
+void print_vmarg_formal(vmarg *e) {
+    if(!e)
+       { printf("%-14s", "NULL");
+        return;}
+    switch(e->type){
+            case(bool_a) :
+                if(e->val == 0)
+                    printf("%s/", "False");
+                else 
+                    printf("%s/", "True");
+                printf("%-14ss",get_varg_t_name(e->type));
+                break;
+            case(string_a) :
+                printf("s: %s/",(char *) e->val);
+                printf("%-14ss",get_varg_t_name(e->type));
+                break;
+            case(number_a) :
+                printf("%.2f/",(double) e->val);
+                printf("%-14ss",get_varg_t_name(e->type));
+                break;
+            default : printf("%-14s",get_varg_t_name(e->type));
+        }
+}
+void print_i_formal(instruction *q) {
+    printf("%-14s", get_op_name(q->opcode));
+    print_vmarg_formal(&q->arg1);
+    print_vmarg_formal(&q->arg2);
+    print_vmarg_formal(&q->result);
+    printf("[%d]\n",q->scrLine);
+}
+
+void print_all_i(){
+    int i = 1;
+    printf("\n\n/---------------------------------   PRINTING ALL INSTRUCTIONS    ----------------------------------/\n\n");
+    printf("%-8s%-14s%-14s%-14s%-14s%-14s\n\n","NO","OP","ARG1","ARG2","RESULT","LINE");
+    while(i < curr_i){
+        printf("%-8d",i);
+        print_i_formal(instructions++);
+        i++;
     }
 }

@@ -22,10 +22,10 @@ printf("\n%d",curr_i);
 
 void generate (vmopcode op,quad quad) {
     instruction i = instruction_constractor(&i,op,quad.line);
-    //make_operand(quad.arg1, &i.arg1);
+    make_operand(quad.arg1, &i.arg1);
     make_operand(quad.arg2, &i.arg2);
     make_operand(quad.result, &i.result);
-    quad.label = nextinstructionlabel();
+    //quad.label = nextinstructionlabel();
     emit_i(i);
 }
 

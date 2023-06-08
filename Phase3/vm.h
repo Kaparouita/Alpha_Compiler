@@ -208,4 +208,9 @@ unsigned consts_newstring(char* str);
 
 void expand_i();
 
+
+void print_i_formal(instruction *q);
+void print_vmarg_formal(vmarg *e) ;
+void print_all_i();
+
 #endif /*vm_H*/

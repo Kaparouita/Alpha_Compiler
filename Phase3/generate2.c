@@ -22,67 +22,67 @@ void make_retvaloperand( vmarg * arg ){
 
 void add_incomplete_jump( unsigned instrNo , unsigned iadress);
 
-extern void generate_ADD (quad * );
-extern void generate_SUB (quad * );
-extern void generate_MUL (quad * );
-extern void generate_DIV (quad * );
-extern void generate_MOD (quad * );
-extern void generate_NEWTABLE (quad * );
-extern void generate_TABLEGETELEM (quad * );
-extern void generate_TABLESETELEM (quad * );
-extern void generate_ASSIGN (quad * );
-extern void generate_NOP (quad * );
-extern void generate_JUMP (quad * );
-extern void generate_IF_EQ (quad * );
-extern void generate_IF_NOTEQ (quad * );
-extern void generate_IF_GREATER (quad * );
-extern void generate_IF_GREATEREQ (quad * );
-extern void generate_IF_LESS (quad * );
-extern void generate_IF_LESSEQ (quad * );
-extern void generate_NOT (quad * );
-extern void generate_OR (quad * );
-extern void generate_PARAM (quad * );
-extern void generate_CALL (quad * );
-extern void generate_GETRETVAL (quad * );
-extern void generate_FUNCSTART (quad * );
-extern void generate_RETURN (quad * );
-extern void generate_FUNCEND (quad * );
+extern void generate_ADD (quad  );
+extern void generate_SUB (quad  );
+extern void generate_MUL (quad  );
+extern void generate_DIV (quad  );
+extern void generate_MOD (quad );
+extern void generate_NEWTABLE (quad  );
+extern void generate_TABLEGETELEM (quad  );
+extern void generate_TABLESETELEM (quad  );
+extern void generate_ASSIGN (quad  );
+extern void generate_NOP (quad  );
+extern void generate_JUMP (quad  );
+extern void generate_IF_EQ (quad  );
+extern void generate_IF_NOTEQ (quad  );
+extern void generate_IF_GREATER (quad  );
+extern void generate_IF_GREATEREQ (quad  );
+extern void generate_IF_LESS (quad  );
+extern void generate_IF_LESSEQ (quad  );
+extern void generate_NOT (quad  );
+extern void generate_OR (quad  );
+extern void generate_PARAM (quad  );
+extern void generate_CALL (quad  );
+extern void generate_GETRETVAL (quad  );
+extern void generate_FUNCSTART (quad  );
+extern void generate_RETURN (quad  );
+extern void generate_FUNCEND (quad  );
 
-typedef void (* generator_func_t) (quad * ) ;
+typedef void (* generator_func_t) (quad ) ;
 
-generator_func_t generators [25] = {
-    generate_ASSIGN ,
-    generate_ADD, 
-    generate_SUB ,
-    generate_MUL, 
-    generate_DIV,
-    generate_MOD ,
-    generate_IF_EQ ,
-    generate_IF_NOTEQ ,
-    generate_IF_LESSEQ ,
-    generate_IF_GREATEREQ ,
-    generate_IF_LESS ,
-    generate_IF_GREATER ,
-    generate_CALL ,
-    generate_PARAM ,
-    generate_RETURN ,
-    generate_GETRETVAL ,
-    generate_FUNCSTART ,
-    generate_FUNCEND ,
-    generate_NEWTABLE ,
-    generate_TABLEGETELEM ,
-    generate_TABLESETELEM ,
-    generate_JUMP ,
-    generate_OR ,
-    generate_NOT ,
-    generate_NOP ,
+void (*const  generators[25]) (quad) = {
+    generate_ASSIGN ,   //0
+    generate_ADD,       //1
+    generate_SUB ,      //2
+    generate_MUL,       //3
+    generate_DIV,       //4
+    generate_MOD ,      //5
+    generate_IF_EQ ,    //6
+    generate_IF_NOTEQ , //7
+    generate_IF_LESSEQ ,//8 
+    generate_IF_GREATEREQ ,//9
+    generate_IF_LESS ,  //10
+    generate_IF_GREATER ,//11
+    generate_CALL ,     //12
+    generate_PARAM ,    //13
+    generate_RETURN ,   //14
+    generate_GETRETVAL ,//15
+    generate_FUNCSTART ,//16
+    generate_FUNCEND ,  //17
+    generate_NEWTABLE , //18
+    generate_TABLEGETELEM ,//19
+    generate_TABLESETELEM ,//20
+    generate_JUMP ,     //21
+    generate_OR ,       //22
+    generate_NOT ,      //23
+    generate_NOP ,      //24
 };
 
 extern int currQuad;
 
 void generateInstructions (void){
     for (unsigned i=1 ; i< currQuad ;  ++i)
-        (*generators[quads[i].op]) (quads+i);
+        (*generators[quads[i].op]) (quads[i]);
         
 }
 

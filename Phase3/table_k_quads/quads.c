@@ -300,8 +300,11 @@ void print_expr_formal(expr *e) {
          printf("%-14s", "NULL");
          return;
     }
-    if(e->sym != NULL)
+    if(e->sym != NULL){
         printf("%-14s", e->sym->name);
+        if(e->type >= 0)
+            printf(",%s",get_expr_t_name( e->type));
+    }
     else{
         switch(e->type){
             case(constbool_e) :

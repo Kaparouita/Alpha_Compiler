@@ -367,7 +367,7 @@ assignexpr: lvalue ASSIGNMENT expr{
 						emit(assign, $3, NULL,$1, 0, yylineno); //paizei na thelei ta arg anapoda
 						$assignexpr = newexpr(assignexpr_e);
 						$assignexpr->sym = newtemp();
-                                                $1->type = $3->type;
+                                               // $1->type = $3->type;
                                                // copy_value($1,$3);
 						emit(assign ,$1, NULL, $assignexpr,0, yylineno); //omoiws me to apo panw
                                                 //copy_value($assignexpr,$1);
@@ -387,7 +387,7 @@ primary: lvalue                 {$$ = emit_iftableitem($1);}
         ;
 
 lvalue: member                  {  $lvalue = $member;} 
-        |ID                     {  $lvalue = lvalue_expr(insert_ID(yylval.stringValue));}
+        |ID                     {  $lvalue = lvalue_expr(insert_ID(yylval.stringValue)); printf("\n%d\n",$lvalue->type);}
         |LOCAL ID               {  $lvalue = lvalue_expr(insert_local(yylval.stringValue));}
         |SCOPE_RESOLUTION ID    {  $lvalue = lvalue_expr(check_global(yylval.stringValue));} //::
         ;             
@@ -741,13 +741,14 @@ int main(int argc, char** argv){
     loopcounterStack = createStack(200);
     init_lib_func();
     malloc_all_lists();
-    emit(0,NULL,NULL,NULL,0,0);
+    emit(21,NULL,NULL,NULL,0,0);
     //yyset_in(input_file); // set the input stream for the lexer
     yyparse(); // call the parser function
     generateInstructions();
     if(error_flag != 0)
         printf("/-------------   ERRORS     -------------------/\n");
-   print_format(); //print scopes
-   print_all_quads(); //print quads
+    print_format(); //print scopes
+    print_all_quads(); //print quads
+    print_all_i();
     return 0;
 }

@@ -2125,7 +2125,7 @@ yyreduce:
 						emit(assign, (yyvsp[0].exprValue), NULL,(yyvsp[-2].exprValue), 0, yylineno); //paizei na thelei ta arg anapoda
 						(yyval.exprValue) = newexpr(assignexpr_e);
 						(yyval.exprValue)->sym = newtemp();
-                                                (yyvsp[-2].exprValue)->type = (yyvsp[0].exprValue)->type;
+                                               // $1->type = $3->type;
                                                // copy_value($1,$3);
 						emit(assign ,(yyvsp[-2].exprValue), NULL, (yyval.exprValue),0, yylineno); //omoiws me to apo panw
                                                 //copy_value($assignexpr,$1);
@@ -2176,7 +2176,7 @@ yyreduce:
 
   case 47:
 #line 390 "parser.y"
-                                {  (yyval.exprValue) = lvalue_expr(insert_ID(yylval.stringValue));}
+                                {  (yyval.exprValue) = lvalue_expr(insert_ID(yylval.stringValue)); printf("\n%d\n",(yyval.exprValue)->type);}
 #line 2181 "parser.c"
     break;
 
@@ -2978,13 +2978,14 @@ int main(int argc, char** argv){
     loopcounterStack = createStack(200);
     init_lib_func();
     malloc_all_lists();
-    emit(0,NULL,NULL,NULL,0,0);
+    emit(21,NULL,NULL,NULL,0,0);
     //yyset_in(input_file); // set the input stream for the lexer
     yyparse(); // call the parser function
     generateInstructions();
     if(error_flag != 0)
         printf("/-------------   ERRORS     -------------------/\n");
-   print_format(); //print scopes
-   print_all_quads(); //print quads
+    print_format(); //print scopes
+    print_all_quads(); //print quads
+    print_all_i();
     return 0;
 }
