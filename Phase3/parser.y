@@ -5,6 +5,9 @@
         #include "table_k_quads/quads.h"
         #include "vm.h"
 
+        #define TXT_FILE "maou.txt"
+        #define BINARY_FILE "binary.abc"
+
         int yyerror (char* yaccProvidedMessage);
         int yylex (void);
         
@@ -749,6 +752,8 @@ int main(int argc, char** argv){
         printf("/-------------   ERRORS     -------------------/\n");
     print_format(); //print scopes
     print_all_quads(); //print quads
-    print_all_i();
+    //print_all_i();
+    write_all_i(TXT_FILE);
+    writeBinaryFile(BINARY_FILE);
     return 0;
 }

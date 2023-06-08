@@ -1,6 +1,16 @@
 #include "vm.h"
 
+#define BINARY_FILE "binary.abc"
+
 extern quad* quads;
+extern double*     numConsts           ;
+extern unsigned    totalNumConsts      ;
+extern char**      stringConsts        ;       
+extern unsigned    totalStringConsts   ;
+extern char**       namedLibfuncs      ;
+extern unsigned    totalNamedLibfuncs  ;
+extern userfunc*   userFuncs           ;
+extern unsigned    totalUserFuncs      ;
 
 incomplete_jump * ij_head = (incomplete_jump * ) 0 ;
 unsigned ij_total = 0;
@@ -86,6 +96,135 @@ void generateInstructions (void){
         
 }
 
+extern int curr_i;
+extern instruction *instructions;
+
+void write_all_data(FILE* file) {
+
+    // Write numConsts
+    fprintf(file, "Num Consts:\n");
+    for (unsigned i = 0; i < totalNumConsts; i++) {
+        fprintf(file, "%.2f\n", numConsts[i]);
+    }
+
+    // Write stringConsts
+    fprintf(file, "\nString Consts:\n");
+    for (unsigned i = 0; i < totalStringConsts; i++) {
+        fprintf(file, "%s\n", stringConsts[i]);
+    }
+
+    // Write namedLibfuncs
+    fprintf(file, "\nNamed Libfuncs:\n");
+    for (unsigned i = 0; i < totalNamedLibfuncs; i++) {
+        fprintf(file, "%s\n", namedLibfuncs[i]);
+    }
+
+    // Write userFuncs
+    fprintf(file, "\nUser Funcs:\n");
+    for (unsigned i = 0; i < totalUserFuncs; i++) {
+        fprintf(file, "Address: %d, Local Vars: %u, ID: %s\n", userFuncs[i].address, userFuncs[i].localSize,userFuncs[i].id);
+    }
+}
+
+
+void write_vmarg_formal(FILE* file, vmarg* e) {
+    if (!e) {
+        fprintf(file, "%-14s", "NULL");
+        return;
+    }
+    switch (e->type) {
+        case bool_a:
+            if (e->val == 0)
+                fprintf(file, "%s/", "False");
+            else
+                fprintf(file, "%s/", "True");
+            fprintf(file, "%-14s", get_varg_t_name(e->type));
+            break;
+        case string_a:
+            fprintf(file, "%d/", e->val);
+            fprintf(file, "%-14s", get_varg_t_name(e->type));
+            break;
+        case number_a:
+            fprintf(file, "%.2f/", (double)e->val);
+            fprintf(file, "%-14s", get_varg_t_name(e->type));
+            break;
+        default:
+            fprintf(file, "%-14s", get_varg_t_name(e->type));
+    }
+}
+
+void write_i_formal(FILE* file, instruction* q) {
+    fprintf(file, "%-14s", get_op_name(q->opcode));
+    write_vmarg_formal(file, &q->arg1);
+    write_vmarg_formal(file, &q->arg2);
+    write_vmarg_formal(file, &q->result);
+    fprintf(file, "[%d]\n", q->scrLine);
+}
+
+void write_all_i(const char* filename) {
+    FILE* file = fopen(filename, "w");
+    if (file == NULL) {
+        printf("Failed to open the file.\n");
+        return;
+    }
+
+    fprintf(file, "\n\n/---------------------------------   PRINTING ALL INSTRUCTIONS    ----------------------------------/\n\n");
+    fprintf(file, "%-8s%-14s%-14s%-14s%-14s%-14s\n\n", "NO", "OP", "ARG1", "ARG2", "RESULT", "LINE");
+
+    int i = 1;
+    while (i < curr_i) {
+        fprintf(file, "%-8d", i);
+        write_i_formal(file, instructions++);
+        i++;
+    }
+    
+    write_all_data(file);
+
+    fclose(file);
+}
+
+
+
+void writeBinaryFile(const char* filename) {
+    FILE* file = fopen(filename, "wb");
+    if (file == NULL) {
+        printf("Failed to open the file for writing.\n");
+        return;
+    }
+    // Write the magic number
+    unsigned MAGIC_NUMBER = 340200501;
+    fwrite(&MAGIC_NUMBER, sizeof(unsigned), 1, file);
+
+    // Write the instructions
+    fwrite(&instructions, sizeof(instruction), curr_i, file);
+
+    write_all_data_binary(file);
+
+    fclose(file);
+}
+
+
+void write_all_data_binary(FILE* file) {
+        // Write the numConsts
+    fwrite(&numConsts, sizeof(double), totalNumConsts, file);
+
+    // Write the stringConsts
+    for (unsigned i = 0; i < totalStringConsts; i++) {
+        size_t stringLength = strlen(stringConsts[i]);
+        fwrite(&stringLength, sizeof(size_t), 1, file);
+        fwrite(stringConsts[i], sizeof(char), stringLength, file);
+    }
+
+    // Write the namedLibfuncs
+    for (unsigned i = 0; i < totalNamedLibfuncs; i++) {
+        size_t stringLength = strlen(namedLibfuncs[i]);
+        fwrite(&stringLength, sizeof(size_t), 1, file);
+        fwrite(namedLibfuncs[i], sizeof(char), stringLength, file);
+    }
+
+    // Write the userFuncs
+    fwrite(&userFuncs, sizeof(userfunc), totalUserFuncs, file);
+}
 //-------------------EXECUTES---------------------------------------------
 /*
 typedef void (*execute_func_t)(instruction * );

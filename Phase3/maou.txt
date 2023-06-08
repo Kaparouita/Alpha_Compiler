@@ -1,0 +1,135 @@
+
+
+/---------------------------------   PRINTING ALL INSTRUCTIONS    ----------------------------------/
+
+NO      OP            ARG1          ARG2          RESULT        LINE          
+
+1       assign        1.00/number_a      nil_a         global_a      [1]
+2       assign        global_a      nil_a         global_a      [1]
+3       assign        2.00/number_a      nil_a         global_a      [2]
+4       assign        global_a      nil_a         global_a      [2]
+5       assign        3.00/number_a      nil_a         global_a      [3]
+6       assign        global_a      nil_a         global_a      [3]
+7       assign        4.00/number_a      nil_a         global_a      [4]
+8       assign        global_a      nil_a         global_a      [4]
+9       add           global_a      global_a      5.00/number_a      [6]
+10      add           4.00/number_a      global_a      4.00/number_a      [6]
+11      add           4.00/number_a      global_a      4.00/number_a      [6]
+12      assign        4.00/number_a      nil_a         global_a      [6]
+13      assign        global_a      nil_a         global_a      [6]
+14      add           global_a      global_a      4.00/number_a      [7]
+15      add           global_a      4.00/number_a      4.00/number_a      [7]
+16      add           global_a      4.00/number_a      4.00/number_a      [7]
+17      assign        4.00/number_a      nil_a         global_a      [7]
+18      assign        global_a      nil_a         global_a      [7]
+19      add           global_a      global_a      4.00/number_a      [8]
+20      assign        4.00/number_a      nil_a         global_a      [8]
+21      assign        global_a      nil_a         global_a      [8]
+22      add           global_a      global_a      4.00/number_a      [9]
+23      assign        4.00/number_a      nil_a         global_a      [9]
+24      assign        global_a      nil_a         global_a      [9]
+25      assign        1/string_a      nil_a         global_a      [11]
+26      assign        global_a      nil_a         global_a      [11]
+27      assign        2/string_a      nil_a         global_a      [13]
+28      assign        global_a      nil_a         global_a      [13]
+29      assign        6.00/number_a      nil_a         global_a      [15]
+30      assign        global_a      nil_a         global_a      [15]
+31      if_noteq      global_a      nil_a         nil_a         [15]
+32      tablesetelem  global_a      3/string_a      4.00/number_a      [15]
+33      tablesetelem  global_a      4/string_a      4.00/number_a      [15]
+34      tablesetelem  global_a      5/string_a      4.00/number_a      [15]
+35      tablesetelem  global_a      6/string_a      global_a      [15]
+36      assign        global_a      nil_a         global_a      [15]
+37      assign        global_a      nil_a         global_a      [15]
+38      jump          nil_a         nil_a         label_a       [17]
+39      tablecreate   unknown       unknown       nil_a         [17]
+40      tablegetelem  local_a       formal_a      4/string_a      [18]
+41      mul           global_a      local_a       4.00/number_a      [18]
+42      tablegetelem  local_a       formal_a      4/string_a      [18]
+43      mul           4.00/number_a      local_a       4.00/number_a      [18]
+44      assign        4.00/number_a      unknown       retval_a      [18]
+45      jump          nil_a         nil_a         label_a       [18]
+46      tablegetelem  unknown       unknown       nil_a         [19]
+47      jump          nil_a         nil_a         label_a       [21]
+48      tablecreate   unknown       unknown       nil_a         [21]
+49      tablegetelem  local_a       formal_a      5/string_a      [22]
+50      mul           7.00/number_a      local_a       4.00/number_a      [22]
+51      tablegetelem  local_a       formal_a      4/string_a      [22]
+52      mul           4.00/number_a      local_a       4.00/number_a      [22]
+53      assign        4.00/number_a      unknown       retval_a      [22]
+54      jump          nil_a         nil_a         label_a       [22]
+55      tablegetelem  unknown       unknown       nil_a         [23]
+56      jump          nil_a         nil_a         label_a       [25]
+57      tablecreate   unknown       unknown       nil_a         [25]
+58      assign        1.00/number_a      nil_a         local_a       [26]
+59      assign        local_a       nil_a         local_a       [26]
+60      tablesetelem  global_a      4/string_a      local_a       [26]
+61      tablegetelem  local_a       global_a      4/string_a      [26]
+62      tablesetelem  global_a      3/string_a      local_a       [27]
+63      tablegetelem  local_a       global_a      3/string_a      [27]
+64      tablesetelem  global_a      2/string_a      local_a       [28]
+65      tablegetelem  local_a       global_a      2/string_a      [28]
+66      tablegetelem  unknown       unknown       nil_a         [29]
+67      funcstart     userfunc_a    unknown       nil_a         [29]
+68      assign        retval_a      unknown       global_a      [29]
+69      funend        1/string_a      unknown       global_a      [29]
+70      funend        global_a      unknown       global_a      [29]
+71      funend        7/string_a      unknown       global_a      [29]
+72      funcstart     libfunc_a     unknown       global_a      [29]
+73      assign        retval_a      unknown       global_a      [29]
+74      funend        global_a      unknown       global_a      [29]
+75      funcstart     userfunc_a    unknown       global_a      [29]
+76      assign        retval_a      unknown       global_a      [29]
+77      funend        global_a      unknown       global_a      [29]
+78      funend        global_a      unknown       global_a      [29]
+79      funend        8/string_a      unknown       global_a      [29]
+80      funcstart     libfunc_a     unknown       global_a      [29]
+81      assign        retval_a      unknown       global_a      [29]
+82      funend        global_a      unknown       global_a      [29]
+83      funcstart     userfunc_a    unknown       global_a      [29]
+84      assign        retval_a      unknown       global_a      [29]
+85      funend        9/string_a      unknown       global_a      [29]
+86      funend        global_a      unknown       global_a      [29]
+87      funend        10/string_a      unknown       global_a      [29]
+88      funcstart     libfunc_a     unknown       global_a      [29]
+Num Consts:
+4.00
+5.00
+7.00
+8.00
+0.00
+3.14
+2.00
+
+String Consts:
+hello
+
+
+y
+x
+r
+pi
+pi (must be 3.141628}): 
+circle Area (must be 78.540700000000001): 
+
+
+
+circle Perimeter (must be 31.41628): 
+
+Named Libfuncs:
+print
+input
+objectmemberkeys
+objecttotalmembers
+totalarguments
+argument
+typeof
+strtonum
+sqrt
+cos
+sin
+
+User Funcs:
+Address: 56, Local Vars: 4, ID: InitCircle
+Address: 38, Local Vars: 4, ID: Area
+Address: 47, Local Vars: 4, ID: Perimeter

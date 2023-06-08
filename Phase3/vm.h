@@ -203,14 +203,25 @@ void reset_operand(vmarg * arg);
 
 unsigned consts_newnumber(double n);
 unsigned libfuncs_newused(char* str);
-unsigned userfunc_newfunc(userfunc *func);
+unsigned userfunc_newfunc(expr *func);
 unsigned consts_newstring(char* str);
 
 void expand_i();
 
-
+const char* get_varg_t_name(vmarg_t type);
 void print_i_formal(instruction *q);
 void print_vmarg_formal(vmarg *e) ;
 void print_all_i();
+
+void write_all_i(const char* filename);
+
+
+unsigned  saveStringToUnsigned(const char* str);
+char* translateUnsignedToString(unsigned  value);
+
+void write_all_data_binary(FILE* file);
+void writeBinaryFile(const char* filename);
+
+void readInstructionsFromFile(char* filename);
 
 #endif /*vm_H*/

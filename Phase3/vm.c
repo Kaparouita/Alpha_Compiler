@@ -17,20 +17,19 @@ void malloc_all_lists(){
     numConsts = (double*)malloc(sizeof(double));
     namedLibfuncs = (char**)malloc(sizeof(char**));
     userFuncs = (userfunc*)malloc(sizeof(userfunc*));
-}
-int check_if_string_exists(char* str) {
-    for(int i=0; i<totalStringConsts; ++i) 
-        if(!strcmp(stringConsts[i], str))
-            return i;
-    else 
-        return -1;
+
+    //init lib
+    for(int i = 0; i<11;i++)
+        libfuncs_newused(get_lib_fuctions()[i]);
+
 }
 
 unsigned consts_newstring(char* str){
     //check an yparxei idi
-    int i = check_if_string_exists(str);
-    if(i != -1)
-        return i;
+    for(int i=0; i<totalStringConsts; ++i) {
+        if(!strcmp(stringConsts[i], str))
+            return i;
+    }
     stringConsts= realloc(stringConsts, sizeof(char*)*(totalStringConsts+1));
     stringConsts[totalStringConsts++] = strdup(str);
     return totalStringConsts;
@@ -53,12 +52,12 @@ unsigned libfuncs_newused(char* str){
     return totalNamedLibfuncs;
 }
 
-unsigned userfunc_newfunc(userfunc *func){
+unsigned userfunc_newfunc(expr *e){
     for(int i = 0 ; i < totalUserFuncs;i++)
-        if(!strcmp(userFuncs[i].id,func->id))
+        if(!strcmp(userFuncs[i].id,e->sym->name))
             return i;
     userFuncs = realloc(userFuncs, sizeof(userfunc)*(totalUserFuncs+1));
-    userfunc_constractor(&userFuncs[totalUserFuncs],func->address,func->localSize,func->id);
+    userfunc_constractor(&userFuncs[totalUserFuncs],e->sym->fuctionAddress,e->sym->totalLocals,e->sym->name);
     return totalUserFuncs++;
 }
 
@@ -158,6 +157,16 @@ void avm_table_destroy (avm_table* t){
 }
 
 
+
+unsigned int saveStringToUnsigned(const char* str) {
+    return strtoul(str, NULL, 0);
+}
+
+char* translateUnsignedToString(unsigned int value) {
+    char* str = malloc(sizeof(char*));  // Adjust the size as per your requirements
+    sprintf(str, "%u", value);
+    return str;
+}
 //generate staf
 
 void make_operand(expr* e,vmarg* arg){
@@ -199,6 +208,7 @@ void make_operand(expr* e,vmarg* arg){
             case programfunc_e: {
                 arg->type = userfunc_a;
                 arg->val = e->sym->fuctionAddress;
+                arg->val = userfunc_newfunc(e);
                 break;
             }
             case libraryfunc_e : {
@@ -282,7 +292,7 @@ void print_vmarg_formal(vmarg *e) {
                 printf("%-14ss",get_varg_t_name(e->type));
                 break;
             case(string_a) :
-                printf("s: %s/",(char *) e->val);
+                printf("s: %d/", e->val);
                 printf("%-14ss",get_varg_t_name(e->type));
                 break;
             case(number_a) :

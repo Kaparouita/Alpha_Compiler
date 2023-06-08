@@ -321,14 +321,24 @@ void init_lib_func(){
     hash_insert(new_var(fuction,lib_func,"sin",0,1,currscopeoffset(),1,0),table);
 }
 
-int check_collisions(char *str){
-    char lib_fuctions[11][20] = {{"print"},{"input"},{"objectmemberkeys"},{"objecttotalmembers"},{"totalarguments"}
+char lib_fuctions[11][20] = {{"print"},{"input"},{"objectmemberkeys"},{"objecttotalmembers"},{"totalarguments"}
     ,{"argument"},{"typeof"},{"strtonum"},{"sqrt"},{"cos"},{"sin"}};
+
+int check_collisions(char *str){
     for(int i=0;i<11;i++){
         if(strcmp(str,lib_fuctions[i]) == 0)
             return 1;
     }
     return 0;
+}
+
+char **get_lib_fuctions() {
+    char** lib_functions2 = malloc(11 * sizeof(char*));
+    for (int i = 0; i < 11; i++) {
+        lib_functions2[i] = malloc(20 * sizeof(char));
+        strcpy(lib_functions2[i], lib_fuctions[i]);
+    }
+    return lib_functions2;
 }
 
 void print_format(){

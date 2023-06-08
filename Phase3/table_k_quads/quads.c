@@ -302,8 +302,8 @@ void print_expr_formal(expr *e) {
     }
     if(e->sym != NULL){
         printf("%-14s", e->sym->name);
-        if(e->type >= 0)
-            printf(",%s",get_expr_t_name( e->type));
+       //// if(e->type >= 0)
+        //    printf(",%s",get_expr_t_name( e->type));
     }
     else{
         switch(e->type){

@@ -236,6 +236,6 @@ void resettemp();
 int check_if_in_fuction();
 
 
-
+char **get_lib_fuctions();
 
 #endif /*Symbol_talbe_H*/
