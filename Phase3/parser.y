@@ -738,22 +738,22 @@ int main(int argc, char** argv){
                 }
         }
 	else yyin=stdin;
-	 
-    
-    save_fuctionlocals = createStack(150); 
-    loopcounterStack = createStack(200);
-    init_lib_func();
-    malloc_all_lists();
-    emit(21,NULL,NULL,NULL,0,0);
-    //yyset_in(input_file); // set the input stream for the lexer
-    yyparse(); // call the parser function
-    generateInstructions();
-    if(error_flag != 0)
-        printf("/-------------   ERRORS     -------------------/\n");
-    print_format(); //print scopes
-    print_all_quads(); //print quads
-    //print_all_i();
-    write_all_i(TXT_FILE);
-    writeBinaryFile(BINARY_FILE);
-    return 0;
+                
+        
+        save_fuctionlocals = createStack(150); 
+        loopcounterStack = createStack(200);
+        init_lib_func();
+        malloc_all_lists();
+        emit(21,NULL,NULL,NULL,0,0);
+        //yyset_in(input_file); // set the input stream for the lexer
+        yyparse(); // call the parser function
+        generateInstructions();
+        if(error_flag != 0)
+                printf("/-------------   ERRORS     -------------------/\n");
+        print_format(); //print scopes
+        print_all_quads(); //print quads
+        //print_all_i();
+        //write_all_i(TXT_FILE);
+        writeBinaryFile(BINARY_FILE);
+        return 0;
 }

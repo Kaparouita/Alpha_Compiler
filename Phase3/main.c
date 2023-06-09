@@ -1,20 +1,21 @@
 
 #include    "vm.h"
 
-int curr_i;
-instruction* instructions;
-double*     numConsts           ;
-unsigned    totalNumConsts      ;
-char**      stringConsts        ;       
-unsigned    totalStringConsts   ;
-char**       namedLibfuncs      ;
-unsigned    totalNamedLibfuncs  ;
-userfunc*   userFuncs           ;
-unsigned    totalUserFuncs      ;
+int curr_i = 0;
+instruction* instructions = (instruction*) 0;
+double*     numConsts           = (double*)0;
+unsigned    totalNumConsts      = 0;
+char**      stringConsts        = (char**) 0;       
+unsigned    totalStringConsts   = 0;
+char**       namedLibfuncs       = (char **)0;
+unsigned    totalNamedLibfuncs  = 0;
+userfunc*   userFuncs           = (userfunc*)0;
+unsigned    totalUserFuncs      = 0;
 
 
 
 int main(){
-    readInstructionsFromFile("binary.abc");
+    readBinary("binary.abc");
+    print_all_i(instructions,curr_i);
     return 0;
 }

@@ -174,7 +174,7 @@ void write_all_i(const char* filename) {
     int i = 1;
     while (i < curr_i) {
         fprintf(file, "%-8d", i);
-        write_i_formal(file, instructions++);
+        write_i_formal(file, &instructions[i]);
         i++;
     }
     
@@ -183,7 +183,20 @@ void write_all_i(const char* filename) {
     fclose(file);
 }
 
-
+void writeInstructions(FILE* file){
+    fwrite(&curr_i, sizeof(unsigned), 1, file);
+    for(int i = 0;i<curr_i;i++){
+        fwrite(&instructions->opcode, sizeof(vmopcode),1, file); 
+        fwrite(&instructions->arg1.type, sizeof(vmarg_t),1, file);  
+        fwrite(&instructions->arg1.val, sizeof(unsigned),1, file);   
+        fwrite(&instructions->arg2.type, sizeof(vmarg_t),1, file);  
+        fwrite(&instructions->arg2.val, sizeof(unsigned),1, file);
+        fwrite(&instructions->result.type, sizeof(vmarg_t),1, file);  
+        fwrite(&instructions->result.val, sizeof(unsigned),1, file); 
+        fwrite(&instructions->scrLine, sizeof(unsigned),1, file); 
+        instructions++;  
+    }
+}
 
 void writeBinaryFile(const char* filename) {
     FILE* file = fopen(filename, "wb");
@@ -196,8 +209,8 @@ void writeBinaryFile(const char* filename) {
     fwrite(&MAGIC_NUMBER, sizeof(unsigned), 1, file);
 
     // Write the instructions
-    fwrite(&instructions, sizeof(instruction), curr_i, file);
-
+    writeInstructions(file);
+    //Write lists
     write_all_data_binary(file);
 
     fclose(file);
@@ -206,24 +219,35 @@ void writeBinaryFile(const char* filename) {
 
 void write_all_data_binary(FILE* file) {
         // Write the numConsts
-    fwrite(&numConsts, sizeof(double), totalNumConsts, file);
-
+    fwrite(&totalNumConsts, sizeof(unsigned), 1, file);
+    for(unsigned i = 0 ;i < totalStringConsts;i++){
+        fwrite(&numConsts[i], sizeof(double), 1, file);
+    }
     // Write the stringConsts
+    fwrite(&totalStringConsts, sizeof(unsigned), 1, file);
     for (unsigned i = 0; i < totalStringConsts; i++) {
-        size_t stringLength = strlen(stringConsts[i]);
-        fwrite(&stringLength, sizeof(size_t), 1, file);
+        unsigned stringLength = strlen(stringConsts[i]);
+        fwrite(&stringLength, sizeof(unsigned), 1, file);
         fwrite(stringConsts[i], sizeof(char), stringLength, file);
     }
 
     // Write the namedLibfuncs
+    fwrite(&totalNamedLibfuncs, sizeof(unsigned), 1, file);
     for (unsigned i = 0; i < totalNamedLibfuncs; i++) {
-        size_t stringLength = strlen(namedLibfuncs[i]);
-        fwrite(&stringLength, sizeof(size_t), 1, file);
+        unsigned stringLength = strlen(namedLibfuncs[i]);
+        fwrite(&stringLength, sizeof(unsigned), 1, file);
         fwrite(namedLibfuncs[i], sizeof(char), stringLength, file);
     }
 
     // Write the userFuncs
-    fwrite(&userFuncs, sizeof(userfunc), totalUserFuncs, file);
+    fwrite(&totalUserFuncs, sizeof(unsigned), 1, file);
+    for (unsigned i = 0; i < totalUserFuncs; i++) {
+        fwrite(&userFuncs[i].address, sizeof(unsigned), 1, file);
+        fwrite(&userFuncs[i].localSize, sizeof(unsigned), 1, file);
+        unsigned stringLength = strlen(userFuncs[i].id);
+        fwrite(&userFuncs[i].id, sizeof(unsigned), stringLength, file);
+
+    }
 }
 //-------------------EXECUTES---------------------------------------------
 /*
