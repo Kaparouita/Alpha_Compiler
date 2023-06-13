@@ -6,11 +6,11 @@
 #include <stdlib.h>
 
 // A structure to represent a stack
-struct Stack {
+typedef struct Stack {
 	int top;
 	unsigned capacity;
 	int* array;
-};
+}Stack;
 
 // function to create a stack of given capacity. It initializes size of
 // stack as 0

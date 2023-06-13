@@ -94,7 +94,7 @@ int newlist (int i);
 int mergelist (int l1, int l2);
 
 void patchlist (int list, int label);
-
+int getglobalvars();
 /**
  * epektini ton pinaka twn quads
 */
@@ -268,7 +268,7 @@ void check_if_fuction(expr* e);
  * 
  * @param e 
  */
-void check_arith(expr* e);
+int check_arith(expr* e);
 /**
  * @brief do numeric operation to e1 and e2
  * 

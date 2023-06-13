@@ -1,7 +1,7 @@
 #include "vm.h"
 
-extern int curr_i;
-extern instruction* instructions;
+extern unsigned codeSize ;
+extern instruction* code ;
 extern double*     numConsts           ;
 extern unsigned    totalNumConsts      ;
 extern char**      stringConsts        ;       
@@ -10,24 +10,25 @@ extern char**       namedLibfuncs      ;
 extern unsigned    totalNamedLibfuncs  ;
 extern userfunc*   userFuncs           ;
 extern unsigned    totalUserFuncs      ;
+extern int    global_vars;     
 
 
 void readInstractions(FILE* file){
-        fread(&curr_i, sizeof(unsigned), 1, file);
-        instructions = malloc(curr_i * sizeof(instruction));
-        if (instructions == NULL) {
+        fread(&codeSize, sizeof(unsigned), 1, file);
+        code = malloc(codeSize * sizeof(instruction));
+        if (code == NULL) {
             printf("Failed to allocate memory for instructions array.\n");
             return;
         }
-        for (unsigned i = 0; i < curr_i; i++) {
-            fread(&(instructions[i].opcode), sizeof(vmopcode), 1, file);
-            fread(&(instructions[i].arg1.type), sizeof(vmarg_t), 1, file);
-            fread(&(instructions[i].arg1.val), sizeof(unsigned), 1, file);
-            fread(&(instructions[i].arg2.type), sizeof(vmarg_t), 1, file);
-            fread(&(instructions[i].arg2.val), sizeof(unsigned), 1, file);
-            fread(&(instructions[i].result.type), sizeof(vmarg_t), 1, file);
-            fread(&(instructions[i].result.val), sizeof(unsigned), 1, file);
-            fread(&(instructions[i].scrLine), sizeof(unsigned), 1, file);
+        for (unsigned i = 0; i < codeSize; i++) {
+            fread(&(code[i].opcode), sizeof(vmopcode), 1, file);
+            fread(&(code[i].arg1.type), sizeof(vmarg_t), 1, file);
+            fread(&(code[i].arg1.val), sizeof(unsigned), 1, file);
+            fread(&(code[i].arg2.type), sizeof(vmarg_t), 1, file);
+            fread(&(code[i].arg2.val), sizeof(unsigned), 1, file);
+            fread(&(code[i].result.type), sizeof(vmarg_t), 1, file);
+            fread(&(code[i].result.val), sizeof(unsigned), 1, file);
+            fread(&(code[i].scrLine), sizeof(unsigned), 1, file);
     }
 }
 
@@ -106,6 +107,7 @@ void readBinary(char* filename) {
         fclose(file);
         return;
     }
+    fread(&global_vars, sizeof(int), 1, file);
     // Read each instruction from the file
     readInstractions(file);
 

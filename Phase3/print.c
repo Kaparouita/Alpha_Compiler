@@ -9,10 +9,7 @@ const char* getOpcodeString(vmopcode code) {
         case mul_v:          return "mul_v";
         case n_div_v:        return "n_div_v";
         case mod_v:          return "mod_v";
-        case uminus_v:       return "uminus_v";
-        case and_v:          return "and_v";
-        case or_v:           return "or_v";
-        case not_v:          return "not_v";
+        case jump_v:          return "jump_v";
         case jeq_v:          return "jeq_v";
         case jnoteq_v:       return "jnoteq_v";
         case jlesseq_v:      return "jlesseq_v";
@@ -55,18 +52,15 @@ void print_vmarg_formal(vmarg *e) {
     switch(e->type){
             case(bool_a) :
                 if(e->val == 0)
-                    printf("%s/", "False");
+                    printf("%-14s/", "False");
                 else 
-                    printf("%s/", "True");
-                printf("%-14ss",get_varg_t_name(e->type));
+                    printf("%-14s/", "True");
                 break;
             case(string_a) :
-                printf("s: %d/", e->val);
-                printf("%-14ss",get_varg_t_name(e->type));
+                printf("s: %-14d/", e->val);
                 break;
             case(number_a) :
-                printf("%.2f/",(double) e->val);
-                printf("%-14ss",get_varg_t_name(e->type));
+                printf("%-14.2f/",(double) e->val);
                 break;
             default : printf("%-14s",get_varg_t_name(e->type));
         }
@@ -79,8 +73,42 @@ void print_i_formal(instruction *q) {
     printf("[%d]\n",q->scrLine);
 }
 
+void print_all_lists(double*     numConsts,
+unsigned    totalNumConsts,
+char**      stringConsts,       
+unsigned    totalStringConsts,
+char**       namedLibfuncs,
+unsigned    totalNamedLibfuncs,
+userfunc*   userFuncs,
+unsigned    totalUserFuncs){
+    // Print numConsts
+    printf("Num Consts:\n");
+    for (unsigned i = 0; i < totalNumConsts; i++) {
+        printf("%.2f\n", numConsts[i]);
+    }
+
+    // Print stringConsts
+    printf("\nString Consts:\n");
+    for (unsigned i = 0; i < totalStringConsts; i++) {
+        printf("%s\n", stringConsts[i]);
+    }
+
+    // Print namedLibfuncs
+    printf("\nNamed Libfuncs:\n");
+    for (unsigned i = 0; i < totalNamedLibfuncs; i++) {
+        printf( "%s\n", namedLibfuncs[i]);
+    }
+
+    // Print userFuncs
+    printf( "\nUser Funcs:\n");
+    for (unsigned i = 0; i < totalUserFuncs; i++) {
+        printf("Address: %d, Local Vars: %u, ID: %s\n", userFuncs[i].address, userFuncs[i].localSize,userFuncs[i].id);
+    }
+
+}
+
 void print_all_i(instruction *instructions,unsigned total){
-    int i = 1;
+    int i = 0;
     printf("\n\n/---------------------------------   PRINTING ALL INSTRUCTIONS    ----------------------------------/\n\n");
     printf("%-8s%-14s%-14s%-14s%-14s%-14s\n\n","NO","OP","ARG1","ARG2","RESULT","LINE");
     while(i < total){

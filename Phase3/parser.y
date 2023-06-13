@@ -291,13 +291,14 @@ term:   LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
                 check_arith($expr);
                 $term = newexpr(arithexpr_e);
                 $term->sym = istempexpr($expr) ? $expr->sym : newtemp();
-                emit(uminus,$expr,NULL,$term,0,yylineno);
+                
+                emit(mul,$expr,newexpr_constnum(1),$term,0,yylineno);
         }
         |NOT expr               {//not a
                 $$ = newexpr(constbool_e);
                 $term->sym = newtemp();
                 $term->boolConst = !(check_if_bool($2));
-                emit(not,NULL,$2,$$,0,yylineno);
+                emit(not,$2,NULL,$$,0,yylineno);
         }
         |INCREMENT lvalue       { //++lvalue
                 check_arith($lvalue);
@@ -361,7 +362,7 @@ assignexpr: lvalue ASSIGNMENT expr{
 					//check_if_fuction($1); //check gia to table
                                         //lvalue[i] = expr
 					if($1->type == tableitem_e) {
-						emit(tablesetelem, $1, $1->index, $3, 0, yylineno);
+						emit(tablesetelem, $3, $1->index, $1, 0, yylineno);
 						$assignexpr = emit_iftableitem($1);
 						$assignexpr->type = assignexpr_e;
 					} 
@@ -390,7 +391,7 @@ primary: lvalue                 {$$ = emit_iftableitem($1);}
         ;
 
 lvalue: member                  {  $lvalue = $member;} 
-        |ID                     {  $lvalue = lvalue_expr(insert_ID(yylval.stringValue)); printf("\n%d\n",$lvalue->type);}
+        |ID                     {  $lvalue = lvalue_expr(insert_ID(yylval.stringValue));}
         |LOCAL ID               {  $lvalue = lvalue_expr(insert_local(yylval.stringValue));}
         |SCOPE_RESOLUTION ID    {  $lvalue = lvalue_expr(check_global(yylval.stringValue));} //::
         ;             
@@ -404,7 +405,7 @@ member:  lvalue FULL_STOP ID    {// a.x;
                                 $member->index = $expr; //index of expr
         }
         //FUCTIONS calls
-        |call   FULL_STOP ID  //a..fuction;
+        |call   FULL_STOP ID  //a.fuction;
         |call   LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET
         ;
 
@@ -419,8 +420,10 @@ call:   call LEFT_PARENTHESIS RIGHT_PARENTHESIS
                                 if($callsuffix->method){
                                         expr* t = $lvalue;
                                         $lvalue = emit_iftableitem(member_item(t, $callsuffix->name));
-                                        if($callsuffix)//!EDW isws prepei na to treksw mexri to telos k meta na to kanw insert?
-                                                $callsuffix->elist->next = t;           // insert san prwto arg (reversed,so last)
+                                        if($callsuffix->elist)//!EDW isws prepei na to treksw mexri to telos k meta na to kanw insert?
+                                        {       expr *e = $callsuffix->elist;
+                                                while(e->next) e = e->next;
+                                                 e->next = t;   }        // insert san prwto arg (reversed,so last)
                                         else
                                                 $callsuffix->elist = t;
                                 }
@@ -441,7 +444,7 @@ call:   call LEFT_PARENTHESIS RIGHT_PARENTHESIS
         ;
 
 callsuffix: normcall            {$callsuffix = $normcall; }
-         |methodcall            {$callsuffix = $methodcall;}
+        |methodcall            {$callsuffix = $methodcall;}
         ;
 
 normcall:   LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS  {
@@ -453,12 +456,13 @@ normcall:   LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS  {
         }
         ;
 
-methodcall: DOUBLE_FULL_STOP ID LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS{
-                                $methodcall = call_constractor($moreElist,1,$ID);
-        }
+methodcall: 
         /*AN TO ELIST = NULL */
-        | DOUBLE_FULL_STOP ID LEFT_PARENTHESIS RIGHT_PARENTHESIS{
+        DOUBLE_FULL_STOP ID LEFT_PARENTHESIS RIGHT_PARENTHESIS{
                                 $methodcall = call_constractor(NULL,1,$ID);
+        }
+        |DOUBLE_FULL_STOP ID LEFT_PARENTHESIS moreElist RIGHT_PARENTHESIS{
+                                $methodcall = call_constractor($moreElist,1,$ID);
         }
         ;    
 
@@ -484,7 +488,7 @@ objectdef:
                                 int i = get_elist_length($moreElist);  //find the length of the items for the table
                                 //for each item check its type and insert it to the table
                                 for(i; i >= 0; i--){
-                                        emit(tablesetelem,$$,newexpr_constnum(i),$moreElist,0,yylineno); // emit (op,temp,index,value)
+                                        emit(tablesetelem,$moreElist,newexpr_constnum(i),$$,0,yylineno); // emit (op,temp,index,value)
                                         $moreElist = $moreElist->next; // go to next expr
                                 }                                                
                                 }
@@ -493,7 +497,7 @@ objectdef:
                                 $$ = tablecreate_and_emit();
                                 int i = get_indexed_length($indexed);
                                 for(i; i >= 0; i--){
-                                        emit(tablesetelem,$$,$indexed->indexedelem,$indexed->value,0,yylineno); // emit (op,temp,index,value)
+                                        emit(tablesetelem,$indexed->value,$indexed->indexedelem,$$,0,yylineno); // emit (op,temp,index,value)
                                         $indexed = $indexed->next; // go to next index
                                 }   
         
@@ -523,8 +527,9 @@ block:  LEFT_CURLY_BRACKET {
                                 CURR_SCOPE++;   
                         }stmts RIGHT_CURLY_BRACKET{
                                 if(CURR_SCOPE!=0)
-                                        hide(CURR_SCOPE--);
+                                        hide(CURR_SCOPE);
                                 $$ = ($stmts)  ?  $stmts : stmt_constractor(0,0);
+                                CURR_SCOPE--;
                 }
         |LEFT_CURLY_BRACKET RIGHT_CURLY_BRACKET{
                 if(CURR_SCOPE!=0)
@@ -554,22 +559,23 @@ funcprefix:
         ;
 
 funcargs:
-        LEFT_PARENTHESIS moreidilist RIGHT_PARENTHESIS {
+        LEFT_PARENTHESIS RIGHT_PARENTHESIS{
                         CURR_SCOPE--;
                         enterscopespace();              // auksanoume to counter gia to ti var einai kata 1
                         resetformalargsoffset();
         }
-        /*|LEFT_PARENTHESIS RIGHT_PARENTHESIS{
+        |LEFT_PARENTHESIS moreidilist RIGHT_PARENTHESIS {
                         CURR_SCOPE--;
                         enterscopespace();              // auksanoume to counter gia to ti var einai kata 1
                         resetformalargsoffset();
-        }*/
+        }
         ;
 
 funcbody:
         block           {
                         delete_last_fuction_scope();
                         $funcbody = currscopeoffset();
+                        printf("%d\n\n",$funcbody);     
                         exitscopespace();
         }
         ;
@@ -606,8 +612,8 @@ idlist: ID                      {insert_formal(yylval.stringValue);}
         |COMMA ID               {insert_formal(yylval.stringValue);}
         ;
 
-moreidilist: moreidilist idlist
-        |
+moreidilist: idlist
+        |moreidilist idlist
         ;
 
 
@@ -729,6 +735,9 @@ int yyerror(char* yaccProvidedMessage){
 
 
 extern int curr_i;
+extern instruction* instructions ;
+extern Stack* userfunctions_Stack;
+
 /*-----------------------------MAIN-----------------------*/
 int main(int argc, char** argv){
         if(argc>1){
@@ -742,18 +751,18 @@ int main(int argc, char** argv){
         
         save_fuctionlocals = createStack(150); 
         loopcounterStack = createStack(200);
+        userfunctions_Stack = createStack(200);
         init_lib_func();
         malloc_all_lists();
-        emit(21,NULL,NULL,NULL,0,0);
         //yyset_in(input_file); // set the input stream for the lexer
         yyparse(); // call the parser function
-        generateInstructions();
         if(error_flag != 0)
                 printf("/-------------   ERRORS     -------------------/\n");
         print_format(); //print scopes
         print_all_quads(); //print quads
-        //print_all_i();
-        //write_all_i(TXT_FILE);
+        generateInstructions();
+        //print_all_i(instructions,curr_i);
+        write_all_i(TXT_FILE);
         writeBinaryFile(BINARY_FILE);
         return 0;
 }

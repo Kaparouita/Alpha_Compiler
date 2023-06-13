@@ -1,19 +1,19 @@
 Einai me olikh apotimhsh
 
-Gia compile ->  make    
+
+#GENERATE INTRUCTIONS
+Gia compile ->  make calc
 Gia run     ->  ./calc "file.txt"
 Gia clean   ->  make clean
 
 
-***AFTER TESTS log***
+#READ BINAY AND RUN VM
+Gia compile ->  make main    
+Gia run     ->  ./calc "file.txt"
 
 
-logika koble// flow_control: exei thema sthn while(11) : grammh 13
-                                mallon exei na kanei me ta break;continue;
 
-
-logika koble // relational: pathainei meta apo ola ta assign
-
-ayta ta ta ypoloipa trexoun komple
+Default Binary file : binary.abc
+Default Txt file : maou.txt (Instructions se txt)
 
 

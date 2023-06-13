@@ -16,6 +16,7 @@ unsigned formalArgOffset=0;
 unsigned scopeSpaceCounter=1;
 quad* quads=(quad*)0;  //nitializes the pointer to the memory address 0,
 extern int tempcounter;
+extern int global_vars ;
 
 void expand(){
     assert(total==currQuad);
@@ -183,7 +184,7 @@ expr* emit_iftableitem(expr* e){
 
     expr* result = newexpr(var_e);
     result->sym = newtemp(); 
-    emit(tablegetelem,result,e,e->index,0,yylineno);  //!paizei na einai lathos
+    emit(tablegetelem,e->index,e,result,0,yylineno);  //!paizei na einai lathos
     return result;
 }
 
@@ -235,7 +236,7 @@ expr* make_call(expr* lv,expr* reversed_elist){
         emit(param,reversed_elist,NULL,NULL,0,yylineno);
         reversed_elist = reversed_elist->next;
     }
-    emit(call,func,NULL,NULL,0,yylineno);
+    emit(call,NULL,NULL,func,0,yylineno);
     expr* result = newexpr(var_e);
     result->sym = newtemp();
     emit(getretval,NULL,NULL,result,0,yylineno);
@@ -297,8 +298,8 @@ void print_quad_formal(struct quad *q) {
 
 void print_expr_formal(expr *e) {
     if (e == NULL) {
-         printf("%-14s", "NULL");
-         return;
+        printf("%-14s", "NULL");
+        return;
     }
     if(e->sym != NULL){
         printf("%-14s", e->sym->name);
@@ -410,7 +411,7 @@ void check_if_fuction(expr* e){
     return;
 }
 
-void check_arith (expr* e) {
+int check_arith (expr* e) {
     if ( e->type == constbool_e ||
         e->type == conststring_e ||
         e->type == nil_e ||
@@ -418,7 +419,8 @@ void check_arith (expr* e) {
         e->type == programfunc_e ||
         e->type == libraryfunc_e ||
         e->type == boolexpr_e )
-            printf("Illegal expr used in %s!\n", e->sym->name);
+            {printf("Illegal expr used !\n");return 0;}
+        return 1;
 }
 
 void copy_value(expr *e1,expr *e2){
@@ -439,16 +441,10 @@ void copy_value(expr *e1,expr *e2){
 }
 
 expr* arithop(expr* expr1,expr* expr2,iopcode op){
-    check_arith(expr1);
-    check_arith(expr2);
     expr* r = newexpr(arithexpr_e);
-    if((expr1->type == constnum_e || expr1->type == var_e ) && (expr2->type == constnum_e || expr2->type == var_e)){
-        if(expr1 == var_e || expr2->type == var_e){
-            if(expr1->type == constnum_e)
-                r = newexpr_constnum(expr1->numConst);
-            r = (expr2->type == constnum_e) ? newexpr_constnum(expr2->numConst) : newexpr_constnum(0);
-        }
-        else
+    int i;
+    i = (!check_arith(expr1)) ? check_arith(expr1) : check_arith(expr2);
+    if((expr1->type == constnum_e ) && (expr2->type == constnum_e )){
         switch (op){
             case add:           
                 r = newexpr_constnum( expr1->numConst + expr2->numConst);
@@ -467,24 +463,19 @@ expr* arithop(expr* expr1,expr* expr2,iopcode op){
                 break;
             default:            yyerror("wrong operation");
         }
-     r->sym = newtemp();
     }else
-        r = is_temp_else_create(expr1,expr2,boolexpr_e);
+    {
+    r = is_temp_else_create(expr1,expr2,arithexpr_e);
     emit(op,expr1,expr2,r,0,yylineno);
+        }
     return r;
-}
+}   
 
 expr* relop(expr* expr1,expr* expr2,iopcode op){
     check_arith(expr1);
     check_arith(expr2);
     expr* r = newexpr(boolexpr_e);
-     if((expr1->type == constnum_e || expr1->type == var_e ) && (expr2->type == constnum_e || expr2->type == var_e)){
-        if(expr1 == var_e || expr2->type == var_e){
-            if(expr1->type == constnum_e)
-                r = newexpr_constnum(expr1->numConst);
-            r = (expr2->type == constnum_e) ? newexpr_constnum(expr2->numConst) : newexpr_constnum(0);
-        }
-        else
+     if((expr1->type == constnum_e ) && (expr2->type == constnum_e )){
         switch (op){
             case if_lesseq:             
                 r = newexpr_constbool( expr1->numConst >= expr2->numConst);
@@ -542,7 +533,7 @@ expr *check_if_same_type(expr *e1,expr* e2,iopcode op){
         }   
     }else {  
             if( (e1->type == tableitem_e || e1->type == nil_e ) && ( e2->type == tableitem_e || e2->type == nil_e) ) 
-                return (op == if_noteq) ? newexpr_constbool(0): newexpr_constbool(1);
+                return (op == if_noteq) ? r: r;
             else{
                 printf("The exprs isnt the same type\n");
                 r = newexpr_nil();
@@ -553,9 +544,9 @@ expr *check_if_same_type(expr *e1,expr* e2,iopcode op){
 
 void emit_relop(expr * e,iopcode op){
     if(e->type != nil_e){
-        emit(assign,e,NULL,newexpr_constbool(1),0,yylineno);
+        emit(assign,newexpr_constbool(1),NULL,e,0,yylineno);
         emit(jump,NULL,NULL,NULL,currQuad+2,yylineno);
-        emit(assign,e,NULL,newexpr_constbool(0),0,yylineno);
+        emit(assign,newexpr_constbool(0),NULL,e,0,yylineno);
     }
 }
 
@@ -595,21 +586,24 @@ expr *is_temp_else_create(expr *e1,expr *e2,expr_t type){
 }
 
 void print_all_quads(){
-    int i = 1;
-    quads++;
+    int i = 0;
     printf("\n\n/---------------------------------   PRINTING ALL QUADS    ----------------------------------/\n\n");
     printf("%-8s%-14s%-14s%-14s%-14s%-14s%-14s\n\n","NO","OP","ARG1","ARG2","RESULT","LABEL","LINE");
     while(i < currQuad){
         printf("%-8d",i);
-        print_quad_formal(quads++);
+        print_quad_formal(&quads[i]);
         i++;
     }
+}
+
+int getglobalvars(){
+    return global_vars;
 }
 
 expr *tablecreate_and_emit(){
     expr* e = newexpr(newtable_e);
 	e->sym = newtemp();
-	emit(tablecreate, e, NULL, NULL, 0, yylineno);
+	emit(tablecreate, NULL, NULL,e, 0, yylineno);
     return e;
 }
 

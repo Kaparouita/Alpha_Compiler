@@ -17,6 +17,7 @@ var* first; // first var for scope_list
 var_table* table ; //table
 last_fuction_scope *fuction_scope ;
 int CURR_SCOPE = 0;
+int global_vars = 0;
 
 var* new_var(var_type type, var_id id, char* name, int scope,scopespace_t space,unsigned offset, int hide, int line){
     var* v = (var*) malloc(sizeof(var));
@@ -58,6 +59,7 @@ void hash_insert(var *v,var_table *table) {
         curr->next = v;
         scope_insert(v); //insert sto scope tou 
     }
+    if(v->space ==programvar) ++global_vars; 
     table->size++;
 }
 
@@ -361,7 +363,8 @@ var *newtemp(){
     char *name = newtempname();
     var * sym = lookup_scope(CURR_SCOPE,name);
     if(sym == NULL)
-        {   sym =new_var(varr,local,name,CURR_SCOPE,currscopespace(),currscopeoffset(),1,yylineno);
+        {  
+            sym =new_var(varr,global,name,CURR_SCOPE,currscopespace(),currscopeoffset(),1,yylineno);
             hash_insert(sym,table);
             inccurrscopeoffset();
             return  sym;}//mprorei k oxi?

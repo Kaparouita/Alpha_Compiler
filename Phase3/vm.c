@@ -23,21 +23,21 @@ void malloc_all_lists(){
         libfuncs_newused(get_lib_fuctions()[i]);
 
 }
-
+/*STIS LISTES GYRNAME TO INDEX! AFOU ETSI THA TO KANOUME TRANSLATE META*/
 unsigned consts_newstring(char* str){
     //check an yparxei idi
     for(int i=0; i<totalStringConsts; ++i) {
         if(!strcmp(stringConsts[i], str))
-            return i;
+            return i+1;
     }
     stringConsts= realloc(stringConsts, sizeof(char*)*(totalStringConsts+1));
     stringConsts[totalStringConsts++] = strdup(str);
     return totalStringConsts;
 }
 unsigned consts_newnumber(double n){
-    for(int i=0; i<totalNumConsts; ++i) 
+    for(unsigned int i=0; i<totalNumConsts; ++i) 
         if(numConsts[i] == n)
-            return i;
+            {return i+1;}
     numConsts = realloc(numConsts, sizeof(double)*(totalNumConsts+1));
     numConsts[totalNumConsts++] = n;
     return totalNumConsts;
@@ -60,15 +60,7 @@ unsigned userfunc_newfunc(expr *e){
     userfunc_constractor(&userFuncs[totalUserFuncs],e->sym->fuctionAddress,e->sym->totalLocals,e->sym->name);
     return totalUserFuncs++;
 }
-
-extern var_table* table ;
-
-//STACK
-
-avm_memcell  stack[AVM_STACKSIZE];                  //the stack
-unsigned  globmem;                                  //the first global's variable oofset on mem
-unsigned  callmem;
-unsigned  datamem;                   
+                
 
 //contractors
 
@@ -77,12 +69,6 @@ vmarg  vmarg_constractor(vmarg* v,vmarg_t type,unsigned val){
     v->val = val;
 }
 
-avm_memcell * avm_memcell_constractor(avm_memcell_t type,data_union data){
-    avm_memcell* cell = (avm_memcell*) malloc (sizeof(avm_memcell*));
-    cell->data = data;
-    cell->type = type;
-    return cell;
-}
 
 userfunc userfunc_constractor(userfunc* func,unsigned ad,unsigned ls,char* id){
     func->address = ad;
@@ -99,74 +85,7 @@ instruction  instruction_constractor(instruction *i,vmopcode op, unsigned scrLin
 }
 
 
-static void avm_initstack (void){
-    for (unsigned i = 0; i<AVM_STACKSIZE;i++){
-        AVM_WIPEOUT(stack[i]);
-        stack[i].type = undef_m;
-    }
-}
 
-//TABLE
-void avm_table_increfcounter (avm_table* t){
-    t->refCounter++;
-}
-
-/*garbage colector*/
-void avm_table_decrefcounter (avm_table* t){
-    assert(t->refCounter > 0);
-    if(!--t->refCounter)
-        avm_table_destroy(t);
-}
-
-void avm_table_buckets_init (avm_table_bucket** p){
-    for (unsigned i=0; i < AVM_TABLE_HASHSIZE; ++i)
-        p[i] = (avm_table_bucket*) 0;
-}
-
-avm_table* avm_tablenew(void ){
-    avm_table* t = (avm_table*) malloc (sizeof(avm_table*));
-    AVM_WIPEOUT(*t);
-
-    t->refCounter = t->totalStr = t->totanNum = 0;
-    avm_table_buckets_init(t->numIndexed);
-    avm_table_buckets_init(t->strIndexed);
-
-    return t;
-}
-
-
-void avm_tablebucketsdestroy (avm_table_bucket** p){
-    for ( unsigned i = 0;i < AVM_TABLE_HASHSIZE; ++i,++p){
-        for (avm_table_bucket *b = *p; b;){
-            avm_table_bucket* del = b;
-            b = b->next;
-            /*
-            avm_memcellclear (&del->key);
-            avm_memcellclear (&del->value);
-            */
-            free(del);
-        }
-        p[i] = (avm_table_bucket*) 0;
-    }
-}
-
-void avm_table_destroy (avm_table* t){
-    avm_tablebucketsdestroy (t->strIndexed);
-    avm_tablebucketsdestroy (t->numIndexed);
-    free(t);
-}
-
-
-
-unsigned int saveStringToUnsigned(const char* str) {
-    return strtoul(str, NULL, 0);
-}
-
-char* translateUnsignedToString(unsigned int value) {
-    char* str = malloc(sizeof(char*));  // Adjust the size as per your requirements
-    sprintf(str, "%u", value);
-    return str;
-}
 //generate staf
 
 void make_operand(expr* e,vmarg* arg){
@@ -237,7 +156,21 @@ void expand_i(){
 int nextinstructionlabel(){return curr_i;}
 
 void reset_operand(vmarg * arg){
-    vmarg_constractor(arg,-1,-1);
+    vmarg_constractor(arg,0,0);
+}
+
+extern unsigned ij_total ;
+extern int currQuad;
+
+void patch_incomplete_jumps(incomplete_jump** head,quad *quads) {
+    incomplete_jump* curr = *head;
+    if(!curr)
+        return;
+    if( currQuad == curr_i)
+        return;
+    for (int i = 0; i < ij_total;i++) {
+        instructions[curr->instrNo].result.val = quads[curr->iaddress].label;
+        curr = curr->next;}
 }
 
 //try
@@ -251,13 +184,23 @@ void reset_operand(vmarg * arg){
     5. top_sp   //save to top_sp
     6. local var tis function
 */
-
-
-void init_globals(){
-    var *v = get_scope_var(0);
-    data_union u;
-    while(v){
-        v = v->next;
+void add_incomplete_jump(incomplete_jump** head, unsigned instrNo, unsigned iaddress) {
+    // Create a new node
+    incomplete_jump* new_jump = (incomplete_jump*)malloc(sizeof(incomplete_jump));
+    new_jump->instrNo = instrNo;
+    new_jump->iaddress = iaddress;
+    new_jump->next = NULL;
+    if (*head == NULL) {
+        *head = new_jump;
+        ij_total++;
+        return;
     }
+    incomplete_jump* current = *head;
+    while (current->next != NULL) {
+        current = current->next;
+    }
+    current->next = new_jump;
+    ij_total++;
 }
+
 
