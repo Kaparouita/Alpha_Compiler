@@ -1,0 +1,38 @@
+5       
+
+
+
+/---------------------------------   PRINTING ALL INSTRUCTIONS    ----------------------------------/
+
+NO      OP            ARG1          ARG2          RESULT        LINE          
+
+0       assign_v      1.00          nil_a         global_a      [13]
+1       assign_v      global_a      nil_a         global_a      [13]
+2       assign_v      2.00          nil_a         global_a      [15]
+3       assign_v      global_a      nil_a         global_a      [15]
+4       jeq_v         global_a      False         7             [16]
+5       assign_v      False         0             False         [16]
+6       jump_v        0             0             8             [16]
+7       assign_v      True          0             False         [16]
+8       assign_v      False         nil_a         global_a      [16]
+9       assign_v      global_a      nil_a         global_a      [16]
+Num Consts:
+1.00
+2.00
+
+String Consts:
+
+Named Libfuncs:
+print
+input
+objectmemberkeys
+objecttotalmembers
+totalarguments
+argument
+typeof
+strtonum
+sqrt
+cos
+sin
+
+User Funcs:

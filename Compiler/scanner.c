@@ -1,6 +1,6 @@
-#line 2 "scanner.c"
+#line 1 "scanner.c"
 
-#line 4 "scanner.c"
+#line 3 "scanner.c"
 
 #define  YY_INT_ALIGNED short int
 
@@ -556,7 +556,7 @@ char *yytext;
 	 * return 1 if fails(not nested comment found)
 	*/ 
 	int star_comment_checker(int i,int what);
-#line 560 "scanner.c"
+#line 559 "scanner.c"
 /*NOT DEFINED SYMBOLS*/
 /*KEYWORDS*/
 /*OPERATORS*/
@@ -566,7 +566,7 @@ char *yytext;
 /*PUNCTUATIONS MARK*/
 /*IDENTIFICATION NAME*/
 /*COMMENTS*/
-#line 570 "scanner.c"
+#line 569 "scanner.c"
 
 #define INITIAL 0
 
@@ -785,7 +785,7 @@ YY_DECL
 	{
 #line 94 "scanner.l"
 
-#line 789 "scanner.c"
+#line 788 "scanner.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -1207,7 +1207,7 @@ YY_RULE_SETUP
 #line 259 "scanner.l"
 ECHO;
 	YY_BREAK
-#line 1211 "scanner.c"
+#line 1210 "scanner.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
